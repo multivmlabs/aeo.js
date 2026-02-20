@@ -1,9 +1,9 @@
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join, relative, extname } from 'path';
-import type { ResolvedConfig, ManifestEntry } from '../types';
+import type { ResolvedAeoConfig, ManifestEntry } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
 
-function collectManifestEntries(dir: string, config: ResolvedConfig, base: string = dir): ManifestEntry[] {
+function collectManifestEntries(dir: string, config: ResolvedAeoConfig, base: string = dir): ManifestEntry[] {
   const entries: ManifestEntry[] = [];
   
   try {
@@ -36,7 +36,7 @@ function collectManifestEntries(dir: string, config: ResolvedConfig, base: strin
   return entries;
 }
 
-export function generateManifest(config: ResolvedConfig): string {
+export function generateManifest(config: ResolvedAeoConfig): string {
   const entries = collectManifestEntries(config.contentDir, config);
   
   const manifest = {

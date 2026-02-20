@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join, relative, extname } from 'path';
 import { createHash } from 'crypto';
-import type { ResolvedConfig, AIIndexEntry } from '../types';
+import type { ResolvedAeoConfig, AIIndexEntry } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
 
 function extractKeywords(content: string): string[] {
@@ -44,7 +44,7 @@ function chunkContent(content: string, maxLength: number = 2000): string[] {
   return chunks;
 }
 
-function collectAIIndexEntries(dir: string, config: ResolvedConfig, base: string = dir): AIIndexEntry[] {
+function collectAIIndexEntries(dir: string, config: ResolvedAeoConfig, base: string = dir): AIIndexEntry[] {
   const entries: AIIndexEntry[] = [];
   
   try {
@@ -97,7 +97,7 @@ function collectAIIndexEntries(dir: string, config: ResolvedConfig, base: string
   return entries;
 }
 
-export function generateAIIndex(config: ResolvedConfig): string {
+export function generateAIIndex(config: ResolvedAeoConfig): string {
   const entries = collectAIIndexEntries(config.contentDir, config);
   
   const index = {

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync, mkdirSync, writeFileSync, copyFileSync } from 'fs';
 import { join, relative, extname, dirname } from 'path';
-import type { ResolvedConfig } from '../types';
+import type { ResolvedAeoConfig } from '../types';
 
 export interface CopiedFile {
   source: string;
@@ -11,7 +11,7 @@ function ensureDir(path: string): void {
   mkdirSync(path, { recursive: true });
 }
 
-export function copyMarkdownFiles(config: ResolvedConfig): CopiedFile[] {
+export function copyMarkdownFiles(config: ResolvedAeoConfig): CopiedFile[] {
   const copiedFiles: CopiedFile[] = [];
   
   function copyRecursive(dir: string, base: string = config.contentDir): void {

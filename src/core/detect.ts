@@ -1,4 +1,4 @@
-import type { Framework, FrameworkInfo } from '../types';
+import type { FrameworkType, FrameworkInfo } from '../types';
 import { readPackageJson } from './utils';
 
 export function detectFramework(projectRoot: string = process.cwd()): FrameworkInfo {

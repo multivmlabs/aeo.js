@@ -12,49 +12,44 @@
       "types": "./dist/index.d.ts"
     },
     "./vite": {
-      "import": "./dist/plugins/vite.mjs",
-      "require": "./dist/plugins/vite.js",
-      "types": "./dist/plugins/vite.d.ts"
+      "import": "./dist/vite.mjs",
+      "require": "./dist/vite.js",
+      "types": "./dist/vite.d.ts"
     },
     "./next": {
-      "import": "./dist/plugins/next.mjs",
-      "require": "./dist/plugins/next.js",
-      "types": "./dist/plugins/next.d.ts"
+      "import": "./dist/next.mjs",
+      "require": "./dist/next.js",
+      "types": "./dist/next.d.ts"
     },
     "./astro": {
-      "import": "./dist/plugins/astro.mjs",
-      "require": "./dist/plugins/astro.js",
-      "types": "./dist/plugins/astro.d.ts"
+      "import": "./dist/astro.mjs",
+      "require": "./dist/astro.js",
+      "types": "./dist/astro.d.ts"
     },
     "./nuxt": {
-      "import": "./dist/plugins/nuxt.mjs",
-      "require": "./dist/plugins/nuxt.js",
-      "types": "./dist/plugins/nuxt.d.ts"
+      "import": "./dist/nuxt.mjs",
+      "require": "./dist/nuxt.js",
+      "types": "./dist/nuxt.d.ts"
     },
     "./webpack": {
-      "import": "./dist/plugins/webpack.mjs",
-      "require": "./dist/plugins/webpack.js",
-      "types": "./dist/plugins/webpack.d.ts"
+      "import": "./dist/webpack.mjs",
+      "require": "./dist/webpack.js",
+      "types": "./dist/webpack.d.ts"
     },
     "./react": {
-      "import": "./dist/widget/react.mjs",
-      "require": "./dist/widget/react.js",
-      "types": "./dist/widget/react.d.ts"
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.js",
+      "types": "./dist/react.d.ts"
     },
     "./vue": {
-      "import": "./dist/widget/vue.mjs",
-      "require": "./dist/widget/vue.js",
-      "types": "./dist/widget/vue.d.ts"
-    },
-    "./svelte": {
-      "import": "./dist/widget/svelte.mjs",
-      "require": "./dist/widget/svelte.js",
-      "types": "./dist/widget/svelte.d.ts"
+      "import": "./dist/vue.mjs",
+      "require": "./dist/vue.js",
+      "types": "./dist/vue.d.ts"
     },
     "./widget": {
-      "import": "./dist/widget/core.mjs",
-      "require": "./dist/widget/core.js",
-      "types": "./dist/widget/core.d.ts"
+      "import": "./dist/widget.mjs",
+      "require": "./dist/widget.js",
+      "types": "./dist/widget.d.ts"
     }
   },
   "files": [
@@ -64,6 +59,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest",
+    "lint": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

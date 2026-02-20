@@ -1,8 +1,8 @@
 import { readdirSync, statSync } from 'fs';
 import { join, relative, extname } from 'path';
-import type { ResolvedConfig } from '../types';
+import type { ResolvedAeoConfig } from '../types';
 
-function collectUrls(dir: string, config: ResolvedConfig, base: string = dir): string[] {
+function collectUrls(dir: string, config: ResolvedAeoConfig, base: string = dir): string[] {
   const urls: string[] = [];
   
   try {
@@ -27,7 +27,7 @@ function collectUrls(dir: string, config: ResolvedConfig, base: string = dir): s
   return urls;
 }
 
-export function generateSitemap(config: ResolvedConfig): string {
+export function generateSitemap(config: ResolvedAeoConfig): string {
   const urls = collectUrls(config.contentDir, config);
   
   const lines: string[] = [

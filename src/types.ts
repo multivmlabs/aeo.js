@@ -13,6 +13,12 @@ export interface AeoConfig {
     sitemap?: boolean;
     aiIndex?: boolean;
   };
+  robots?: {
+    allow?: string[];
+    disallow?: string[];
+    crawlDelay?: number;
+    sitemap?: string;
+  };
   widget?: {
     enabled?: boolean;
     position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
@@ -28,7 +34,7 @@ export interface AeoConfig {
   };
 }
 
-export interface ResolvedConfig extends AeoConfig {
+export interface ResolvedAeoConfig {
   title: string;
   description: string;
   url: string;
@@ -43,6 +49,12 @@ export interface ResolvedConfig extends AeoConfig {
     sitemap: boolean;
     aiIndex: boolean;
   };
+  robots: {
+    allow: string[];
+    disallow: string[];
+    crawlDelay: number;
+    sitemap: string;
+  };
   widget: {
     enabled: boolean;
     position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
@@ -56,6 +68,32 @@ export interface ResolvedConfig extends AeoConfig {
     aiLabel: string;
     showBadge: boolean;
   };
+}
+
+export interface DocEntry {
+  title: string;
+  description?: string;
+  path: string;
+  markdownUrl: string;
+  htmlUrl: string;
+  category?: string;
+  keywords?: string[];
+  content: string;
+}
+
+export interface AeoManifest {
+  name: string;
+  description: string;
+  baseUrl: string;
+  generatedAt: string;
+  totalDocs: number;
+  access: {
+    llmsTxt: boolean;
+    llmsFullTxt: boolean;
+    sitemap: boolean;
+    rawMarkdown: boolean;
+  };
+  docs: DocEntry[];
 }
 
 export interface MarkdownFile {
@@ -83,10 +121,10 @@ export interface AIIndexEntry {
   metadata?: Record<string, any>;
 }
 
-export type Framework = 'next' | 'nuxt' | 'astro' | 'remix' | 'sveltekit' | 'angular' | 'docusaurus' | 'vite' | 'unknown';
+export type FrameworkType = 'next' | 'vite' | 'nuxt' | 'astro' | 'remix' | 'sveltekit' | 'angular' | 'docusaurus' | 'vanilla' | 'unknown';
 
 export interface FrameworkInfo {
-  framework: Framework;
+  framework: FrameworkType;
   contentDir: string;
   outDir: string;
 }

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join, relative, extname } from 'path';
-import type { ResolvedConfig } from '../types';
+import type { ResolvedAeoConfig } from '../types';
 import { parseFrontmatter, bumpHeadings } from './utils';
 
 function collectAndConcatenateMarkdown(dir: string, base: string = dir): string[] {
@@ -51,7 +51,7 @@ function collectAndConcatenateMarkdown(dir: string, base: string = dir): string[
   return sections;
 }
 
-export function generateLlmsFullTxt(config: ResolvedConfig): string {
+export function generateLlmsFullTxt(config: ResolvedAeoConfig): string {
   const lines: string[] = [
     `# ${config.title} - Complete Documentation`,
     '',

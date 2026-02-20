@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { generateLlmsTxt } from './llms-txt'
 import fs from 'fs'
 import path from 'path'
-import type { ResolvedConfig } from '../types'
+import type { ResolvedAeoConfig } from '../types'
 
 vi.mock('fs')
 vi.mock('path')
@@ -31,7 +31,7 @@ describe('generateLlmsTxt', () => {
     mockFs.readFileSync.mockReturnValue('# Test Title\n\nTest content\n\n## Section\n\nMore content')
   })
 
-  const baseConfig: ResolvedConfig = {
+  const baseConfig: ResolvedAeoConfig = {
     url: 'https://example.com',
     title: 'Test Project',
     description: 'A test project description',
@@ -99,7 +99,7 @@ describe('generateLlmsTxt', () => {
   })
 
   it('should handle missing description', () => {
-    const config: ResolvedConfig = {
+    const config: ResolvedAeoConfig = {
       ...baseConfig,
       description: undefined as any,
     }

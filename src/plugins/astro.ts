@@ -1,5 +1,5 @@
 import type { AstroIntegration } from 'astro';
-import { generateAeoFiles } from '../core/generate';
+import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig } from '../types';
 import { join } from 'path';
@@ -73,7 +73,7 @@ export function aeoAstroIntegration(options: AeoConfig = {}): AstroIntegration {
         });
         
         try {
-          const result = await generateAeoFiles(resolvedConfig);
+          const result = await generateAEOFiles(resolvedConfig);
           
           if (result.files.length > 0) {
             buildLogger.info(`Generated ${result.files.length} files`);
@@ -100,7 +100,7 @@ export function aeoAstroIntegration(options: AeoConfig = {}): AstroIntegration {
         devLogger.info('Generating AEO files for development...');
         
         try {
-          const result = await generateAeoFiles(resolvedConfig);
+          const result = await generateAEOFiles(resolvedConfig);
           
           if (result.files.length > 0) {
             devLogger.info(`Generated ${result.files.length} files`);
@@ -126,7 +126,7 @@ export function aeoAstroIntegration(options: AeoConfig = {}): AstroIntegration {
               devLogger.info('Content file changed, regenerating AEO files...');
               
               try {
-                const result = await generateAeoFiles(resolvedConfig);
+                const result = await generateAEOFiles(resolvedConfig);
                 
                 if (result.files.length > 0) {
                   devLogger.info(`Regenerated ${result.files.length} files`);
