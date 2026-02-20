@@ -1,0 +1,61 @@
+{
+  "name": "aeo.js",
+  "version": "0.0.1",
+  "description": "Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "aeo": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "aeo",
+    "answer-engine-optimization",
+    "llm",
+    "ai",
+    "seo",
+    "llms-txt",
+    "robots-txt",
+    "ai-crawlers",
+    "structured-data",
+    "json-ld",
+    "chatgpt",
+    "claude",
+    "perplexity",
+    "searchgpt",
+    "web-optimization",
+    "vite",
+    "webpack",
+    "nextjs",
+    "react",
+    "vue",
+    "angular",
+    "svelte"
+  ],
+  "author": "Ruben Marcus",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/multivmlabs/aeo.js"
+  },
+  "homepage": "https://aeojs.org",
+  "bugs": {
+    "url": "https://github.com/multivmlabs/aeo.js/issues"
+  }
+}
