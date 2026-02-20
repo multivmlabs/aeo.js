@@ -10,10 +10,52 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./vite": {
+      "import": "./dist/plugins/vite.mjs",
+      "require": "./dist/plugins/vite.js",
+      "types": "./dist/plugins/vite.d.ts"
+    },
+    "./next": {
+      "import": "./dist/plugins/next.mjs",
+      "require": "./dist/plugins/next.js",
+      "types": "./dist/plugins/next.d.ts"
+    },
+    "./astro": {
+      "import": "./dist/plugins/astro.mjs",
+      "require": "./dist/plugins/astro.js",
+      "types": "./dist/plugins/astro.d.ts"
+    },
+    "./nuxt": {
+      "import": "./dist/plugins/nuxt.mjs",
+      "require": "./dist/plugins/nuxt.js",
+      "types": "./dist/plugins/nuxt.d.ts"
+    },
+    "./webpack": {
+      "import": "./dist/plugins/webpack.mjs",
+      "require": "./dist/plugins/webpack.js",
+      "types": "./dist/plugins/webpack.d.ts"
+    },
+    "./react": {
+      "import": "./dist/widget/react.mjs",
+      "require": "./dist/widget/react.js",
+      "types": "./dist/widget/react.d.ts"
+    },
+    "./vue": {
+      "import": "./dist/widget/vue.mjs",
+      "require": "./dist/widget/vue.js",
+      "types": "./dist/widget/vue.d.ts"
+    },
+    "./svelte": {
+      "import": "./dist/widget/svelte.mjs",
+      "require": "./dist/widget/svelte.js",
+      "types": "./dist/widget/svelte.d.ts"
+    },
+    "./widget": {
+      "import": "./dist/widget/core.mjs",
+      "require": "./dist/widget/core.js",
+      "types": "./dist/widget/core.d.ts"
     }
-  },
-  "bin": {
-    "aeo": "./dist/cli.js"
   },
   "files": [
     "dist"
@@ -57,5 +99,56 @@
   "homepage": "https://aeojs.org",
   "bugs": {
     "url": "https://github.com/multivmlabs/aeo.js/issues"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@astrojs/astro": ">=3.0.0",
+    "@nuxt/kit": ">=3.0.0",
+    "@sveltejs/kit": ">=1.0.0",
+    "next": ">=13.0.0",
+    "react": ">=17.0.0",
+    "svelte": ">=3.0.0",
+    "vite": ">=4.0.0",
+    "vue": ">=3.0.0",
+    "webpack": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@astrojs/astro": {
+      "optional": true
+    },
+    "@nuxt/kit": {
+      "optional": true
+    },
+    "@sveltejs/kit": {
+      "optional": true
+    },
+    "next": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@types/minimatch": "^5.1.2",
+    "minimatch": "^10.2.2"
   }
 }
