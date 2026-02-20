@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join, relative, extname } from 'path';
-import type { ResolvedConfig, MarkdownFile } from '../types';
+import type { ResolvedAeoConfig, MarkdownFile } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
 
 function collectMarkdownFiles(dir: string, base: string = dir): MarkdownFile[] {
@@ -36,7 +36,7 @@ function collectMarkdownFiles(dir: string, base: string = dir): MarkdownFile[] {
   return files;
 }
 
-export function generateLlmsTxt(config: ResolvedConfig): string {
+export function generateLlmsTxt(config: ResolvedAeoConfig): string {
   const lines: string[] = [
     `# ${config.title}`,
     '',

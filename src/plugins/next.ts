@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next';
-import { generateAeoFiles } from '../core/generate';
+import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig } from '../types';
 import { join } from 'path';
@@ -41,7 +41,7 @@ export function withAeo(nextConfig: NextAeoConfig = {}): NextConfig {
               console.log('[aeo.js] Generating AEO files for Next.js...');
               
               try {
-                const result = await generateAeoFiles(resolvedConfig);
+                const result = await generateAEOFiles(resolvedConfig);
                 
                 if (result.files.length > 0) {
                   console.log(`[aeo.js] Generated ${result.files.length} files:`);
@@ -122,7 +122,7 @@ export async function generateAeoMetadata(config?: AeoConfig) {
   
   // Generate files during build
   if (process.env.NODE_ENV === 'production') {
-    await generateAeoFiles(resolvedConfig);
+    await generateAEOFiles(resolvedConfig);
   }
   
   return {

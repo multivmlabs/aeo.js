@@ -1,4 +1,4 @@
-import type { AeoConfig, ResolvedConfig } from './types';
+import type { AeoConfig } from './types';
 
 export const VERSION = '0.0.1';
 
@@ -6,8 +6,20 @@ export function defineConfig(config: AeoConfig): AeoConfig {
   return config;
 }
 
-export type { AeoConfig, ResolvedConfig, MarkdownFile, ManifestEntry, AIIndexEntry, Framework, FrameworkInfo } from './types';
+// Export all types
+export type { 
+  AeoConfig, 
+  ResolvedAeoConfig, 
+  DocEntry,
+  AeoManifest,
+  MarkdownFile, 
+  ManifestEntry, 
+  AIIndexEntry, 
+  FrameworkType, 
+  FrameworkInfo 
+} from './types';
 
+// Export core functions
 export { detectFramework } from './core/detect';
-export { generateAeoFiles } from './core/generate';
+export { generateAEOFiles as generateAll } from './core/generate';
 export { resolveConfig } from './core/utils';

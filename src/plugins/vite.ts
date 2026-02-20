@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-import { generateAeoFiles } from '../core/generate';
+import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig } from '../types';
 import { join } from 'path';
@@ -34,7 +34,7 @@ export function aeoVitePlugin(options: AeoConfig = {}): Plugin {
       console.log('[aeo.js] Generating AEO files...');
       
       try {
-        const result = await generateAeoFiles(resolvedConfig);
+        const result = await generateAEOFiles(resolvedConfig);
         
         if (result.files.length > 0) {
           console.log(`[aeo.js] Generated ${result.files.length} files:`);
@@ -64,7 +64,7 @@ export function aeoVitePlugin(options: AeoConfig = {}): Plugin {
             console.log('[aeo.js] Markdown file changed, regenerating...');
             
             try {
-              const result = await generateAeoFiles(resolvedConfig);
+              const result = await generateAEOFiles(resolvedConfig);
               
               if (result.files.length > 0) {
                 console.log(`[aeo.js] Regenerated ${result.files.length} files`);

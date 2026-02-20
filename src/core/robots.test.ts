@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { generateRobotsTxt } from './robots'
-import type { ResolvedConfig } from '../types'
+import type { ResolvedAeoConfig } from '../types'
 
 describe('generateRobotsTxt', () => {
-  const baseConfig: ResolvedConfig = {
+  const baseConfig: ResolvedAeoConfig = {
     url: 'https://example.com',
     title: 'Test Site',
     description: 'Test description',
@@ -53,7 +53,7 @@ describe('generateRobotsTxt', () => {
   })
 
   it('should handle missing url', () => {
-    const config: ResolvedConfig = {
+    const config: ResolvedAeoConfig = {
       ...baseConfig,
       url: '',
     }

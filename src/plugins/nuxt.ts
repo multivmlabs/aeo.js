@@ -1,5 +1,5 @@
 import { defineNuxtModule, addPlugin, createResolver } from '@nuxt/kit';
-import { generateAeoFiles } from '../core/generate';
+import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig } from '../types';
 import { join } from 'path';
@@ -43,7 +43,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
       
       try {
-        const result = await generateAeoFiles(resolvedConfig);
+        const result = await generateAEOFiles(resolvedConfig);
         
         if (result.files.length > 0) {
           console.log(`[aeo.js] Generated ${result.files.length} files:`);
@@ -78,7 +78,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
       
       try {
-        const result = await generateAeoFiles(prodConfig);
+        const result = await generateAEOFiles(prodConfig);
         
         if (result.files.length > 0) {
           console.log(`[aeo.js] Generated ${result.files.length} files for production`);
@@ -99,7 +99,7 @@ export default defineNuxtModule<ModuleOptions>({
           console.log('[aeo.js] Content changed, regenerating AEO files...');
           
           try {
-            const result = await generateAeoFiles(resolvedConfig);
+            const result = await generateAEOFiles(resolvedConfig);
             
             if (result.files.length > 0) {
               console.log(`[aeo.js] Regenerated ${result.files.length} files`);

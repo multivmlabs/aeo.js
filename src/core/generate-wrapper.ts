@@ -9,7 +9,7 @@ import { detectFramework } from './detect';
 import { resolveConfig, getAllMarkdownFiles } from './utils';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import type { AeoConfig, FrameworkInfo, ResolvedConfig } from '../types';
+import type { AeoConfig, FrameworkInfo, ResolvedAeoConfig } from '../types';
 
 export interface GenerateResult {
   markdownFiles: string[];
@@ -26,25 +26,25 @@ interface GenerateFiles {
 }
 
 // Wrapper functions to adapt the signature
-export function generateRobotsTxt(files: GenerateFiles, config: ResolvedConfig, root: string): void {
+export function generateRobotsTxt(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
   const content = genRobots(config);
   mkdirSync(config.output || 'public/aeo', { recursive: true });
   writeFileSync(join(config.output || 'public/aeo', 'robots.txt'), content, 'utf-8');
 }
 
-export function generateLLMsTxt(files: GenerateFiles, config: ResolvedConfig, root: string): void {
+export function generateLLMsTxt(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
   const content = genLlms(config);
   mkdirSync(config.output || 'public/aeo', { recursive: true });
   writeFileSync(join(config.output || 'public/aeo', 'llms.txt'), content, 'utf-8');
 }
 
-export function generateLLMsFullTxt(files: GenerateFiles, config: ResolvedConfig, root: string): void {
+export function generateLLMsFullTxt(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
   const content = genLlmsFull(config);
   mkdirSync(config.output || 'public/aeo', { recursive: true });
   writeFileSync(join(config.output || 'public/aeo', 'llms-full.txt'), content, 'utf-8');
 }
 
-export function copyRawMarkdownFiles(files: GenerateFiles, config: ResolvedConfig, root: string): void {
+export function copyRawMarkdownFiles(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
   const fullConfig = {
     ...config,
     root: root || process.cwd(),
@@ -58,23 +58,23 @@ export function copyRawMarkdownFiles(files: GenerateFiles, config: ResolvedConfi
       sitemap: false,
       aiIndex: false
     }
-  } as ResolvedConfig;
+  } as ResolvedAeoConfig;
   copyMarkdownFiles(fullConfig);
 }
 
-export function generateManifest(files: GenerateFiles, config: ResolvedConfig, root: string): void {
+export function generateManifest(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
   const content = genManifest(config);
   mkdirSync(config.output || 'public/aeo', { recursive: true });
   writeFileSync(join(config.output || 'public/aeo', 'docs.json'), content, 'utf-8');
 }
 
-export function generateSitemap(files: GenerateFiles, config: ResolvedConfig, root: string): void {
+export function generateSitemap(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
   const content = genSitemap(config);
   mkdirSync(config.output || 'public/aeo', { recursive: true });
   writeFileSync(join(config.output || 'public/aeo', 'sitemap.xml'), content, 'utf-8');
 }
 
-export function generateAIIndex(files: GenerateFiles, config: ResolvedConfig, root: string): void {
+export function generateAIIndex(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
   const content = genAIIndex(config);
   mkdirSync(config.output || 'public/aeo', { recursive: true });
   writeFileSync(join(config.output || 'public/aeo', 'ai-index.json'), content, 'utf-8');

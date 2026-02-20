@@ -1,5 +1,5 @@
 import type { Compiler, WebpackPluginInstance } from 'webpack';
-import { generateAeoFiles } from '../core/generate';
+import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig } from '../types';
 import { join } from 'path';
@@ -27,7 +27,7 @@ export class AeoWebpackPlugin implements WebpackPluginInstance {
       console.log('[aeo.js] Generating AEO files...');
       
       try {
-        const result = await generateAeoFiles(this.resolvedConfig);
+        const result = await generateAEOFiles(this.resolvedConfig);
         
         if (result.files.length > 0) {
           console.log(`[aeo.js] Generated ${result.files.length} files:`);
@@ -71,7 +71,7 @@ export class AeoWebpackPlugin implements WebpackPluginInstance {
           console.log('[aeo.js] Markdown files changed, regenerating...');
           
           try {
-            const result = await generateAeoFiles(this.resolvedConfig);
+            const result = await generateAEOFiles(this.resolvedConfig);
             
             if (result.files.length > 0) {
               console.log(`[aeo.js] Regenerated ${result.files.length} files`);

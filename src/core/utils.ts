@@ -1,10 +1,10 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join, relative, extname } from 'path';
-import type { AeoConfig, ResolvedConfig, MarkdownFile } from '../types';
+import type { AeoConfig, ResolvedAeoConfig, MarkdownFile } from '../types';
 import { detectFramework } from './detect';
 import { minimatch } from 'minimatch';
 
-export function resolveConfig(config: AeoConfig = {}): ResolvedConfig {
+export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
   const frameworkInfo = detectFramework();
   
   return {
