@@ -1,6 +1,6 @@
 {
   "name": "aeo.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
