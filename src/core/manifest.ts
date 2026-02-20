@@ -37,7 +37,21 @@ function collectManifestEntries(dir: string, config: ResolvedAeoConfig, base: st
 }
 
 export function generateManifest(config: ResolvedAeoConfig): string {
-  const entries = collectManifestEntries(config.contentDir, config);
+  const entries: ManifestEntry[] = [];
+
+  // Add discovered pages from framework plugin
+  if (config.pages && config.pages.length > 0) {
+    for (const page of config.pages) {
+      entries.push({
+        url: `${config.url}${page.pathname === '/' ? '' : page.pathname}`,
+        title: page.title || page.pathname,
+        description: page.description,
+      });
+    }
+  }
+
+  // Add markdown content files
+  entries.push(...collectManifestEntries(config.contentDir, config));
   
   const manifest = {
     version: '1.0',

@@ -53,24 +53,41 @@ export function generateLlmsTxt(config: ResolvedAeoConfig): string {
   lines.push('optimized for consumption by Large Language Models (LLMs) and AI assistants.');
   lines.push('');
   
-  const markdownFiles = collectMarkdownFiles(config.contentDir);
-  
-  if (markdownFiles.length > 0) {
-    lines.push('## Documentation Structure');
+  // List discovered pages (from framework plugin)
+  if (config.pages && config.pages.length > 0) {
+    lines.push('## Pages');
     lines.push('');
-    
+
+    for (const page of config.pages) {
+      const url = `${config.url}${page.pathname === '/' ? '' : page.pathname}`;
+      const title = page.title || page.pathname;
+      lines.push(`- [${title}](${url})`);
+      if (page.description) {
+        lines.push(`  ${page.description}`);
+      }
+    }
+    lines.push('');
+  }
+
+  // List markdown content files
+  const markdownFiles = collectMarkdownFiles(config.contentDir);
+
+  if (markdownFiles.length > 0) {
+    lines.push('## Documentation');
+    lines.push('');
+
     const grouped: Record<string, MarkdownFile[]> = {};
-    
+
     for (const file of markdownFiles) {
       const dir = file.path.split('/')[0] || 'root';
       if (!grouped[dir]) grouped[dir] = [];
       grouped[dir].push(file);
     }
-    
+
     for (const [dir, files] of Object.entries(grouped)) {
       lines.push(`### ${dir === 'root' ? 'Main Documentation' : dir}`);
       lines.push('');
-      
+
       for (const file of files) {
         const url = `${config.url}/${file.path.replace(/\.mdx?$/, '')}`;
         lines.push(`- [${file.title}](${url})`);

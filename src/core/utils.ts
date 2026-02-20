@@ -13,6 +13,7 @@ export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
     url: config.url || 'https://example.com',
     contentDir: config.contentDir || frameworkInfo.contentDir,
     outDir: config.outDir || frameworkInfo.outDir,
+    pages: config.pages || [],
     generators: {
       robotsTxt: config.generators?.robotsTxt !== false,
       llmsTxt: config.generators?.llmsTxt !== false,
@@ -21,6 +22,12 @@ export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
       manifest: config.generators?.manifest !== false,
       sitemap: config.generators?.sitemap !== false,
       aiIndex: config.generators?.aiIndex !== false,
+    },
+    robots: {
+      allow: config.robots?.allow || ['/'],
+      disallow: config.robots?.disallow || [],
+      crawlDelay: config.robots?.crawlDelay || 0,
+      sitemap: config.robots?.sitemap || '',
     },
     widget: {
       enabled: config.widget?.enabled !== false,

@@ -1,9 +1,17 @@
+export interface PageEntry {
+  pathname: string;
+  title?: string;
+  description?: string;
+  content?: string;
+}
+
 export interface AeoConfig {
   title?: string;
   description?: string;
   url?: string;
   contentDir?: string;
   outDir?: string;
+  pages?: PageEntry[];
   generators?: {
     robotsTxt?: boolean;
     llmsTxt?: boolean;
@@ -40,6 +48,7 @@ export interface ResolvedAeoConfig {
   url: string;
   contentDir: string;
   outDir: string;
+  pages: PageEntry[];
   generators: {
     robotsTxt: boolean;
     llmsTxt: boolean;

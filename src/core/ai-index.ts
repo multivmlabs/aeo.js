@@ -97,8 +97,64 @@ function collectAIIndexEntries(dir: string, config: ResolvedAeoConfig, base: str
   return entries;
 }
 
+export function generateAiIndex(config: ResolvedAeoConfig): string {
+  return generateAIIndex(config);
+}
+
 export function generateAIIndex(config: ResolvedAeoConfig): string {
-  const entries = collectAIIndexEntries(config.contentDir, config);
+  const entries: AIIndexEntry[] = [];
+
+  // Add discovered pages from framework plugin
+  if (config.pages && config.pages.length > 0) {
+    for (const page of config.pages) {
+      const url = `${config.url}${page.pathname === '/' ? '' : page.pathname}`;
+      const title = page.title || page.pathname;
+      const content = page.content || '';
+
+      if (content) {
+        const chunks = chunkContent(content);
+        const keywords = extractKeywords(content);
+
+        chunks.forEach((chunk, index) => {
+          const id = createHash('sha256')
+            .update(`${url}-${index}`)
+            .digest('hex')
+            .slice(0, 16);
+
+          entries.push({
+            id,
+            url,
+            title: chunks.length > 1 ? `${title} (Part ${index + 1})` : title,
+            content: chunk,
+            description: page.description,
+            keywords,
+            metadata: {
+              chunkIndex: index,
+              totalChunks: chunks.length,
+              sourcePath: page.pathname,
+            },
+          });
+        });
+      } else {
+        const id = createHash('sha256')
+          .update(url)
+          .digest('hex')
+          .slice(0, 16);
+
+        entries.push({
+          id,
+          url,
+          title,
+          content: page.description || title,
+          description: page.description,
+          keywords: [],
+        });
+      }
+    }
+  }
+
+  // Add markdown content files
+  entries.push(...collectAIIndexEntries(config.contentDir, config));
   
   const index = {
     version: '1.0',

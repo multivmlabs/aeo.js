@@ -1,136 +1,128 @@
 import { generateRobotsTxt as genRobots } from './robots';
 import { generateLlmsTxt as genLlms } from './llms-txt';
 import { generateLlmsFullTxt as genLlmsFull } from './llms-full';
-import { copyMarkdownFiles } from './raw-markdown';
+import { copyMarkdownFiles, generatePageMarkdownFiles } from './raw-markdown';
 import { generateManifest as genManifest } from './manifest';
 import { generateSitemap as genSitemap } from './sitemap';
 import { generateAIIndex as genAIIndex } from './ai-index';
-import { detectFramework } from './detect';
-import { resolveConfig, getAllMarkdownFiles } from './utils';
-import { writeFileSync, mkdirSync } from 'fs';
+import { resolveConfig } from './utils';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
-import type { AeoConfig, FrameworkInfo, ResolvedAeoConfig } from '../types';
+import type { AeoConfig, ResolvedAeoConfig } from '../types';
 
 export interface GenerateResult {
-  markdownFiles: string[];
-  framework: FrameworkInfo | null;
-  totalFiles: number;
-  outputPath: string;
-}
-
-interface GenerateFiles {
-  markdownFiles: string[];
-  framework: FrameworkInfo | null;
-  totalFiles: number;
-  outputPath: string;
-}
-
-// Wrapper functions to adapt the signature
-export function generateRobotsTxt(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
-  const content = genRobots(config);
-  mkdirSync(config.output || 'public/aeo', { recursive: true });
-  writeFileSync(join(config.output || 'public/aeo', 'robots.txt'), content, 'utf-8');
-}
-
-export function generateLLMsTxt(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
-  const content = genLlms(config);
-  mkdirSync(config.output || 'public/aeo', { recursive: true });
-  writeFileSync(join(config.output || 'public/aeo', 'llms.txt'), content, 'utf-8');
-}
-
-export function generateLLMsFullTxt(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
-  const content = genLlmsFull(config);
-  mkdirSync(config.output || 'public/aeo', { recursive: true });
-  writeFileSync(join(config.output || 'public/aeo', 'llms-full.txt'), content, 'utf-8');
-}
-
-export function copyRawMarkdownFiles(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
-  const fullConfig = {
-    ...config,
-    root: root || process.cwd(),
-    outDir: config.output || 'public/aeo',
-    generators: {
-      robotsTxt: false,
-      llmsTxt: false,
-      llmsFullTxt: false,
-      rawMarkdown: true,
-      manifest: false,
-      sitemap: false,
-      aiIndex: false
-    }
-  } as ResolvedAeoConfig;
-  copyMarkdownFiles(fullConfig);
-}
-
-export function generateManifest(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
-  const content = genManifest(config);
-  mkdirSync(config.output || 'public/aeo', { recursive: true });
-  writeFileSync(join(config.output || 'public/aeo', 'docs.json'), content, 'utf-8');
-}
-
-export function generateSitemap(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
-  const content = genSitemap(config);
-  mkdirSync(config.output || 'public/aeo', { recursive: true });
-  writeFileSync(join(config.output || 'public/aeo', 'sitemap.xml'), content, 'utf-8');
-}
-
-export function generateAIIndex(files: GenerateFiles, config: ResolvedAeoConfig, root: string): void {
-  const content = genAIIndex(config);
-  mkdirSync(config.output || 'public/aeo', { recursive: true });
-  writeFileSync(join(config.output || 'public/aeo', 'ai-index.json'), content, 'utf-8');
+  files: string[];
+  errors: string[];
 }
 
 export async function generateAEOFiles(
-  projectRoot?: string,
-  config?: Partial<AeoConfig>
+  configOrRoot?: ResolvedAeoConfig | AeoConfig | string,
+  maybeConfig?: Partial<AeoConfig>
 ): Promise<GenerateResult> {
-  const root = projectRoot || process.cwd();
-  const resolvedConfig = resolveConfig(config);
-  const framework = detectFramework(root);
-  
-  const markdownFiles = getAllMarkdownFiles(
-    root,
-    resolvedConfig.include || ['**/*.md'],
-    resolvedConfig.exclude || ['**/node_modules/**']
-  );
-  
-  const files = {
-    markdownFiles,
-    framework,
-    totalFiles: markdownFiles.length,
-    outputPath: resolvedConfig.output || 'public/aeo'
-  };
-  
-  // Generate robots.txt if enabled
-  if (config?.generateRobots ?? resolvedConfig.generateRobots) {
-    generateRobotsTxt(files, resolvedConfig, root);
+  let config: ResolvedAeoConfig;
+
+  if (typeof configOrRoot === 'string') {
+    config = resolveConfig({ ...maybeConfig, outDir: maybeConfig?.outDir || configOrRoot });
+  } else if (
+    configOrRoot &&
+    typeof configOrRoot === 'object' &&
+    'generators' in configOrRoot &&
+    typeof (configOrRoot as ResolvedAeoConfig).generators?.robotsTxt === 'boolean'
+  ) {
+    config = configOrRoot as ResolvedAeoConfig;
+  } else {
+    config = resolveConfig(configOrRoot as AeoConfig | undefined);
   }
-  
-  // Generate LLMs files if enabled
-  if (config?.generateLLMs ?? resolvedConfig.generateLLMs) {
-    generateLLMsTxt(files, resolvedConfig, root);
-    generateLLMsFullTxt(files, resolvedConfig, root);
+
+  const outDir = config.outDir;
+  const files: string[] = [];
+  const errors: string[] = [];
+
+  if (!existsSync(outDir)) {
+    mkdirSync(outDir, { recursive: true });
   }
-  
-  // Copy raw markdown if enabled
-  if (config?.generateRawMarkdown ?? resolvedConfig.generateRawMarkdown) {
-    copyRawMarkdownFiles(files, resolvedConfig, root);
+
+  if (config.generators.robotsTxt) {
+    try {
+      const content = genRobots(config);
+      writeFileSync(join(outDir, 'robots.txt'), content, 'utf-8');
+      files.push('robots.txt');
+    } catch (e: any) {
+      errors.push(`robots.txt: ${e.message}`);
+    }
   }
-  
-  // Generate manifest if enabled
-  if (config?.generateManifest ?? resolvedConfig.generateManifest) {
-    generateManifest(files, resolvedConfig, root);
+
+  if (config.generators.llmsTxt) {
+    try {
+      const content = genLlms(config);
+      writeFileSync(join(outDir, 'llms.txt'), '\uFEFF' + content, 'utf-8');
+      files.push('llms.txt');
+    } catch (e: any) {
+      errors.push(`llms.txt: ${e.message}`);
+    }
   }
-  
-  // Generate sitemap if enabled
-  if (config?.generateSitemap ?? resolvedConfig.generateSitemap) {
-    generateSitemap(files, resolvedConfig, root);
+
+  if (config.generators.llmsFullTxt) {
+    try {
+      const content = genLlmsFull(config);
+      writeFileSync(join(outDir, 'llms-full.txt'), '\uFEFF' + content, 'utf-8');
+      files.push('llms-full.txt');
+    } catch (e: any) {
+      errors.push(`llms-full.txt: ${e.message}`);
+    }
   }
-  
-  // Generate AI index if enabled
-  if (config?.generateAIIndex ?? resolvedConfig.generateAIIndex) {
-    generateAIIndex(files, resolvedConfig, root);
+
+  if (config.generators.rawMarkdown) {
+    // Generate page .md files first (auto-extracted from build output)
+    try {
+      const generated = generatePageMarkdownFiles(config);
+      for (const f of generated) {
+        files.push(f.destination);
+      }
+    } catch (e: any) {
+      errors.push(`page-markdown: ${e.message}`);
+    }
+
+    // Then copy handwritten .md from contentDir (these take priority, overwriting generated ones)
+    try {
+      const copied = copyMarkdownFiles(config);
+      for (const f of copied) {
+        files.push(f.destination);
+      }
+    } catch (e: any) {
+      errors.push(`raw-markdown: ${e.message}`);
+    }
   }
-  
-  return files;
+
+  if (config.generators.manifest) {
+    try {
+      const content = genManifest(config);
+      writeFileSync(join(outDir, 'docs.json'), content, 'utf-8');
+      files.push('docs.json');
+    } catch (e: any) {
+      errors.push(`docs.json: ${e.message}`);
+    }
+  }
+
+  if (config.generators.sitemap) {
+    try {
+      const content = genSitemap(config);
+      writeFileSync(join(outDir, 'sitemap.xml'), content, 'utf-8');
+      files.push('sitemap.xml');
+    } catch (e: any) {
+      errors.push(`sitemap.xml: ${e.message}`);
+    }
+  }
+
+  if (config.generators.aiIndex) {
+    try {
+      const content = genAIIndex(config);
+      writeFileSync(join(outDir, 'ai-index.json'), content, 'utf-8');
+      files.push('ai-index.json');
+    } catch (e: any) {
+      errors.push(`ai-index.json: ${e.message}`);
+    }
+  }
+
+  return { files, errors };
 }

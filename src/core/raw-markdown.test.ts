@@ -1,186 +1,194 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { copyRawMarkdown } from './raw-markdown';
-import * as fs from 'fs/promises';
+import { readdirSync, statSync, copyFileSync, mkdirSync } from 'fs';
 import * as path from 'path';
+import type { ResolvedAeoConfig } from '../types';
 
-vi.mock('fs/promises');
+vi.mock('fs');
 vi.mock('path', async () => {
   const actual = await vi.importActual('path');
   return {
     ...actual,
-    join: vi.fn((...args) => args.join('/'))
+    join: vi.fn((...args) => args.filter(Boolean).join('/')),
+    relative: vi.fn((from, to) => to.replace(from + '/', '')),
+    extname: vi.fn((file) => {
+      const match = file.match(/\.[^.]+$/);
+      return match ? match[0] : '';
+    }),
+    dirname: vi.fn((file) => {
+      const parts = file.split('/');
+      parts.pop();
+      return parts.join('/');
+    })
   };
 });
 
-vi.mock('./utils', () => ({
-  resolveConfig: vi.fn().mockResolvedValue({
-    routes: [],
-    baseUrl: 'https://example.com',
-    markdownDir: 'content'
-  }),
-  ensureDir: vi.fn().mockResolvedValue(undefined)
-}));
-
 describe('copyRawMarkdown', () => {
+  const mockReaddirSync = vi.mocked(readdirSync);
+  const mockStatSync = vi.mocked(statSync);
+  const mockCopyFileSync = vi.mocked(copyFileSync);
+  const mockMkdirSync = vi.mocked(mkdirSync);
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should copy markdown files from source to public directory', async () => {
-    const mockReaddir = vi.mocked(fs.readdir);
-    const mockStat = vi.mocked(fs.stat);
-    const mockCopyFile = vi.mocked(fs.copyFile);
-    
-    mockReaddir.mockResolvedValue([
-      { name: 'page1.md', isFile: () => true, isDirectory: () => false },
-      { name: 'page2.md', isFile: () => true, isDirectory: () => false },
-      { name: 'image.png', isFile: () => true, isDirectory: () => false },
-      { name: 'subfolder', isFile: () => false, isDirectory: () => true }
-    ] as any);
-    
-    mockStat.mockResolvedValue({
-      isFile: () => true,
-      isDirectory: () => false
-    } as any);
-
-    await copyRawMarkdown('/test/project');
-    
-    expect(mockCopyFile).toHaveBeenCalledTimes(2);
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      '/test/project/content/page1.md',
-      '/test/project/public/raw-markdown/page1.md'
-    );
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      '/test/project/content/page2.md',
-      '/test/project/public/raw-markdown/page2.md'
-    );
+  const createConfig = (overrides = {}): ResolvedAeoConfig => ({
+    url: 'https://example.com',
+    title: 'Test Site',
+    description: 'Test description',
+    contentDir: 'content',
+    outDir: 'public/aeo',
+    generators: {
+      robotsTxt: true,
+      llmsTxt: true,
+      llmsFullTxt: true,
+      rawMarkdown: true,
+      manifest: true,
+      sitemap: true,
+      aiIndex: true,
+    },
+    ...overrides
   });
 
-  it('should recursively copy markdown files from subdirectories', async () => {
-    const mockReaddir = vi.mocked(fs.readdir);
-    const mockStat = vi.mocked(fs.stat);
-    const mockCopyFile = vi.mocked(fs.copyFile);
-    const { ensureDir } = await import('./utils');
+  it('should copy markdown files from source to public directory', () => {
+    mockReaddirSync.mockReturnValue(['page1.md', 'page2.md', 'image.png', 'subfolder'] as any);
     
-    mockReaddir.mockImplementation((dirPath) => {
-      const pathStr = dirPath.toString();
-      if (pathStr.endsWith('/content')) {
-        return Promise.resolve([
-          { name: 'docs', isFile: () => false, isDirectory: () => true },
-          { name: 'root.md', isFile: () => true, isDirectory: () => false }
-        ] as any);
-      } else if (pathStr.endsWith('/docs')) {
-        return Promise.resolve([
-          { name: 'guide.md', isFile: () => true, isDirectory: () => false },
-          { name: 'api', isFile: () => false, isDirectory: () => true }
-        ] as any);
-      } else if (pathStr.endsWith('/api')) {
-        return Promise.resolve([
-          { name: 'reference.md', isFile: () => true, isDirectory: () => false }
-        ] as any);
+    mockStatSync.mockImplementation((path) => {
+      const pathStr = path.toString();
+      if (pathStr.endsWith('subfolder')) {
+        return { isFile: () => false, isDirectory: () => true } as any;
       }
-      return Promise.resolve([]);
+      return { isFile: () => true, isDirectory: () => false } as any;
+    });
+
+    const config = createConfig();
+    const result = copyRawMarkdown(config);
+    
+    expect(mockCopyFileSync).toHaveBeenCalledTimes(2);
+    expect(mockCopyFileSync).toHaveBeenCalledWith(
+      'content/page1.md',
+      'public/aeo/page1.md'
+    );
+    expect(mockCopyFileSync).toHaveBeenCalledWith(
+      'content/page2.md',
+      'public/aeo/page2.md'
+    );
+    expect(result).toHaveLength(2);
+  });
+
+  it('should recursively copy markdown files from subdirectories', () => {
+    mockReaddirSync.mockImplementation((dirPath) => {
+      const pathStr = dirPath.toString();
+      if (pathStr === 'content') {
+        return ['docs', 'root.md'] as any;
+      } else if (pathStr.endsWith('docs')) {
+        return ['guide.md', 'api'] as any;
+      } else if (pathStr.endsWith('api')) {
+        return ['reference.md'] as any;
+      }
+      return [];
     });
     
-    mockStat.mockResolvedValue({
+    mockStatSync.mockImplementation((path) => {
+      const pathStr = path.toString();
+      if (pathStr.includes('docs') && !pathStr.includes('.md')) {
+        return { isFile: () => false, isDirectory: () => true } as any;
+      }
+      if (pathStr.includes('api') && !pathStr.includes('.md')) {
+        return { isFile: () => false, isDirectory: () => true } as any;
+      }
+      return { isFile: () => true, isDirectory: () => false } as any;
+    });
+
+    const config = createConfig();
+    const result = copyRawMarkdown(config);
+    
+    expect(mockCopyFileSync).toHaveBeenCalledWith(
+      'content/root.md',
+      'public/aeo/root.md'
+    );
+    expect(mockCopyFileSync).toHaveBeenCalledWith(
+      'content/docs/guide.md',
+      'public/aeo/docs/guide.md'
+    );
+    expect(mockCopyFileSync).toHaveBeenCalledWith(
+      'content/docs/api/reference.md',
+      'public/aeo/docs/api/reference.md'
+    );
+    
+    expect(mockMkdirSync).toHaveBeenCalledWith('public/aeo', expect.any(Object));
+    expect(mockMkdirSync).toHaveBeenCalledWith('public/aeo/docs', expect.any(Object));
+    expect(mockMkdirSync).toHaveBeenCalledWith('public/aeo/docs/api', expect.any(Object));
+    expect(result).toHaveLength(3);
+  });
+
+  it('should skip non-markdown files', () => {
+    mockReaddirSync.mockReturnValue(['document.md', 'script.js', 'style.css', 'data.json'] as any);
+    
+    mockStatSync.mockReturnValue({
       isFile: () => true,
       isDirectory: () => false
     } as any);
 
-    await copyRawMarkdown('/test/project');
+    const config = createConfig();
+    const result = copyRawMarkdown(config);
     
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      '/test/project/content/root.md',
-      '/test/project/public/raw-markdown/root.md'
+    expect(mockCopyFileSync).toHaveBeenCalledTimes(1);
+    expect(mockCopyFileSync).toHaveBeenCalledWith(
+      'content/document.md',
+      'public/aeo/document.md'
     );
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      '/test/project/content/docs/guide.md',
-      '/test/project/public/raw-markdown/docs/guide.md'
-    );
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      '/test/project/content/docs/api/reference.md',
-      '/test/project/public/raw-markdown/docs/api/reference.md'
-    );
-    
-    expect(ensureDir).toHaveBeenCalledWith('/test/project/public/raw-markdown/docs');
-    expect(ensureDir).toHaveBeenCalledWith('/test/project/public/raw-markdown/docs/api');
+    expect(result).toHaveLength(1);
   });
 
-  it('should skip non-markdown files', async () => {
-    const mockReaddir = vi.mocked(fs.readdir);
-    const mockCopyFile = vi.mocked(fs.copyFile);
-    
-    mockReaddir.mockResolvedValue([
-      { name: 'document.md', isFile: () => true, isDirectory: () => false },
-      { name: 'script.js', isFile: () => true, isDirectory: () => false },
-      { name: 'style.css', isFile: () => true, isDirectory: () => false },
-      { name: 'README.MD', isFile: () => true, isDirectory: () => false },
-      { name: 'data.json', isFile: () => true, isDirectory: () => false }
-    ] as any);
-
-    await copyRawMarkdown('/test/project');
-    
-    expect(mockCopyFile).toHaveBeenCalledTimes(2);
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      expect.stringContaining('document.md'),
-      expect.stringContaining('document.md')
-    );
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      expect.stringContaining('README.MD'),
-      expect.stringContaining('README.MD')
-    );
-  });
-
-  it('should handle missing markdown directory gracefully', async () => {
-    const mockReaddir = vi.mocked(fs.readdir);
-    
-    mockReaddir.mockRejectedValue(new Error('ENOENT: Directory not found'));
-
-    await expect(copyRawMarkdown('/test/project')).resolves.not.toThrow();
-  });
-
-  it('should use custom markdown directory from config', async () => {
-    const { resolveConfig } = await import('./utils');
-    vi.mocked(resolveConfig).mockResolvedValueOnce({
-      routes: [],
-      baseUrl: 'https://example.com',
-      markdownDir: 'custom-docs'
+  it('should handle missing markdown directory gracefully', () => {
+    mockReaddirSync.mockImplementation(() => {
+      throw new Error('ENOENT: Directory not found');
     });
-    
-    const mockReaddir = vi.mocked(fs.readdir);
-    mockReaddir.mockResolvedValue([
-      { name: 'test.md', isFile: () => true, isDirectory: () => false }
-    ] as any);
-    
-    const mockCopyFile = vi.mocked(fs.copyFile);
 
-    await copyRawMarkdown('/test/project');
+    const config = createConfig();
+    const result = copyRawMarkdown(config);
     
-    expect(mockReaddir).toHaveBeenCalledWith(
-      '/test/project/custom-docs',
-      expect.any(Object)
-    );
-    expect(mockCopyFile).toHaveBeenCalledWith(
-      '/test/project/custom-docs/test.md',
-      expect.any(String)
-    );
+    expect(result).toEqual([]);
+    expect(mockCopyFileSync).not.toHaveBeenCalled();
   });
 
-  it('should handle copy errors for individual files', async () => {
-    const mockReaddir = vi.mocked(fs.readdir);
-    const mockCopyFile = vi.mocked(fs.copyFile);
+  it('should use custom markdown directory from config', () => {
+    mockReaddirSync.mockReturnValue(['test.md'] as any);
     
-    mockReaddir.mockResolvedValue([
-      { name: 'file1.md', isFile: () => true, isDirectory: () => false },
-      { name: 'file2.md', isFile: () => true, isDirectory: () => false }
-    ] as any);
-    
-    mockCopyFile
-      .mockRejectedValueOnce(new Error('Permission denied'))
-      .mockResolvedValueOnce(undefined);
+    mockStatSync.mockReturnValue({
+      isFile: () => true,
+      isDirectory: () => false
+    } as any);
 
-    await copyRawMarkdown('/test/project');
+    const config = createConfig({ contentDir: 'custom-docs' });
+    const result = copyRawMarkdown(config);
     
-    expect(mockCopyFile).toHaveBeenCalledTimes(2);
+    expect(mockReaddirSync).toHaveBeenCalledWith('custom-docs');
+    expect(mockCopyFileSync).toHaveBeenCalledWith(
+      'custom-docs/test.md',
+      'public/aeo/test.md'
+    );
+    expect(result).toHaveLength(1);
+  });
+
+  it('should handle copy errors for individual files', () => {
+    mockReaddirSync.mockReturnValue(['file1.md', 'file2.md'] as any);
+    
+    mockStatSync.mockReturnValue({
+      isFile: () => true,
+      isDirectory: () => false
+    } as any);
+    
+    mockCopyFileSync
+      .mockImplementationOnce(() => { throw new Error('Permission denied'); })
+      .mockImplementationOnce(() => undefined);
+
+    const config = createConfig();
+    const result = copyRawMarkdown(config);
+    
+    expect(mockCopyFileSync).toHaveBeenCalledTimes(2);
+    expect(result).toHaveLength(1);
   });
 });

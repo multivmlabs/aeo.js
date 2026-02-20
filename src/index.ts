@@ -7,19 +7,20 @@ export function defineConfig(config: AeoConfig): AeoConfig {
 }
 
 // Export all types
-export type { 
-  AeoConfig, 
-  ResolvedAeoConfig, 
+export type {
+  AeoConfig,
+  ResolvedAeoConfig,
+  PageEntry,
   DocEntry,
   AeoManifest,
-  MarkdownFile, 
-  ManifestEntry, 
-  AIIndexEntry, 
-  FrameworkType, 
-  FrameworkInfo 
+  MarkdownFile,
+  ManifestEntry,
+  AIIndexEntry,
+  FrameworkType,
+  FrameworkInfo
 } from './types';
 
 // Export core functions
 export { detectFramework } from './core/detect';
-export { generateAEOFiles as generateAll } from './core/generate';
+export { generateAEOFiles as generateAll, generateAEOFiles } from './core/generate';
 export { resolveConfig } from './core/utils';

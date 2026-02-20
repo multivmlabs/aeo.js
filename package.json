@@ -7,49 +7,49 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./vite": {
+      "types": "./dist/vite.d.ts",
       "import": "./dist/vite.mjs",
-      "require": "./dist/vite.js",
-      "types": "./dist/vite.d.ts"
+      "require": "./dist/vite.js"
     },
     "./next": {
+      "types": "./dist/next.d.ts",
       "import": "./dist/next.mjs",
-      "require": "./dist/next.js",
-      "types": "./dist/next.d.ts"
+      "require": "./dist/next.js"
     },
     "./astro": {
+      "types": "./dist/astro.d.ts",
       "import": "./dist/astro.mjs",
-      "require": "./dist/astro.js",
-      "types": "./dist/astro.d.ts"
+      "require": "./dist/astro.js"
     },
     "./nuxt": {
+      "types": "./dist/nuxt.d.ts",
       "import": "./dist/nuxt.mjs",
-      "require": "./dist/nuxt.js",
-      "types": "./dist/nuxt.d.ts"
+      "require": "./dist/nuxt.js"
     },
     "./webpack": {
+      "types": "./dist/webpack.d.ts",
       "import": "./dist/webpack.mjs",
-      "require": "./dist/webpack.js",
-      "types": "./dist/webpack.d.ts"
+      "require": "./dist/webpack.js"
     },
     "./react": {
+      "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",
-      "require": "./dist/react.js",
-      "types": "./dist/react.d.ts"
+      "require": "./dist/react.js"
     },
     "./vue": {
+      "types": "./dist/vue.d.ts",
       "import": "./dist/vue.mjs",
-      "require": "./dist/vue.js",
-      "types": "./dist/vue.d.ts"
+      "require": "./dist/vue.js"
     },
     "./widget": {
+      "types": "./dist/widget.d.ts",
       "import": "./dist/widget.mjs",
-      "require": "./dist/widget.js",
-      "types": "./dist/widget.d.ts"
+      "require": "./dist/widget.js"
     }
   },
   "files": [

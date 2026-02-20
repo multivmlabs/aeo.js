@@ -19,7 +19,7 @@ export class AeoWidget {
   constructor(options: AeoWidgetOptions = {}) {
     this.config = this.resolveConfig(options.config);
     this.container = options.container || document.body;
-    
+
     if (this.config.widget?.enabled !== false) {
       this.init();
     }
@@ -45,9 +45,9 @@ export class AeoWidget {
         enabled: true,
         position: 'bottom-right',
         theme: {
-          background: 'rgba(18, 18, 24, 0.9)',
-          text: '#C0C0C5',
-          accent: '#E8E8EA',
+          background: '#0a0a0f',
+          text: '#a0a0a8',
+          accent: '#e8e8ea',
           badge: '#4ADE80',
         },
         humanLabel: 'Human',
@@ -67,7 +67,7 @@ export class AeoWidget {
 
   private injectStyles(): void {
     if (this.styleElement) return;
-    
+
     this.styleElement = document.createElement('style');
     this.styleElement.textContent = getStyles(this.config.widget?.theme);
     document.head.appendChild(this.styleElement);
@@ -76,7 +76,7 @@ export class AeoWidget {
   private createToggle(): void {
     const position = this.config.widget?.position || 'bottom-right';
     const icons = getIcons();
-    
+
     this.toggleElement = document.createElement('div');
     this.toggleElement.className = `aeo-toggle aeo-${position}`;
     this.toggleElement.innerHTML = `
@@ -91,7 +91,7 @@ export class AeoWidget {
         </button>
       </div>
     `;
-    
+
     this.container.appendChild(this.toggleElement);
   }
 
@@ -145,100 +145,187 @@ export class AeoWidget {
     }
   }
 
+  private getMarkdownPath(): string {
+    const currentPath = window.location.pathname;
+    if (currentPath === '/' || currentPath.endsWith('/')) {
+      return `${currentPath}index.md`;
+    }
+    return `${currentPath}.md`;
+  }
+
   private async showOverlay(): Promise<void> {
     const icons = getIcons();
-    
+    const mdPath = this.getMarkdownPath();
+
     this.overlayElement = document.createElement('div');
     this.overlayElement.className = 'aeo-overlay';
     this.overlayElement.innerHTML = `
-      <div class="aeo-overlay-content">
-        <div class="aeo-overlay-header">
-          <h2>AI-Optimized View</h2>
-          ${this.config.widget?.showBadge ? '<span class="aeo-badge">LLM-ready</span>' : ''}
-          <button class="aeo-close-btn" aria-label="Close">${icons.close}</button>
+      <div class="aeo-topbar">
+        ${this.config.widget?.showBadge !== false ? '<span class="aeo-badge"><span class="aeo-badge-dot"></span>LLM-READY</span>' : ''}
+        <span class="aeo-route-tab">${mdPath}</span>
+        <div class="aeo-topbar-spacer"></div>
+        <div class="aeo-topbar-actions">
+          <button class="aeo-topbar-btn aeo-copy-btn" disabled>
+            ${icons.copy}
+            <span>Copy</span>
+          </button>
+          <button class="aeo-topbar-btn aeo-download-btn" disabled>
+            ${icons.download}
+            <span>Download .md</span>
+          </button>
+          <button class="aeo-close-btn">
+            ${icons.close}
+            <span>Close</span>
+          </button>
         </div>
-        <div class="aeo-overlay-body">
+      </div>
+      <div class="aeo-content-area">
+        <div class="aeo-content-wrapper">
           <div class="aeo-loading">
             ${icons.spinner}
             <span>Loading AI-optimized content...</span>
           </div>
         </div>
-        <div class="aeo-overlay-footer">
-          <button class="aeo-copy-btn" disabled>${icons.copy} Copy Markdown</button>
-          <button class="aeo-download-btn" disabled>${icons.download} Download .md</button>
-        </div>
       </div>
     `;
-    
+
     this.container.appendChild(this.overlayElement);
-    
-    // Bind overlay events
+
     const closeBtn = this.overlayElement.querySelector('.aeo-close-btn');
     closeBtn?.addEventListener('click', () => this.closeOverlay());
-    
-    // Fetch content
+
     await this.loadContent();
   }
 
   private async loadContent(): Promise<void> {
     if (!this.overlayElement) return;
-    
-    const bodyElement = this.overlayElement.querySelector('.aeo-overlay-body');
-    if (!bodyElement) return;
+
+    const wrapper = this.overlayElement.querySelector('.aeo-content-wrapper');
+    if (!wrapper) return;
 
     try {
-      // Try to fetch markdown version
-      const currentPath = window.location.pathname;
-      const markdownPath = currentPath.endsWith('/') 
-        ? `${currentPath}index.md`
-        : `${currentPath}.md`;
-      
-      const response = await fetch(markdownPath);
+      const mdPath = this.getMarkdownPath();
+      const response = await fetch(mdPath);
       let content: string;
-      
+
       if (response.ok) {
         content = await response.text();
       } else {
-        // Fallback to DOM extraction
         content = extractDOMToMarkdown();
       }
-      
-      // Display content
-      bodyElement.innerHTML = `
-        <div class="aeo-markdown-url">
-          <span>Markdown URL:</span>
-          <code>${window.location.origin}${markdownPath}</code>
-        </div>
-        <pre class="aeo-markdown-content">${this.escapeHtml(content)}</pre>
+
+      wrapper.innerHTML = `
+        <pre class="aeo-markdown-source"><code>${this.highlightMarkdown(content)}</code></pre>
       `;
-      
-      // Enable buttons
+
       const copyBtn = this.overlayElement.querySelector('.aeo-copy-btn') as HTMLButtonElement;
       const downloadBtn = this.overlayElement.querySelector('.aeo-download-btn') as HTMLButtonElement;
-      
+
       if (copyBtn) {
         copyBtn.disabled = false;
         copyBtn.addEventListener('click', () => this.copyToClipboard(content));
       }
-      
+
       if (downloadBtn) {
         downloadBtn.disabled = false;
         downloadBtn.addEventListener('click', () => this.downloadMarkdown(content));
       }
-      
-    } catch (error) {
-      // Show error with fallback links
-      bodyElement.innerHTML = `
+
+    } catch {
+      wrapper.innerHTML = `
         <div class="aeo-error">
           <p>Unable to load AI-optimized content.</p>
           <p>Try these alternatives:</p>
-          <ul>
-            <li><a href="/llms.txt" target="_blank">View llms.txt</a></li>
-            <li><a href="/llms-full.txt" target="_blank">View llms-full.txt</a></li>
-          </ul>
+          <div>
+            <a href="/llms.txt" target="_blank">llms.txt</a>
+            <a href="/llms-full.txt" target="_blank">llms-full.txt</a>
+          </div>
         </div>
       `;
     }
+  }
+
+  private highlightMarkdown(md: string): string {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    const lines = md.split('\n');
+    const out: string[] = [];
+    let inFrontmatter = false;
+    let inCode = false;
+    let frontmatterStart = lines[0]?.trim() === '---';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Frontmatter handling
+      if (i === 0 && frontmatterStart) {
+        inFrontmatter = true;
+        out.push(`<span class="hl-fm">${esc(line)}</span>`);
+        continue;
+      }
+      if (inFrontmatter) {
+        if (trimmed === '---') {
+          inFrontmatter = false;
+          out.push(`<span class="hl-fm">${esc(line)}</span>`);
+        } else {
+          out.push(`<span class="hl-fm">${esc(line)}</span>`);
+        }
+        continue;
+      }
+
+      // Code block
+      if (trimmed.startsWith('```')) {
+        inCode = !inCode;
+        out.push(`<span class="hl-code">${esc(line)}</span>`);
+        continue;
+      }
+      if (inCode) {
+        out.push(`<span class="hl-code">${esc(line)}</span>`);
+        continue;
+      }
+
+      // Headings
+      if (/^#{1,6}\s/.test(trimmed)) {
+        out.push(`<span class="hl-heading">${esc(line)}</span>`);
+        continue;
+      }
+
+      // Horizontal rule
+      if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+        out.push(`<span class="hl-hr">${esc(line)}</span>`);
+        continue;
+      }
+
+      // Blockquote
+      if (trimmed.startsWith('>')) {
+        out.push(`<span class="hl-quote">${esc(line)}</span>`);
+        continue;
+      }
+
+      // List items
+      if (/^[-*+]\s/.test(trimmed) || /^\d+\.\s/.test(trimmed)) {
+        out.push(this.highlightInline(esc(line)));
+        continue;
+      }
+
+      // Regular text with inline highlights
+      out.push(this.highlightInline(esc(line)));
+    }
+
+    return out.join('\n');
+  }
+
+  private highlightInline(escaped: string): string {
+    // Bold **text**
+    let text = escaped.replace(/\*\*(.+?)\*\*/g, '<span class="hl-bold">**$1**</span>');
+    // Italic *text*
+    text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<span class="hl-italic">*$1*</span>');
+    // Inline code `text`
+    text = text.replace(/`([^`]+)`/g, '<span class="hl-code">`$1`</span>');
+    // Links [text](url)
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<span class="hl-link">[<span class="hl-link-text">$1</span>](<span class="hl-link-url">$2</span>)</span>');
+    return text;
   }
 
   private closeOverlay(): void {
@@ -253,7 +340,7 @@ export class AeoWidget {
     try {
       await navigator.clipboard.writeText(text);
       this.showToast('Copied to clipboard!');
-    } catch (err) {
+    } catch {
       this.showToast('Failed to copy');
     }
   }
@@ -274,22 +361,16 @@ export class AeoWidget {
     return name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
   }
 
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
   private showToast(message: string): void {
     const toast = document.createElement('div');
     toast.className = 'aeo-toast';
     toast.textContent = message;
     this.container.appendChild(toast);
-    
+
     setTimeout(() => {
       toast.classList.add('aeo-toast-show');
     }, 10);
-    
+
     setTimeout(() => {
       toast.classList.remove('aeo-toast-show');
       setTimeout(() => toast.remove(), 300);
@@ -300,21 +381,6 @@ export class AeoWidget {
     this.toggleElement?.remove();
     this.overlayElement?.remove();
     this.styleElement?.remove();
-  }
-}
-
-// Auto-init on DOM ready
-if (typeof window !== 'undefined') {
-  const init = () => {
-    if (!(window as any).__aeoWidget) {
-      (window as any).__aeoWidget = new AeoWidget();
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
   }
 }
 

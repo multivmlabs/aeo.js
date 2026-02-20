@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync, mkdirSync, writeFileSync, copyFileSync } from 'fs';
+import { readdirSync, statSync, mkdirSync, writeFileSync, copyFileSync } from 'fs';
 import { join, relative, extname, dirname } from 'path';
 import type { ResolvedAeoConfig } from '../types';
 
@@ -7,8 +7,17 @@ export interface CopiedFile {
   destination: string;
 }
 
+export interface GeneratedMarkdownFile {
+  pathname: string;
+  destination: string;
+}
+
 function ensureDir(path: string): void {
   mkdirSync(path, { recursive: true });
+}
+
+export function copyRawMarkdown(config: ResolvedAeoConfig): CopiedFile[] {
+  return copyMarkdownFiles(config);
 }
 
 export function copyMarkdownFiles(config: ResolvedAeoConfig): CopiedFile[] {
@@ -48,4 +57,64 @@ export function copyMarkdownFiles(config: ResolvedAeoConfig): CopiedFile[] {
   
   copyRecursive(config.contentDir);
   return copiedFiles;
+}
+
+export function generatePageMarkdownFiles(config: ResolvedAeoConfig): GeneratedMarkdownFile[] {
+  const generated: GeneratedMarkdownFile[] = [];
+  const pages = config.pages || [];
+
+  for (const page of pages) {
+    // Use site title as fallback for pages without a title
+    const pageTitle = page.title || (page.pathname === '/' ? config.title : undefined);
+    if (!page.content && !pageTitle) continue;
+
+    let filename: string;
+    if (page.pathname === '/') {
+      filename = 'index.md';
+    } else {
+      const clean = page.pathname.replace(/^\//, '').replace(/\/$/, '');
+      filename = clean.includes('/') ? `${clean}.md` : `${clean}.md`;
+    }
+
+    const destPath = join(config.outDir, filename);
+
+    const pageUrl = page.pathname === '/'
+      ? config.url
+      : `${config.url.replace(/\/$/, '')}${page.pathname}`;
+
+    const lines: string[] = [];
+
+    // YAML frontmatter
+    lines.push('---');
+    if (pageTitle) lines.push(`title: "${pageTitle}"`);
+    if (page.description) lines.push(`description: "${page.description}"`);
+    lines.push(`url: ${pageUrl}`);
+    lines.push(`source: ${pageUrl}`);
+    lines.push(`generated_by: aeo.js`);
+    lines.push('---', '');
+
+    if (pageTitle) {
+      lines.push(`# ${pageTitle}`, '');
+    }
+
+    if (page.description) {
+      lines.push(`${page.description}`, '');
+    }
+
+    if (page.content) {
+      lines.push(page.content);
+    }
+
+    const content = lines.join('\n');
+
+    ensureDir(dirname(destPath));
+    try {
+      writeFileSync(destPath, content, 'utf-8');
+      generated.push({ pathname: page.pathname, destination: destPath });
+    } catch {
+      // skip unwritable files
+    }
+  }
+
+  return generated;
 }

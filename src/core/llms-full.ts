@@ -51,6 +51,10 @@ function collectAndConcatenateMarkdown(dir: string, base: string = dir): string[
   return sections;
 }
 
+export function generateLlmsFull(config: ResolvedAeoConfig): string {
+  return generateLlmsFullTxt(config);
+}
+
 export function generateLlmsFullTxt(config: ResolvedAeoConfig): string {
   const lines: string[] = [
     `# ${config.title} - Complete Documentation`,
@@ -66,17 +70,58 @@ export function generateLlmsFullTxt(config: ResolvedAeoConfig): string {
   
   lines.push('## Table of Contents');
   lines.push('');
-  lines.push('This document includes all markdown documentation from this project.');
+  lines.push('This document includes all content from this project.');
   lines.push('Each section is separated by a horizontal rule (---) for easy parsing.');
   lines.push('');
-  
+
+  let hasContent = false;
+
+  // Include discovered pages (from framework plugin)
+  if (config.pages && config.pages.length > 0) {
+    for (const page of config.pages) {
+      const url = `${config.url}${page.pathname === '/' ? '' : page.pathname}`;
+      const title = page.title || page.pathname;
+      const sectionLines: string[] = [
+        '---',
+        '',
+        `# ${title}`,
+        '',
+        `URL: ${url}`,
+        '',
+      ];
+      if (page.description) {
+        sectionLines.push(`> ${page.description}`);
+        sectionLines.push('');
+      }
+      if (page.content) {
+        sectionLines.push(page.content);
+        sectionLines.push('');
+      }
+      lines.push(sectionLines.join('\n'));
+      hasContent = true;
+    }
+  }
+
+  // Include markdown content files
   const sections = collectAndConcatenateMarkdown(config.contentDir);
-  
+
   if (sections.length > 0) {
     lines.push(...sections);
-  } else {
-    lines.push('No documentation files found.');
+    hasContent = true;
+  }
+
+  if (!hasContent) {
+    // Always include site overview so LLMs have basic context
+    lines.push('---');
     lines.push('');
+    lines.push(`# ${config.title}`);
+    lines.push('');
+    lines.push(`URL: ${config.url}`);
+    lines.push('');
+    if (config.description) {
+      lines.push(config.description);
+      lines.push('');
+    }
   }
   
   lines.push('---');

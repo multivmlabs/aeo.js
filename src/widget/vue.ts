@@ -1,56 +1,57 @@
-import { defineComponent, h, onMounted, onUnmounted, ref, PropType } from 'vue';
 import type { AeoConfig } from '../types';
 import { AeoWidget, type AeoWidgetOptions } from './core';
 
-export const AeoWidgetVue = defineComponent({
+export const AeoWidgetVue = {
   name: 'AeoWidget',
   props: {
     config: {
-      type: Object as PropType<Partial<AeoConfig>>,
+      type: Object as any,
       default: () => ({}),
     },
   },
-  setup(props) {
-    const widgetInstance = ref<AeoWidget | null>(null);
-    const containerRef = ref<HTMLDivElement | null>(null);
+  setup(props: any) {
+    const vue = require('vue');
+    const widgetInstance = vue.ref(null as AeoWidget | null);
+    const containerRef = vue.ref(null as HTMLDivElement | null);
 
-    onMounted(() => {
+    vue.onMounted(() => {
       if (!containerRef.value) return;
-      
+
       const options: AeoWidgetOptions = {
         config: props.config,
         container: containerRef.value,
       };
-      
+
       widgetInstance.value = new AeoWidget(options);
     });
 
-    onUnmounted(() => {
+    vue.onUnmounted(() => {
       if (widgetInstance.value) {
         widgetInstance.value.destroy();
         widgetInstance.value = null;
       }
     });
 
-    return () => h('div', {
+    return () => vue.h('div', {
       ref: containerRef,
       class: 'aeo-widget-vue-container',
     });
   },
-});
+};
 
 export function useAeoWidget(config?: Partial<AeoConfig>) {
-  const widget = ref<AeoWidget | null>(null);
+  const vue = require('vue');
+  const widget = vue.ref(null as AeoWidget | null);
 
   const init = (customConfig?: Partial<AeoConfig>) => {
     if (widget.value) {
       widget.value.destroy();
     }
-    
+
     const options: AeoWidgetOptions = {
       config: customConfig || config,
     };
-    
+
     widget.value = new AeoWidget(options);
   };
 
@@ -61,13 +62,13 @@ export function useAeoWidget(config?: Partial<AeoConfig>) {
     }
   };
 
-  onMounted(() => {
+  vue.onMounted(() => {
     if (config) {
       init();
     }
   });
 
-  onUnmounted(() => {
+  vue.onUnmounted(() => {
     destroy();
   });
 

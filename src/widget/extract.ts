@@ -1,19 +1,19 @@
 export function extractDOMToMarkdown(): string {
   const lines: string[] = [];
   const processed = new WeakSet();
-  
+
   // Add page title
   const title = document.title;
   if (title) {
     lines.push(`# ${title}`, '');
   }
-  
+
   // Add meta description
   const description = document.querySelector('meta[name="description"]') as HTMLMetaElement;
   if (description?.content) {
     lines.push(`> ${description.content}`, '');
   }
-  
+
   // Find main content area
   const mainContent = findMainContent();
   if (mainContent) {
@@ -22,12 +22,11 @@ export function extractDOMToMarkdown(): string {
     // Fallback to body
     processNode(document.body, lines, processed);
   }
-  
-  return lines.join('\\n').trim();
+
+  return lines.join('\n').trim();
 }
 
 function findMainContent(): Element | null {
-  // Try to find the main content area
   const selectors = [
     'main',
     '[role="main"]',
@@ -39,38 +38,41 @@ function findMainContent(): Element | null {
     '.container',
     '.wrapper',
   ];
-  
+
   for (const selector of selectors) {
     const element = document.querySelector(selector);
     if (element) return element;
   }
-  
+
   return null;
 }
 
 function processNode(node: Node, lines: string[], processed: WeakSet<object>): void {
   if (processed.has(node)) return;
   processed.add(node);
-  
+
   // Skip certain elements
   if (node instanceof HTMLElement) {
     const tagName = node.tagName.toLowerCase();
     const skipTags = ['script', 'style', 'noscript', 'iframe', 'svg', 'canvas', 'video', 'audio'];
     if (skipTags.includes(tagName)) return;
-    
+
     // Skip hidden elements
     const style = window.getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden') return;
-    
+
     // Skip navigation and footer elements (unless they contain important content)
     if (tagName === 'nav' || tagName === 'footer' || node.classList.contains('nav') || node.classList.contains('footer')) {
       if (!hasImportantContent(node)) return;
     }
+
+    // Skip the aeo widget itself
+    if (node.classList.contains('aeo-toggle') || node.classList.contains('aeo-overlay')) return;
   }
-  
+
   if (node instanceof HTMLElement) {
     const tagName = node.tagName.toLowerCase();
-    
+
     switch (tagName) {
       case 'h1':
         lines.push('', `# ${getTextContent(node)}`, '');
@@ -97,7 +99,7 @@ function processNode(node: Node, lines: string[], processed: WeakSet<object>): v
       case 'blockquote':
         const quoteText = getTextContent(node);
         if (quoteText) {
-          lines.push('', ...quoteText.split('\\n').map(line => `> ${line}`), '');
+          lines.push('', ...quoteText.split('\n').map(line => `> ${line}`), '');
         }
         break;
       case 'pre':
@@ -199,12 +201,12 @@ function processListItems(list: HTMLUListElement | HTMLOListElement, lines: stri
 function processTable(table: HTMLTableElement, lines: string[]): void {
   const rows = Array.from(table.querySelectorAll('tr'));
   if (rows.length === 0) return;
-  
+
   const headers = Array.from(rows[0].querySelectorAll('th, td')).map(cell => getTextContent(cell));
   if (headers.length > 0) {
     lines.push('', '| ' + headers.join(' | ') + ' |');
     lines.push('|' + headers.map(() => ' --- ').join('|') + '|');
-    
+
     for (let i = 1; i < rows.length; i++) {
       const cells = Array.from(rows[i].querySelectorAll('td')).map(cell => getTextContent(cell));
       if (cells.length > 0) {
@@ -215,22 +217,25 @@ function processTable(table: HTMLTableElement, lines: string[]): void {
 }
 
 function getTextContent(node: Node): string {
-  return node.textContent?.trim().replace(/\\s+/g, ' ') || '';
+  // Use innerText for elements — it inserts spaces at element boundaries
+  // (e.g. <span>with</span><span>modern</span> → "with modern" not "withmodern")
+  if (node instanceof HTMLElement) {
+    return node.innerText?.trim().replace(/\s+/g, ' ') || '';
+  }
+  return node.textContent?.trim().replace(/\s+/g, ' ') || '';
 }
 
 function isWhitespaceOnly(text: string): boolean {
-  return /^\\s*$/.test(text);
+  return /^\s*$/.test(text);
 }
 
 function hasImportantContent(node: HTMLElement): boolean {
-  // Check if navigation or footer has important content like links to docs
   const importantKeywords = ['documentation', 'docs', 'api', 'guide', 'tutorial', 'reference'];
   const text = node.textContent?.toLowerCase() || '';
   return importantKeywords.some(keyword => text.includes(keyword));
 }
 
 function extractLanguage(codeElement: Element): string {
-  // Try to extract language from class names
   const classes = Array.from(codeElement.classList);
   for (const cls of classes) {
     if (cls.startsWith('language-')) {
@@ -240,8 +245,7 @@ function extractLanguage(codeElement: Element): string {
       return cls.replace('lang-', '');
     }
   }
-  
-  // Check parent pre element
+
   const pre = codeElement.closest('pre');
   if (pre) {
     const preClasses = Array.from(pre.classList);
@@ -254,6 +258,6 @@ function extractLanguage(codeElement: Element): string {
       }
     }
   }
-  
+
   return '';
 }
