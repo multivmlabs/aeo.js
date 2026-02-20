@@ -5,6 +5,7 @@ Answer Engine Optimization for the modern web. Make your site discoverable by AI
 <p align="center">
   <a href="https://ralphstarter.ai/badge"><img src="https://ralphstarter.ai/img/badge-built-with@2x.png" alt="built with ralph-starter" height="28"></a>
 </p>
+
 ## What is AEO?
 
 Answer Engine Optimization (AEO) is the practice of making your website discoverable and citable by AI-powered answer engines like ChatGPT, Claude, Perplexity, and SearchGPT.
