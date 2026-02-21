@@ -55,7 +55,7 @@ export async function generateAEOFiles(
   if (config.generators.llmsTxt) {
     try {
       const content = genLlms(config);
-      writeFileSync(join(outDir, 'llms.txt'), '\uFEFF' + content, 'utf-8');
+      writeFileSync(join(outDir, 'llms.txt'), content, 'utf-8');
       files.push('llms.txt');
     } catch (e: any) {
       errors.push(`llms.txt: ${e.message}`);
@@ -65,7 +65,7 @@ export async function generateAEOFiles(
   if (config.generators.llmsFullTxt) {
     try {
       const content = genLlmsFull(config);
-      writeFileSync(join(outDir, 'llms-full.txt'), '\uFEFF' + content, 'utf-8');
+      writeFileSync(join(outDir, 'llms-full.txt'), content, 'utf-8');
       files.push('llms-full.txt');
     } catch (e: any) {
       errors.push(`llms-full.txt: ${e.message}`);

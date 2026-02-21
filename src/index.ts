@@ -1,6 +1,6 @@
 import type { AeoConfig } from './types';
 
-export const VERSION = '0.0.1';
+export const VERSION = '0.0.2';
 
 export function defineConfig(config: AeoConfig): AeoConfig {
   return config;
@@ -23,4 +23,4 @@ export type {
 // Export core functions
 export { detectFramework } from './core/detect';
 export { generateAEOFiles as generateAll, generateAEOFiles } from './core/generate';
-export { resolveConfig } from './core/utils';
+export { resolveConfig, validateConfig } from './core/utils';

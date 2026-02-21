@@ -21,16 +21,19 @@ aeo.js auto-generates the files these engines look for and provides a drop-in wi
 - **`ai-index.json`** -- AI-optimized content index
 - **Raw Markdown** -- Per-page `.md` files extracted from your HTML
 - **Human/AI Widget** -- Drop-in toggle showing the AI-readable version of any page
+- **CLI** -- `npx aeo.js generate` to run standalone
 
 ## Supported Frameworks
 
 | Framework | Status | Import |
 |-----------|--------|--------|
-| Next.js | Stable | `aeo.js/next` |
 | Astro | Stable | `aeo.js/astro` |
+| Next.js | Stable | `aeo.js/next` |
+| Vite / React | Stable | `aeo.js/vite` |
+| Nuxt | Stable | `aeo.js/nuxt` |
+| Angular | Stable | `aeo.js/angular` |
 | Webpack | Stable | `aeo.js/webpack` |
-| Vite | Coming soon | -- |
-| Nuxt | Coming soon | -- |
+| Any (CLI) | Stable | `npx aeo.js generate` |
 
 ## Install
 
@@ -39,6 +42,27 @@ npm install aeo.js
 ```
 
 ## Quick Start
+
+### Astro
+
+```js
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import { aeoAstroIntegration } from 'aeo.js/astro';
+
+export default defineConfig({
+  site: 'https://mysite.com',
+  integrations: [
+    aeoAstroIntegration({
+      title: 'My Site',
+      description: 'A site optimized for AI discovery',
+      url: 'https://mysite.com',
+    }),
+  ],
+});
+```
+
+The widget is automatically injected and persists across View Transitions.
 
 ### Next.js
 
@@ -67,19 +91,16 @@ After building, run the post-build step to extract content from pre-rendered pag
 }
 ```
 
-### Astro
-
-Add the integration in your Astro config:
+### Vite (React, Vue, Svelte, etc.)
 
 ```js
-// astro.config.mjs
-import { defineConfig } from 'astro/config';
-import { aeoAstroIntegration } from 'aeo.js/astro';
+// vite.config.ts
+import { defineConfig } from 'vite';
+import { aeoVitePlugin } from 'aeo.js/vite';
 
 export default defineConfig({
-  site: 'https://mysite.com',
-  integrations: [
-    aeoAstroIntegration({
+  plugins: [
+    aeoVitePlugin({
       title: 'My Site',
       description: 'A site optimized for AI discovery',
       url: 'https://mysite.com',
@@ -88,9 +109,62 @@ export default defineConfig({
 });
 ```
 
-### Webpack
+The Vite plugin:
+- Generates AEO files on `vite dev` and `vite build`
+- Injects the widget automatically
+- Serves dynamic `.md` files in dev (extracts content from your running app)
+- Detects SPA shells and falls back to client-side DOM extraction
 
-Add the plugin to your webpack config:
+### Nuxt
+
+Add the module to your Nuxt config:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['aeo.js/nuxt'],
+  aeo: {
+    title: 'My Site',
+    description: 'A site optimized for AI discovery',
+    url: 'https://mysite.com',
+  },
+});
+```
+
+The Nuxt module:
+- Scans your `pages/` directory for routes
+- Generates AEO files during dev and production builds
+- Scans pre-rendered HTML from `.output/public/` for full page content
+- Injects the widget as a client-side Nuxt plugin
+- Adds `<link>` and `<meta>` tags for AEO discoverability
+
+### Angular
+
+Add a post-build step to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "postbuild": "node -e \"import('aeo.js/angular').then(m => m.postBuild({ title: 'My App', url: 'https://myapp.com' }))\""
+  }
+}
+```
+
+The Angular plugin:
+- Reads `angular.json` to auto-detect the output directory (`dist/<project>/browser/`)
+- Scans route config files (`*.routes.ts`) and component directories for routes
+- Scans pre-rendered HTML from the build output for full page content
+- Injects the widget into `index.html` automatically
+
+You can also generate AEO files from source routes without building:
+
+```ts
+import { generate } from 'aeo.js/angular';
+
+await generate({ title: 'My App', url: 'https://myapp.com' });
+```
+
+### Webpack
 
 ```js
 // webpack.config.js
@@ -107,7 +181,46 @@ module.exports = {
 };
 ```
 
+## CLI
+
+Run aeo.js from the command line without any framework integration:
+
+```bash
+# Generate all AEO files
+npx aeo.js generate
+
+# Generate with options
+npx aeo.js generate --url https://mysite.com --title "My Site" --out public
+
+# Create a config file
+npx aeo.js init
+
+# Check your setup
+npx aeo.js check
+```
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `generate` | Generate all AEO files (robots.txt, llms.txt, sitemap.xml, etc.) |
+| `init` | Create an `aeo.config.ts` configuration file |
+| `check` | Validate your AEO setup and show what would be generated |
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--out <dir>` | Output directory (default: auto-detected) |
+| `--url <url>` | Site URL |
+| `--title <title>` | Site title |
+| `--no-widget` | Disable widget generation |
+| `--help`, `-h` | Show help |
+| `--version`, `-v` | Show version |
+
 ## Configuration
+
+All framework plugins accept the same config object. You can also use `defineConfig` for standalone configs:
 
 ```js
 import { defineConfig } from 'aeo.js';
@@ -159,7 +272,7 @@ export default defineConfig({
 
 ## Widget
 
-The Human/AI widget is a floating toggle that lets visitors switch between the normal page and its AI-readable markdown version. It's automatically injected by the Astro integration. For Next.js, you can add it manually:
+The Human/AI widget is a floating toggle that lets visitors switch between the normal page and its AI-readable markdown version. Framework plugins (Astro, Vite, Nuxt, Angular) inject it automatically. For Next.js or manual setups:
 
 ```tsx
 // app/layout.tsx (or any client component)
@@ -185,7 +298,7 @@ export function AeoWidgetLoader() {
 When a visitor clicks **AI**, the widget:
 1. Fetches the `.md` file for the current page
 2. Falls back to extracting markdown from the live DOM if no `.md` exists
-3. Displays the markdown with syntax highlighting
+3. Displays the markdown in a slide-out panel
 4. Offers copy-to-clipboard and download actions
 
 ## Generated Files
