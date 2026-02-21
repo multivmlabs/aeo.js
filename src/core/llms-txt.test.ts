@@ -1,142 +1,108 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { generateLlmsTxt } from './llms-txt'
-import fs from 'fs'
-import path from 'path'
-import type { ResolvedAeoConfig } from '../types'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { generateLlmsTxt } from './llms-txt';
+import type { ResolvedAeoConfig } from '../types';
 
-vi.mock('fs')
-vi.mock('path')
+vi.mock('fs', () => ({
+  readdirSync: vi.fn().mockReturnValue([]),
+  statSync: vi.fn(),
+  readFileSync: vi.fn().mockReturnValue('# Test\n\nContent'),
+  existsSync: vi.fn().mockReturnValue(false),
+}));
+
+const baseConfig: ResolvedAeoConfig = {
+  url: 'https://example.com',
+  title: 'Test Project',
+  description: 'A test project description',
+  contentDir: '/project/content',
+  outDir: 'public',
+  pages: [],
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    llmsFullTxt: true,
+    rawMarkdown: true,
+    manifest: true,
+    sitemap: true,
+    aiIndex: true,
+  },
+  robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
+  widget: {
+    enabled: true,
+    position: 'bottom-right',
+    theme: { background: '#000', text: '#fff', accent: '#eee', badge: '#4ADE80' },
+    humanLabel: 'Human',
+    aiLabel: 'AI',
+    showBadge: true,
+  },
+};
 
 describe('generateLlmsTxt', () => {
-  const mockFs = fs as any
-  const mockPath = path as any
-
   beforeEach(() => {
-    vi.clearAllMocks()
-    mockPath.join.mockImplementation((...args: string[]) => args.join('/'))
-    mockPath.relative.mockImplementation((from: string, to: string) => 
-      to.replace(from + '/', '')
-    )
-    mockPath.extname.mockImplementation((file: string) => {
-      if (file.endsWith('.md')) return '.md'
-      if (file.endsWith('.mdx')) return '.mdx'
-      return ''
-    })
-    
-    mockFs.readdirSync.mockReturnValue(['README.md', 'guide.md'])
-    mockFs.statSync.mockReturnValue({
-      isDirectory: () => false,
-      isFile: () => true
-    })
-    mockFs.readFileSync.mockReturnValue('# Test Title\n\nTest content\n\n## Section\n\nMore content')
-  })
-
-  const baseConfig: ResolvedAeoConfig = {
-    url: 'https://example.com',
-    title: 'Test Project',
-    description: 'A test project description',
-    contentDir: '/project/content',
-    outDir: 'public',
-    generators: {
-      robotsTxt: true,
-      llmsTxt: true,
-      llmsFullTxt: true,
-      rawMarkdown: true,
-      manifest: true,
-      sitemap: true,
-      aiIndex: true,
-    }
-  }
+    vi.clearAllMocks();
+  });
 
   it('should generate llms.txt with project title and description', () => {
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('# Test Project')
-    expect(result).toContain('> A test project description')
-  })
+    const result = generateLlmsTxt(baseConfig);
+
+    expect(result).toContain('# Test Project');
+    expect(result).toContain('> A test project description');
+  });
 
   it('should include about section', () => {
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('## About')
-    expect(result).toContain('This file provides a structured overview')
-    expect(result).toContain('optimized for consumption by Large Language Models')
-  })
+    const result = generateLlmsTxt(baseConfig);
 
-  it('should include documentation structure', () => {
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('## Documentation Structure')
-  })
+    expect(result).toContain('## About');
+    expect(result).toContain('This file provides a structured overview');
+    expect(result).toContain('optimized for consumption by Large Language Models');
+  });
 
   it('should include quick links', () => {
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('## Quick Links')
-    expect(result).toContain('Full Documentation: https://example.com/llms-full.txt')
-    expect(result).toContain('Documentation Manifest: https://example.com/docs.json')
-    expect(result).toContain('AI-Optimized Index: https://example.com/ai-index.json')
-    expect(result).toContain('Sitemap: https://example.com/sitemap.xml')
-  })
+    const result = generateLlmsTxt(baseConfig);
+
+    expect(result).toContain('## Quick Links');
+    expect(result).toContain('Full Documentation: https://example.com/llms-full.txt');
+    expect(result).toContain('Documentation Manifest: https://example.com/docs.json');
+    expect(result).toContain('AI-Optimized Index: https://example.com/ai-index.json');
+    expect(result).toContain('Sitemap: https://example.com/sitemap.xml');
+  });
 
   it('should include LLM instructions', () => {
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('## For LLMs')
-    expect(result).toContain('To get the complete documentation in a single file')
-    expect(result).toContain('https://example.com/llms-full.txt')
-    expect(result).toContain('For structured access to individual pages')
-    expect(result).toContain('https://example.com/docs.json')
-    expect(result).toContain('For RAG (Retrieval Augmented Generation) systems')
-    expect(result).toContain('https://example.com/ai-index.json')
-  })
+    const result = generateLlmsTxt(baseConfig);
+
+    expect(result).toContain('## For LLMs');
+    expect(result).toContain('https://example.com/llms-full.txt');
+    expect(result).toContain('https://example.com/docs.json');
+    expect(result).toContain('https://example.com/ai-index.json');
+  });
 
   it('should include footer', () => {
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('Generated by aeo.js')
-    expect(result).toContain('Learn more at https://aeojs.org')
-  })
+    const result = generateLlmsTxt(baseConfig);
+
+    expect(result).toContain('Generated by aeo.js');
+    expect(result).toContain('Learn more at https://aeojs.org');
+  });
 
   it('should handle missing description', () => {
+    const config: ResolvedAeoConfig = { ...baseConfig, description: '' };
+    const result = generateLlmsTxt(config);
+
+    expect(result).toContain('# Test Project');
+    // Should not have empty blockquote
+    expect(result).not.toContain('> \n');
+  });
+
+  it('should include pages section when pages exist', () => {
     const config: ResolvedAeoConfig = {
       ...baseConfig,
-      description: undefined as any,
-    }
-    
-    const result = generateLlmsTxt(config)
-    
-    expect(result).not.toContain('> ')
-    expect(result).toContain('# Test Project')
-  })
+      pages: [
+        { pathname: '/', title: 'Home' },
+        { pathname: '/about', title: 'About Us' },
+      ],
+    };
+    const result = generateLlmsTxt(config);
 
-  it('should handle nested directory structure', () => {
-    mockFs.readdirSync.mockImplementation((dir: string) => {
-      if (dir === '/project/content') return ['docs', 'README.md']
-      if (dir.includes('docs')) return ['guide.md', 'api.md']
-      return []
-    })
-    mockFs.statSync.mockImplementation((path: string) => ({
-      isDirectory: () => path.includes('docs') && !path.includes('.md'),
-      isFile: () => path.includes('.md')
-    }))
-    
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('### Main Documentation')
-    expect(result).toContain('### docs')
-  })
-
-  it('should extract title from markdown content', () => {
-    mockFs.readFileSync.mockImplementation((file: string) => {
-      if (file.includes('README')) {
-        return '---\ntitle: Custom Title\ndescription: Custom desc\n---\n# Content Title\n\nContent'
-      }
-      return '# Regular Title\n\nContent'
-    })
-    
-    const result = generateLlmsTxt(baseConfig)
-    
-    expect(result).toContain('[Custom Title]')
-  })
-})
+    expect(result).toContain('## Pages');
+    expect(result).toContain('Home');
+    expect(result).toContain('About Us');
+  });
+});

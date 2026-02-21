@@ -1,148 +1,107 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { generateLlmsFull } from './llms-full';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { generateLlmsFullTxt } from './llms-full';
+import type { ResolvedAeoConfig } from '../types';
 
-vi.mock('fs/promises');
-vi.mock('./utils', () => ({
-  resolveConfig: vi.fn().mockResolvedValue({
-    routes: [
-      { path: '/', title: 'Home' },
-      { path: '/about', title: 'About' },
-      { path: '/blog/post1', title: 'Blog Post 1' }
-    ],
-    baseUrl: 'https://example.com'
-  }),
-  ensureDir: vi.fn().mockResolvedValue(undefined)
+vi.mock('fs', () => ({
+  readdirSync: vi.fn().mockReturnValue([]),
+  statSync: vi.fn(),
+  readFileSync: vi.fn().mockReturnValue('# Test\n\nContent'),
+  existsSync: vi.fn().mockReturnValue(false),
 }));
 
-describe('generateLlmsFull', () => {
+const baseConfig: ResolvedAeoConfig = {
+  url: 'https://example.com',
+  title: 'Test Project',
+  description: 'A test project description',
+  contentDir: '/project/content',
+  outDir: 'public',
+  pages: [],
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    llmsFullTxt: true,
+    rawMarkdown: true,
+    manifest: true,
+    sitemap: true,
+    aiIndex: true,
+  },
+  robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
+  widget: {
+    enabled: true,
+    position: 'bottom-right',
+    theme: { background: '#000', text: '#fff', accent: '#eee', badge: '#4ADE80' },
+    humanLabel: 'Human',
+    aiLabel: 'AI',
+    showBadge: true,
+  },
+};
+
+describe('generateLlmsFullTxt', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should concatenate all page content into llms-full.txt', async () => {
-    const mockReadFile = vi.mocked(fs.readFile);
-    const mockWriteFile = vi.mocked(fs.writeFile);
-    
-    mockReadFile.mockImplementation((filePath) => {
-      const pathStr = filePath.toString();
-      if (pathStr.endsWith('/index.html')) {
-        return Promise.resolve(Buffer.from(`
-          <!DOCTYPE html>
-          <html>
-            <body>
-              <h1>Welcome Home</h1>
-              <p>This is the homepage.</p>
-            </body>
-          </html>
-        `));
-      } else if (pathStr.endsWith('/about.html')) {
-        return Promise.resolve(Buffer.from(`
-          <!DOCTYPE html>
-          <html>
-            <body>
-              <h1>About Us</h1>
-              <p>Learn more about our company.</p>
-            </body>
-          </html>
-        `));
-      } else if (pathStr.endsWith('/blog/post1.html')) {
-        return Promise.resolve(Buffer.from(`
-          <!DOCTYPE html>
-          <html>
-            <body>
-              <article>
-                <h1>First Blog Post</h1>
-                <p>This is an interesting article.</p>
-              </article>
-            </body>
-          </html>
-        `));
-      }
-      return Promise.resolve(Buffer.from('<html></html>'));
-    });
+  it('should generate complete documentation header', () => {
+    const result = generateLlmsFullTxt(baseConfig);
 
-    await generateLlmsFull('/test/project');
-    
-    expect(mockWriteFile).toHaveBeenCalledWith(
-      path.join('/test/project', 'public', 'llms-full.txt'),
-      expect.any(String)
-    );
-    
-    const content = mockWriteFile.mock.calls[0][1] as string;
-    
-    expect(content).toContain('# Full Content Export');
-    expect(content).toContain('## Page: Home');
-    expect(content).toContain('URL: https://example.com/');
-    expect(content).toContain('Welcome Home');
-    expect(content).toContain('This is the homepage');
-    
-    expect(content).toContain('## Page: About');
-    expect(content).toContain('URL: https://example.com/about');
-    expect(content).toContain('About Us');
-    expect(content).toContain('Learn more about our company');
-    
-    expect(content).toContain('## Page: Blog Post 1');
-    expect(content).toContain('URL: https://example.com/blog/post1');
-    expect(content).toContain('First Blog Post');
-    expect(content).toContain('This is an interesting article');
+    expect(result).toContain('# Test Project - Complete Documentation');
+    expect(result).toContain('> A test project description');
   });
 
-  it('should handle missing HTML files gracefully', async () => {
-    const mockReadFile = vi.mocked(fs.readFile);
-    const mockWriteFile = vi.mocked(fs.writeFile);
-    
-    mockReadFile.mockRejectedValue(new Error('ENOENT: File not found'));
+  it('should include table of contents section', () => {
+    const result = generateLlmsFullTxt(baseConfig);
 
-    await generateLlmsFull('/test/project');
-    
-    expect(mockWriteFile).toHaveBeenCalled();
-    const content = mockWriteFile.mock.calls[0][1] as string;
-    
-    expect(content).toContain('## Page: Home');
-    expect(content).toContain('[Content not available]');
+    expect(result).toContain('## Table of Contents');
+    expect(result).toContain('Each section is separated by a horizontal rule');
   });
 
-  it('should strip scripts and styles from content', async () => {
-    const mockReadFile = vi.mocked(fs.readFile);
-    const mockWriteFile = vi.mocked(fs.writeFile);
-    
-    mockReadFile.mockResolvedValue(Buffer.from(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>body { color: red; }</style>
-        </head>
-        <body>
-          <h1>Page Title</h1>
-          <p>Visible content here.</p>
-          <script>console.log('hidden');</script>
-          <style>.hidden { display: none; }</style>
-        </body>
-      </html>
-    `));
+  it('should include page content when pages have content', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      pages: [
+        { pathname: '/', title: 'Home', content: 'Welcome to our site' },
+        { pathname: '/about', title: 'About', description: 'About us', content: 'We are great' },
+      ],
+    };
 
-    await generateLlmsFull('/test/project');
-    
-    const content = mockWriteFile.mock.calls[0][1] as string;
-    
-    expect(content).toContain('Page Title');
-    expect(content).toContain('Visible content here');
-    expect(content).not.toContain('console.log');
-    expect(content).not.toContain('color: red');
-    expect(content).not.toContain('display: none');
+    const result = generateLlmsFullTxt(config);
+
+    expect(result).toContain('# Home');
+    expect(result).toContain('Welcome to our site');
+    expect(result).toContain('# About');
+    expect(result).toContain('We are great');
+    expect(result).toContain('URL: https://example.com');
+    expect(result).toContain('URL: https://example.com/about');
   });
 
-  it('should include separator between pages', async () => {
-    const mockWriteFile = vi.mocked(fs.writeFile);
-    vi.mocked(fs.readFile).mockResolvedValue(Buffer.from('<html><body>Content</body></html>'));
+  it('should include separator between pages', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      pages: [
+        { pathname: '/', title: 'Home', content: 'Home content' },
+        { pathname: '/about', title: 'About', content: 'About content' },
+      ],
+    };
 
-    await generateLlmsFull('/test/project');
-    
-    const content = mockWriteFile.mock.calls[0][1] as string;
-    const separatorCount = (content.match(/---\n\n/g) || []).length;
-    
+    const result = generateLlmsFullTxt(config);
+    const separatorCount = (result.match(/^---$/gm) || []).length;
+
     expect(separatorCount).toBeGreaterThan(0);
+  });
+
+  it('should include footer', () => {
+    const result = generateLlmsFullTxt(baseConfig);
+
+    expect(result).toContain('## About This Document');
+    expect(result).toContain('Generated by aeo.js');
+    expect(result).toContain('https://aeojs.org');
+  });
+
+  it('should include fallback content when no pages exist', () => {
+    const result = generateLlmsFullTxt(baseConfig);
+
+    // Should still have the site title in the content
+    expect(result).toContain('# Test Project');
+    expect(result).toContain('URL: https://example.com');
   });
 });

@@ -2,6 +2,10 @@
   "name": "aeo.js",
   "version": "0.0.2",
   "description": "Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.",
+  "bin": {
+    "aeo.js": "./dist/cli.mjs",
+    "aeojs": "./dist/cli.mjs"
+  },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -10,6 +14,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.mjs",
+      "require": "./dist/vite.js"
     },
     "./next": {
       "types": "./dist/next.d.ts",
@@ -21,6 +30,11 @@
       "import": "./dist/astro.mjs",
       "require": "./dist/astro.js"
     },
+    "./nuxt": {
+      "types": "./dist/nuxt.d.ts",
+      "import": "./dist/nuxt.mjs",
+      "require": "./dist/nuxt.js"
+    },
     "./webpack": {
       "types": "./dist/webpack.d.ts",
       "import": "./dist/webpack.mjs",
@@ -30,6 +44,11 @@
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",
       "require": "./dist/react.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.mjs",
+      "require": "./dist/vue.js"
     },
     "./widget": {
       "types": "./dist/widget.d.ts",
@@ -84,24 +103,37 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
+    "jsdom": "^28.1.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
     "@astrojs/astro": ">=3.0.0",
+    "@nuxt/kit": ">=3.0.0",
     "next": ">=13.0.0",
     "react": ">=17.0.0",
+    "vite": ">=4.0.0",
+    "vue": ">=3.0.0",
     "webpack": ">=5.0.0"
   },
   "peerDependenciesMeta": {
     "@astrojs/astro": {
       "optional": true
     },
+    "@nuxt/kit": {
+      "optional": true
+    },
     "next": {
       "optional": true
     },
     "react": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    },
+    "vue": {
       "optional": true
     },
     "webpack": {

@@ -64,9 +64,12 @@ export function generatePageMarkdownFiles(config: ResolvedAeoConfig): GeneratedM
   const pages = config.pages || [];
 
   for (const page of pages) {
-    // Use site title as fallback for pages without a title
+    // Only generate .md files for pages that have actual content.
+    // Pages discovered from filenames (dev mode) only have pathname/title
+    // but no body content — those are useless as standalone markdown files.
+    if (!page.content) continue;
+
     const pageTitle = page.title || (page.pathname === '/' ? config.title : undefined);
-    if (!page.content && !pageTitle) continue;
 
     let filename: string;
     if (page.pathname === '/') {
