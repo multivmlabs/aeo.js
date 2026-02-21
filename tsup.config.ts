@@ -9,6 +9,7 @@ export default defineConfig({
     webpack: 'src/plugins/webpack.ts',
     astro: 'src/plugins/astro.ts',
     nuxt: 'src/plugins/nuxt.ts',
+    angular: 'src/plugins/angular.ts',
     widget: 'src/widget/core.ts',
     react: 'src/widget/react.tsx',
     vue: 'src/widget/vue.ts',

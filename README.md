@@ -31,6 +31,7 @@ aeo.js auto-generates the files these engines look for and provides a drop-in wi
 | Next.js | Stable | `aeo.js/next` |
 | Vite / React | Stable | `aeo.js/vite` |
 | Nuxt | Stable | `aeo.js/nuxt` |
+| Angular | Stable | `aeo.js/angular` |
 | Webpack | Stable | `aeo.js/webpack` |
 | Any (CLI) | Stable | `npx aeo.js generate` |
 
@@ -136,6 +137,32 @@ The Nuxt module:
 - Scans pre-rendered HTML from `.output/public/` for full page content
 - Injects the widget as a client-side Nuxt plugin
 - Adds `<link>` and `<meta>` tags for AEO discoverability
+
+### Angular
+
+Add a post-build step to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "postbuild": "node -e \"import('aeo.js/angular').then(m => m.postBuild({ title: 'My App', url: 'https://myapp.com' }))\""
+  }
+}
+```
+
+The Angular plugin:
+- Reads `angular.json` to auto-detect the output directory (`dist/<project>/browser/`)
+- Scans route config files (`*.routes.ts`) and component directories for routes
+- Scans pre-rendered HTML from the build output for full page content
+- Injects the widget into `index.html` automatically
+
+You can also generate AEO files from source routes without building:
+
+```ts
+import { generate } from 'aeo.js/angular';
+
+await generate({ title: 'My App', url: 'https://myapp.com' });
+```
 
 ### Webpack
 
@@ -245,7 +272,7 @@ export default defineConfig({
 
 ## Widget
 
-The Human/AI widget is a floating toggle that lets visitors switch between the normal page and its AI-readable markdown version. Framework plugins (Astro, Vite, Nuxt) inject it automatically. For Next.js or manual setups:
+The Human/AI widget is a floating toggle that lets visitors switch between the normal page and its AI-readable markdown version. Framework plugins (Astro, Vite, Nuxt, Angular) inject it automatically. For Next.js or manual setups:
 
 ```tsx
 // app/layout.tsx (or any client component)

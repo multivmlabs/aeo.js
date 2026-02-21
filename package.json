@@ -40,6 +40,11 @@
       "import": "./dist/webpack.mjs",
       "require": "./dist/webpack.js"
     },
+    "./angular": {
+      "types": "./dist/angular.d.ts",
+      "import": "./dist/angular.mjs",
+      "require": "./dist/angular.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",
