@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PAGES } from '../../../shared/content';
+
+const page = PAGES.home;
+---
+
+<Layout title={page.title}>
+  <h1>{page.heading}</h1>
+  <p class="description">{page.description}</p>
+  <p>{page.body}</p>
+</Layout>
+
+<style>
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: #555;
+    margin-bottom: 1rem;
+  }
+</style>

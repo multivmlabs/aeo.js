@@ -69,7 +69,15 @@
     "dev": "tsup --watch",
     "test": "vitest",
     "lint": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "demo:install": "npm run build && for d in demo/*/; do echo \"Installing $d...\" && (cd \"$d\" && npm install); done",
+    "demo:astro": "npm run build && cd demo/astro && npm run dev",
+    "demo:next": "npm run build && cd demo/next && npm run dev",
+    "demo:vite": "npm run build && cd demo/vite-react && npm run dev",
+    "demo:nuxt": "npm run build && cd demo/nuxt && npm run dev",
+    "demo:angular": "npm run build && cd demo/angular && npm run dev",
+    "demo:webpack": "npm run build && cd demo/webpack && npm run dev",
+    "demo:build-all": "npm run build && for d in demo/*/; do echo \"Building $d...\" && (cd \"$d\" && npm run build); done"
   },
   "keywords": [
     "aeo",
@@ -106,6 +114,7 @@
     "url": "https://github.com/multivmlabs/aeo.js/issues"
   },
   "devDependencies": {
+    "@nuxt/kit": "^3.21.1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "jsdom": "^28.1.0",

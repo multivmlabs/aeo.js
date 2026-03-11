@@ -3,3 +3,25 @@ dist
 *.tgz
 .env
 .DS_Store
+
+# Demo artifacts
+demo/*/node_modules
+demo/*/dist
+demo/*/.next
+demo/*/.nuxt
+demo/*/.output
+demo/*/.angular
+demo/*/package-lock.json
+demo/*/.astro
+demo/*/build
+demo/*/.vinxi
+
+# AEO generated files in demo projects
+demo/next/public/robots.txt
+demo/next/public/llms.txt
+demo/next/public/llms-full.txt
+demo/next/public/sitemap.xml
+demo/next/public/docs.json
+demo/next/public/ai-index.json
+demo/**/next-env.d.ts
+demo/**/env.d.ts

@@ -1,0 +1,17 @@
+{
+  "name": "aeojs-demo-webpack",
+  "private": true,
+  "scripts": {
+    "dev": "webpack serve --mode development --port 3500",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "aeo.js": "file:../../"
+  },
+  "devDependencies": {
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.0",
+    "webpack-dev-server": "^5.0.0",
+    "html-webpack-plugin": "^5.6.0"
+  }
+}
