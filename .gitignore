@@ -23,5 +23,6 @@ demo/next/public/llms-full.txt
 demo/next/public/sitemap.xml
 demo/next/public/docs.json
 demo/next/public/ai-index.json
+demo/next/public/schema.json
 demo/**/next-env.d.ts
 demo/**/env.d.ts
