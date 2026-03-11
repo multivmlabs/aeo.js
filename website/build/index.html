@@ -3,83 +3,368 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>aeo.js — Answer Engine Optimization</title>
+  <title>aeo.js — Answer Engine Optimization for the Modern Web</title>
+  <meta name="description" content="Make your website discoverable by AI crawlers and LLMs. One package, every framework.">
+  <meta property="og:title" content="aeo.js — Answer Engine Optimization">
+  <meta property="og:description" content="Make your website discoverable by AI crawlers and LLMs. One package, every framework.">
+  <meta property="og:url" content="https://aeojs.org">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'JetBrains Mono', monospace, system-ui;
+      font-family: 'JetBrains Mono', monospace;
       background: #08080A;
       color: #C0C0C5;
       min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(40, 40, 46, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(40, 40, 46, 0.3) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow effect */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(74, 222, 128, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Nav */
+    nav {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      padding: 1.5rem 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
     }
-    .container {
-      text-align: center;
-      max-width: 600px;
-      padding: 2rem;
-    }
-    h1 {
-      font-size: 3rem;
+    .nav-logo {
+      font-size: 1rem;
+      font-weight: 700;
       color: #E8E8EA;
-      margin-bottom: 0.5rem;
+      text-decoration: none;
     }
-    .badge {
-      display: inline-block;
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a {
+      color: #606068;
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #E8E8EA; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 6rem 2rem 4rem;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
       font-size: 0.65rem;
       font-weight: 600;
       color: #4ADE80;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      border-radius: 100px;
+      margin-bottom: 2rem;
+      background: rgba(74, 222, 128, 0.05);
+    }
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ADE80;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #E8E8EA;
+      line-height: 1.1;
       margin-bottom: 1.5rem;
     }
-    p {
+    h1 span { color: #4ADE80; }
+    .hero-sub {
       font-size: 1rem;
       line-height: 1.8;
       color: #808088;
-      margin-bottom: 1rem;
+      margin-bottom: 2.5rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    code {
+
+    /* Install block */
+    .install {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
       background: rgba(40, 40, 46, 0.5);
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
       border: 1px solid #28282E;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .install code {
       font-size: 0.85rem;
       color: #E8E8EA;
     }
-    .links {
-      margin-top: 2rem;
+    .install .prompt { color: #4ADE80; }
+
+    /* CTA buttons */
+    .cta {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       justify-content: center;
+      margin-top: 1.5rem;
     }
-    a {
-      color: #98989F;
+    .btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.65rem 1.5rem;
+      border-radius: 8px;
       text-decoration: none;
-      font-size: 0.8rem;
-      padding: 0.5rem 1rem;
-      border: 1px solid #28282E;
-      border-radius: 6px;
       transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
-    a:hover {
+    .btn-primary {
+      background: #E8E8EA;
+      color: #08080A;
+      border: 1px solid #E8E8EA;
+    }
+    .btn-primary:hover {
+      background: #C0C0C5;
+      border-color: #C0C0C5;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #98989F;
+      border: 1px solid #28282E;
+    }
+    .btn-secondary:hover {
       border-color: #38383F;
       color: #E8E8EA;
       background: rgba(40, 40, 46, 0.5);
     }
+
+    /* Features */
+    .features {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 2rem 4rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .feature {
+      padding: 1.5rem;
+      border: 1px solid #1a1a1f;
+      border-radius: 12px;
+      background: rgba(14, 14, 18, 0.6);
+      transition: border-color 0.2s;
+    }
+    .feature:hover { border-color: #28282E; }
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(40, 40, 46, 0.5);
+      border: 1px solid #28282E;
+      margin-bottom: 1rem;
+      color: #4ADE80;
+    }
+    .feature h3 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #E8E8EA;
+      margin-bottom: 0.5rem;
+    }
+    .feature p {
+      font-size: 0.7rem;
+      line-height: 1.7;
+      color: #606068;
+    }
+
+    /* Frameworks */
+    .frameworks {
+      text-align: center;
+      padding: 2rem 2rem 4rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .frameworks h2 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #38383F;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1.5rem;
+    }
+    .fw-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    .fw-tag {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #606068;
+      padding: 0.4rem 0.9rem;
+      border: 1px solid #1a1a1f;
+      border-radius: 6px;
+      background: rgba(14, 14, 18, 0.6);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid #1a1a1f;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    footer p {
+      font-size: 0.65rem;
+      color: #38383F;
+    }
+    footer a { color: #606068; text-decoration: none; }
+    footer a:hover { color: #98989F; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      h1 { font-size: 2.2rem; }
+      .hero { padding: 4rem 1.5rem 3rem; }
+      .features { grid-template-columns: 1fr; }
+      .cta { flex-direction: column; align-items: center; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>aeo.js</h1>
-    <span class="badge">Coming Soon</span>
-    <p>Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.</p>
-    <p><code>npm install aeo.js</code></p>
-    <div class="links">
-      <a href="https://github.com/multivmlabs/aeo.js">GitHub</a>
-      <a href="https://www.npmjs.com/package/aeo.js">npm</a>
-    </div>
+  <div class="page">
+    <nav>
+      <a href="/" class="nav-logo">aeo.js</a>
+      <div class="nav-links">
+        <a href="https://github.com/multivmlabs/aeo.js">GitHub</a>
+        <a href="https://www.npmjs.com/package/aeo.js">npm</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Building in public
+      </div>
+      <h1>Make your site visible to <span>AI</span></h1>
+      <p class="hero-sub">
+        One package to make any website discoverable by ChatGPT, Claude, Perplexity, and every AI crawler. Works with every framework.
+      </p>
+      <div class="install">
+        <code><span class="prompt">$</span> npm install aeo.js</code>
+      </div>
+      <div class="cta">
+        <a href="https://github.com/multivmlabs/aeo.js" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/multivmlabs/aeo.js" class="btn btn-secondary">View on GitHub</a>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <h3>AEO File Generation</h3>
+        <p>Auto-generates robots.txt, llms.txt, llms-full.txt, docs.json, sitemap.xml, and markdown endpoints on every build.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="10" rx="2"/>
+            <circle cx="9" cy="16" r="1"/>
+            <circle cx="15" cy="16" r="1"/>
+            <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          </svg>
+        </div>
+        <h3>Human / AI Widget</h3>
+        <p>Drop-in toggle showing content provenance. Click AI to see raw markdown with copy and download for any page.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3>Every Framework</h3>
+        <p>Build plugins for Vite, Next.js, Astro, Nuxt, SvelteKit, Remix, and webpack. Zero-config with auto framework detection.</p>
+      </div>
+    </section>
+
+    <section class="frameworks">
+      <h2>Works with</h2>
+      <div class="fw-grid">
+        <span class="fw-tag">Next.js</span>
+        <span class="fw-tag">Vite</span>
+        <span class="fw-tag">Astro</span>
+        <span class="fw-tag">Nuxt</span>
+        <span class="fw-tag">SvelteKit</span>
+        <span class="fw-tag">Remix</span>
+        <span class="fw-tag">React</span>
+        <span class="fw-tag">Vue</span>
+        <span class="fw-tag">Svelte</span>
+        <span class="fw-tag">Angular</span>
+        <span class="fw-tag">Webpack</span>
+        <span class="fw-tag">Vanilla JS</span>
+      </div>
+    </section>
+
+    <footer>
+      <p>Built by <a href="https://github.com/rubenmarcus">Ruben Marcus</a> &middot; <a href="https://github.com/multivmlabs/aeo.js">Open Source</a></p>
+    </footer>
   </div>
 </body>
 </html>
