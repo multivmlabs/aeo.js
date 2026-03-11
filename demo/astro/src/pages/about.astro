@@ -1,0 +1,44 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PAGES } from '../../../shared/content';
+
+const page = PAGES.about;
+---
+
+<Layout title={page.title}>
+  <h1>{page.heading}</h1>
+  <p class="description">{page.description}</p>
+  <p>{page.body}</p>
+
+  <h2>Key Features</h2>
+  <ul>
+    {page.features.map((feature) => (
+      <li>{feature}</li>
+    ))}
+  </ul>
+</Layout>
+
+<style>
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: #555;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  ul {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+</style>

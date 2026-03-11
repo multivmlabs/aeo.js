@@ -1,0 +1,16 @@
+{
+  "name": "aeojs-demo-nuxt",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --port 3300",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "nuxt": "^3.10.0",
+    "@nuxt/kit": "^3.10.0",
+    "aeo.js": "file:../../"
+  }
+}

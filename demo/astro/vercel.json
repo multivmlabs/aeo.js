@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd ../.. && npm install && npm run build && cd demo/astro && npm install",
+  "buildCommand": "npx astro build",
+  "outputDirectory": "dist"
+}

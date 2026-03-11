@@ -44,12 +44,29 @@ export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
       manifest: config.generators?.manifest !== false,
       sitemap: config.generators?.sitemap !== false,
       aiIndex: config.generators?.aiIndex !== false,
+      schema: config.generators?.schema !== false,
     },
     robots: {
       allow: config.robots?.allow || ['/'],
       disallow: config.robots?.disallow || [],
       crawlDelay: config.robots?.crawlDelay || 0,
       sitemap: config.robots?.sitemap || '',
+    },
+    schema: {
+      enabled: config.schema?.enabled !== false,
+      organization: {
+        name: config.schema?.organization?.name || config.title || 'My Site',
+        url: config.schema?.organization?.url || config.url || 'https://example.com',
+        logo: config.schema?.organization?.logo || '',
+        sameAs: config.schema?.organization?.sameAs || [],
+      },
+      defaultType: config.schema?.defaultType || 'WebPage',
+    },
+    og: {
+      enabled: config.og?.enabled !== false,
+      image: config.og?.image || '',
+      twitterHandle: config.og?.twitterHandle || '',
+      type: config.og?.type || 'website',
     },
     widget: {
       enabled: config.widget?.enabled !== false,

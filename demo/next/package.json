@@ -1,0 +1,15 @@
+{
+  "name": "aeojs-demo-next",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "aeo.js": "file:../../"
+  }
+}

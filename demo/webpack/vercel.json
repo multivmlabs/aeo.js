@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd ../.. && npm install && npm run build && cd demo/webpack && npm install",
+  "buildCommand": "npx webpack --mode production",
+  "outputDirectory": "dist"
+}

@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd ../.. && npm install && npm run build && cd demo/angular && npm install",
+  "buildCommand": "npx ng build",
+  "outputDirectory": "dist/aeojs-demo-angular/browser"
+}

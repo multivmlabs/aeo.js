@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PAGES } from '../../../shared/content';
+
+const page = PAGES.docs;
+---
+
+<Layout title={page.title}>
+  <h1>{page.heading}</h1>
+  <p class="description">{page.description}</p>
+
+  <div class="sections">
+    {page.sections.map((section) => (
+      <section>
+        <h2>{section.title}</h2>
+        <p>{section.content}</p>
+      </section>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: #555;
+    margin-bottom: 1.5rem;
+  }
+
+  .sections {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  section {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    background: #fff;
+  }
+
+  section h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+    color: #1a1a1a;
+  }
+
+  section p {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+</style>

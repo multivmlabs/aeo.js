@@ -1,0 +1,74 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PAGES } from '../../../shared/content';
+
+const page = PAGES.contact;
+---
+
+<Layout title={page.title}>
+  <h1>{page.heading}</h1>
+  <p class="description">{page.description}</p>
+  <div class="body">
+    <p>{page.body}</p>
+  </div>
+
+  <div class="links">
+    <a href="mailto:hello@aeojs.org" class="link-card">
+      <h3>General Support</h3>
+      <p>hello@aeojs.org</p>
+    </a>
+    <a href="mailto:enterprise@aeojs.org" class="link-card">
+      <h3>Enterprise Inquiries</h3>
+      <p>enterprise@aeojs.org</p>
+    </a>
+    <a href="https://github.com/multivmlabs/aeo.js" class="link-card">
+      <h3>GitHub</h3>
+      <p>multivmlabs/aeo.js</p>
+    </a>
+  </div>
+</Layout>
+
+<style>
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: #555;
+    margin-bottom: 1rem;
+  }
+
+  .body {
+    margin-bottom: 1.5rem;
+  }
+
+  .links {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .link-card {
+    display: block;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+  }
+
+  .link-card:hover {
+    border-color: #2563eb;
+  }
+
+  .link-card h3 {
+    margin-bottom: 0.25rem;
+    color: #2563eb;
+  }
+
+  .link-card p {
+    color: #555;
+    font-size: 0.95rem;
+  }
+</style>

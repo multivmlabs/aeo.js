@@ -5,6 +5,7 @@ import { copyMarkdownFiles, generatePageMarkdownFiles } from './raw-markdown';
 import { generateManifest as genManifest } from './manifest';
 import { generateSitemap as genSitemap } from './sitemap';
 import { generateAIIndex as genAIIndex } from './ai-index';
+import { generateSchema as genSchema } from './schema';
 import { resolveConfig } from './utils';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -121,6 +122,16 @@ export async function generateAEOFiles(
       files.push('ai-index.json');
     } catch (e: any) {
       errors.push(`ai-index.json: ${e.message}`);
+    }
+  }
+
+  if (config.generators.schema && config.schema.enabled) {
+    try {
+      const content = genSchema(config);
+      writeFileSync(join(outDir, 'schema.json'), content, 'utf-8');
+      files.push('schema.json');
+    } catch (e: any) {
+      errors.push(`schema.json: ${e.message}`);
     }
   }
 

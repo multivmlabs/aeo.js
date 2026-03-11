@@ -3,6 +3,9 @@ import { resolveConfig } from '../core/utils';
 import type { AeoConfig, PageEntry } from '../types';
 import { join } from 'path';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'fs';
+import { extractTextFromHtml, extractTitle, extractDescription, htmlToMarkdown } from '../core/html-extract';
+import { generatePageSchemas, generateJsonLdScript } from '../core/schema';
+import { generateOGTagsHtml } from '../core/opengraph';
 
 function scanBuiltPages(dir: string, baseUrl: string): PageEntry[] {
   const pages: PageEntry[] = [];
@@ -18,8 +21,8 @@ function scanBuiltPages(dir: string, baseUrl: string): PageEntry[] {
         } else if (entry === 'index.html' || (entry.endsWith('.html') && entry !== '404.html' && entry !== '500.html')) {
           try {
             const html = readFileSync(fullPath, 'utf-8');
-            const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
-            const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
+            const title = extractTitle(html);
+            const description = extractDescription(html);
             const textContent = extractTextFromHtml(html);
 
             let pathname: string;
@@ -33,13 +36,10 @@ function scanBuiltPages(dir: string, baseUrl: string): PageEntry[] {
             // Ensure clean pathname
             pathname = pathname.replace(/\/+/g, '/') || '/';
 
-            const rawTitle = titleMatch ? titleMatch[1] : undefined;
-            const title = rawTitle?.split('|')[0]?.trim() || rawTitle;
-
             pages.push({
               pathname,
               title,
-              description: descMatch ? descMatch[1] : undefined,
+              description,
               content: textContent,
             });
           } catch { /* skip unreadable files */ }
@@ -84,101 +84,6 @@ function scanDevPages(pagesDir: string): PageEntry[] {
     walk(resolvedPagesDir, resolvedPagesDir);
   }
   return pages;
-}
-
-function extractTextFromHtml(html: string): string {
-  let text = html;
-  // Remove scripts, styles, SVGs
-  text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
-  text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
-  text = text.replace(/<svg[\s\S]*?<\/svg>/gi, '');
-  // Extract from <main> if available, otherwise strip boilerplate
-  const mainMatch = text.match(/<main[^>]*>([\s\S]*)<\/main>/i);
-  if (mainMatch) {
-    text = mainMatch[1];
-  } else {
-    text = text.replace(/<nav[\s\S]*?<\/nav>/gi, '');
-    text = text.replace(/<header[\s\S]*?<\/header>/gi, '');
-    text = text.replace(/<footer[\s\S]*?<\/footer>/gi, '');
-  }
-  // Handle links wrapping block elements: flatten to inline link
-  text = text.replace(/<a[^>]+href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, url, inner) => {
-    if (/<(?:h[1-6]|div|p|section)[^>]*>/i.test(inner)) {
-      const cleanInner = inner.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      return `\n[${cleanInner.slice(0, 120).trim()}](${url})\n`;
-    }
-    return `[${inner}](${url})`;
-  });
-  // Convert headings (h1 -> ## since # is the page title)
-  text = text.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n\n## $1\n\n');
-  text = text.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n\n## $1\n\n');
-  text = text.replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n\n### $1\n\n');
-  text = text.replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, '\n\n#### $1\n\n');
-  text = text.replace(/<h5[^>]*>([\s\S]*?)<\/h5>/gi, '\n\n##### $1\n\n');
-  text = text.replace(/<h6[^>]*>([\s\S]*?)<\/h6>/gi, '\n\n###### $1\n\n');
-  // Convert remaining inline links
-  text = text.replace(/<a[^>]+href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
-  // Convert bold and italic
-  text = text.replace(/<(?:strong|b)[^>]*>([\s\S]*?)<\/(?:strong|b)>/gi, '**$1**');
-  text = text.replace(/<(?:em|i)[^>]*>([\s\S]*?)<\/(?:em|i)>/gi, '*$1*');
-  // Convert list items
-  text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1');
-  // Convert blockquotes
-  text = text.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, '\n\n> $1\n\n');
-  // Convert hr and br
-  text = text.replace(/<hr[^>]*\/?>/gi, '\n\n---\n\n');
-  text = text.replace(/<br[^>]*\/?>/gi, '\n');
-  // Convert paragraphs
-  text = text.replace(/<\/p>/gi, '\n\n');
-  text = text.replace(/<p[^>]*>/gi, '');
-  // Other block elements as newlines
-  text = text.replace(/<\/?(?:div|section|article|header|main|aside|figure|figcaption|table|thead|tbody|tr|td|th|ul|ol|dl|dt|dd)[^>]*>/gi, '\n');
-  // Remove all remaining HTML tags
-  text = text.replace(/<[^>]+>/g, '');
-  // Decode HTML entities
-  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&copy;/g, '(c)');
-  // Strip emojis (including flags)
-  text = text.replace(/[\u{1F1E0}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}]/gu, '');
-  // Clean up lines
-  text = text.split('\n').map(l => l.replace(/\s+/g, ' ').trim()).join('\n');
-  text = text.replace(/\n{3,}/g, '\n\n');
-  // Clean whitespace inside markdown syntax
-  text = text.replace(/\[[\s\n]+/g, '[').replace(/[\s\n]+\]/g, ']');
-  text = text.replace(/(#{2,6})\s*\n+\s*/g, '$1 ');
-  // Remove empty headings
-  text = text.replace(/^#{2,6}\s*$/gm, '');
-  text = text.replace(/\n{3,}/g, '\n\n');
-  return text.trim().slice(0, 8000);
-}
-
-function htmlToMarkdown(html: string, pagePath: string, config: any): string {
-  const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
-  const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
-  const textContent = extractTextFromHtml(html);
-
-  const rawTitle = titleMatch ? titleMatch[1]?.split('|')[0]?.trim() : undefined;
-  const description = descMatch?.[1];
-  const pageUrl = pagePath === '/'
-    ? config.url
-    : `${config.url.replace(/\/$/, '')}${pagePath}`;
-
-  const lines: string[] = [];
-
-  // YAML frontmatter
-  lines.push('---');
-  if (rawTitle) lines.push(`title: "${rawTitle}"`);
-  if (description) lines.push(`description: "${description}"`);
-  lines.push(`url: ${pageUrl}`);
-  lines.push(`source: ${pageUrl}`);
-  lines.push(`generated_by: aeo.js`);
-  lines.push('---', '');
-
-  if (rawTitle) lines.push(`# ${rawTitle}`, '');
-  if (description) lines.push(`${description}`, '');
-
-  if (textContent) lines.push(textContent);
-
-  return lines.join('\n');
 }
 
 export function aeoAstroIntegration(options: AeoConfig = {}): any {
@@ -380,8 +285,29 @@ if (!document.querySelector('meta[name="astro-view-transitions-enabled"]')) {
   };
 }
 
-export const AeoMetaTags = ({ config }: { config?: AeoConfig }) => {
+export const AeoMetaTags = ({ config, page }: { config?: AeoConfig; page?: { pathname?: string; title?: string; description?: string; content?: string } }) => {
   const resolvedConfig = resolveConfig(config);
+  const currentPage = page || { pathname: '/' };
+
+  const pageEntry: PageEntry = {
+    pathname: currentPage.pathname || '/',
+    title: currentPage.title,
+    description: currentPage.description,
+    content: currentPage.content,
+  };
+
+  // JSON-LD structured data
+  let jsonLd = '';
+  if (resolvedConfig.schema.enabled) {
+    const schemas = generatePageSchemas(pageEntry, resolvedConfig);
+    jsonLd = generateJsonLdScript(schemas);
+  }
+
+  // OG / Twitter Card meta tags
+  let ogTags = '';
+  if (resolvedConfig.og.enabled) {
+    ogTags = generateOGTagsHtml(pageEntry, resolvedConfig);
+  }
 
   return `
     <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Summary" />
@@ -391,6 +317,8 @@ export const AeoMetaTags = ({ config }: { config?: AeoConfig }) => {
     <meta name="aeo:title" content="${resolvedConfig.title}" />
     <meta name="aeo:description" content="${resolvedConfig.description}" />
     <meta name="aeo:url" content="${resolvedConfig.url}" />
+    ${ogTags}
+    ${jsonLd}
   `;
 };
 
