@@ -1,198 +1,146 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { generateAllWrapper } from './generate-wrapper';
+import { generateAEOFiles } from './generate-wrapper';
+import * as robots from './robots';
+import * as llmsTxt from './llms-txt';
+import * as llmsFull from './llms-full';
+import * as rawMarkdown from './raw-markdown';
+import * as manifest from './manifest';
+import * as sitemap from './sitemap';
+import * as aiIndex from './ai-index';
+import type { ResolvedAeoConfig } from '../types';
 
-// Mock all generator functions
-vi.mock('./robots', () => ({
-  generateRobots: vi.fn().mockResolvedValue(undefined)
+vi.mock('fs', () => ({
+  mkdirSync: vi.fn(),
+  writeFileSync: vi.fn(),
+  existsSync: vi.fn().mockReturnValue(true),
+  readFileSync: vi.fn(),
+  readdirSync: vi.fn().mockReturnValue([]),
+  statSync: vi.fn(),
+  copyFileSync: vi.fn(),
 }));
 
-vi.mock('./sitemap', () => ({
-  generateSitemap: vi.fn().mockResolvedValue(undefined)
-}));
+const baseConfig: ResolvedAeoConfig = {
+  title: 'Test Site',
+  description: 'Test description',
+  url: 'https://example.com',
+  contentDir: 'content',
+  outDir: '/tmp/test-out',
+  pages: [],
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    llmsFullTxt: true,
+    rawMarkdown: true,
+    manifest: true,
+    sitemap: true,
+    aiIndex: true,
+  },
+  robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
+  widget: {
+    enabled: true,
+    position: 'bottom-right',
+    theme: { background: '#000', text: '#fff', accent: '#eee', badge: '#4ADE80' },
+    humanLabel: 'Human',
+    aiLabel: 'AI',
+    showBadge: true,
+  },
+};
 
-vi.mock('./llms-txt', () => ({
-  generateLlmsTxt: vi.fn().mockResolvedValue(undefined)
-}));
-
-vi.mock('./llms-full', () => ({
-  generateLlmsFull: vi.fn().mockResolvedValue(undefined)
-}));
-
-vi.mock('./manifest', () => ({
-  generateManifest: vi.fn().mockResolvedValue(undefined)
-}));
-
-vi.mock('./ai-index', () => ({
-  generateAiIndex: vi.fn().mockResolvedValue(undefined)
-}));
-
-vi.mock('./raw-markdown', () => ({
-  copyRawMarkdown: vi.fn().mockResolvedValue(undefined)
-}));
-
-vi.mock('./utils', () => ({
-  resolveConfig: vi.fn().mockResolvedValue({
-    routes: [{ path: '/', title: 'Home' }],
-    baseUrl: 'https://example.com',
-    generators: {
-      robots: true,
-      sitemap: true,
-      llmsTxt: true,
-      llmsFull: true,
-      manifest: true,
-      aiIndex: true,
-      rawMarkdown: true
-    }
-  })
-}));
-
-describe('generateAllWrapper', () => {
+describe('generateAEOFiles', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, 'log').mockImplementation(() => {});
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(robots, 'generateRobotsTxt').mockReturnValue('User-agent: *\nAllow: /');
+    vi.spyOn(llmsTxt, 'generateLlmsTxt').mockReturnValue('# LLMs.txt');
+    vi.spyOn(llmsFull, 'generateLlmsFullTxt').mockReturnValue('# Full LLMs');
+    vi.spyOn(manifest, 'generateManifest').mockReturnValue('{"docs":[]}');
+    vi.spyOn(sitemap, 'generateSitemap').mockReturnValue('<?xml version="1.0"?>');
+    vi.spyOn(aiIndex, 'generateAIIndex').mockReturnValue('{"index":[]}');
+    vi.spyOn(rawMarkdown, 'copyMarkdownFiles').mockReturnValue([]);
+    vi.spyOn(rawMarkdown, 'generatePageMarkdownFiles').mockReturnValue([]);
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  it('should call all enabled generators and return file list', async () => {
+    const result = await generateAEOFiles(baseConfig);
 
-  it('should call all enabled generators', async () => {
-    const { generateRobots } = await import('./robots');
-    const { generateSitemap } = await import('./sitemap');
-    const { generateLlmsTxt } = await import('./llms-txt');
-    const { generateLlmsFull } = await import('./llms-full');
-    const { generateManifest } = await import('./manifest');
-    const { generateAiIndex } = await import('./ai-index');
-    const { copyRawMarkdown } = await import('./raw-markdown');
+    expect(robots.generateRobotsTxt).toHaveBeenCalledWith(baseConfig);
+    expect(llmsTxt.generateLlmsTxt).toHaveBeenCalledWith(baseConfig);
+    expect(llmsFull.generateLlmsFullTxt).toHaveBeenCalledWith(baseConfig);
+    expect(manifest.generateManifest).toHaveBeenCalledWith(baseConfig);
+    expect(sitemap.generateSitemap).toHaveBeenCalledWith(baseConfig);
+    expect(aiIndex.generateAIIndex).toHaveBeenCalledWith(baseConfig);
 
-    await generateAllWrapper('/test/project');
-
-    expect(generateRobots).toHaveBeenCalledWith('/test/project');
-    expect(generateSitemap).toHaveBeenCalledWith('/test/project');
-    expect(generateLlmsTxt).toHaveBeenCalledWith('/test/project');
-    expect(generateLlmsFull).toHaveBeenCalledWith('/test/project');
-    expect(generateManifest).toHaveBeenCalledWith('/test/project');
-    expect(generateAiIndex).toHaveBeenCalledWith('/test/project');
-    expect(copyRawMarkdown).toHaveBeenCalledWith('/test/project');
+    expect(result.files).toContain('robots.txt');
+    expect(result.files).toContain('llms.txt');
+    expect(result.files).toContain('llms-full.txt');
+    expect(result.files).toContain('docs.json');
+    expect(result.files).toContain('sitemap.xml');
+    expect(result.files).toContain('ai-index.json');
+    expect(result.errors).toEqual([]);
   });
 
   it('should skip disabled generators', async () => {
-    const { resolveConfig } = await import('./utils');
-    vi.mocked(resolveConfig).mockResolvedValueOnce({
-      routes: [],
-      baseUrl: 'https://example.com',
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
       generators: {
-        robots: true,
-        sitemap: false,
-        llmsTxt: true,
-        llmsFull: false,
+        robotsTxt: true,
+        llmsTxt: false,
+        llmsFullTxt: false,
+        rawMarkdown: false,
         manifest: true,
+        sitemap: false,
         aiIndex: false,
-        rawMarkdown: false
-      }
-    });
+      },
+    };
 
-    const { generateRobots } = await import('./robots');
-    const { generateSitemap } = await import('./sitemap');
-    const { generateLlmsTxt } = await import('./llms-txt');
-    const { generateLlmsFull } = await import('./llms-full');
-    const { generateManifest } = await import('./manifest');
-    const { generateAiIndex } = await import('./ai-index');
-    const { copyRawMarkdown } = await import('./raw-markdown');
+    const result = await generateAEOFiles(config);
 
-    await generateAllWrapper('/test/project');
+    expect(robots.generateRobotsTxt).toHaveBeenCalled();
+    expect(llmsTxt.generateLlmsTxt).not.toHaveBeenCalled();
+    expect(llmsFull.generateLlmsFullTxt).not.toHaveBeenCalled();
+    expect(manifest.generateManifest).toHaveBeenCalled();
+    expect(sitemap.generateSitemap).not.toHaveBeenCalled();
+    expect(aiIndex.generateAIIndex).not.toHaveBeenCalled();
 
-    expect(generateRobots).toHaveBeenCalled();
-    expect(generateSitemap).not.toHaveBeenCalled();
-    expect(generateLlmsTxt).toHaveBeenCalled();
-    expect(generateLlmsFull).not.toHaveBeenCalled();
-    expect(generateManifest).toHaveBeenCalled();
-    expect(generateAiIndex).not.toHaveBeenCalled();
-    expect(copyRawMarkdown).not.toHaveBeenCalled();
+    expect(result.files).toContain('robots.txt');
+    expect(result.files).toContain('docs.json');
+    expect(result.files).not.toContain('llms.txt');
   });
 
   it('should handle generator errors gracefully', async () => {
-    const { generateRobots } = await import('./robots');
-    const { generateSitemap } = await import('./sitemap');
-    const { generateLlmsTxt } = await import('./llms-txt');
-    
-    vi.mocked(generateRobots).mockRejectedValueOnce(new Error('Robots generation failed'));
-    vi.mocked(generateSitemap).mockResolvedValueOnce(undefined);
-    
-    await generateAllWrapper('/test/project');
+    vi.spyOn(robots, 'generateRobotsTxt').mockImplementation(() => {
+      throw new Error('Robots generation failed');
+    });
 
-    expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining('Error generating robots.txt:'),
-      expect.any(Error)
-    );
-    expect(generateSitemap).toHaveBeenCalled();
-    expect(generateLlmsTxt).toHaveBeenCalled();
-  });
+    const result = await generateAEOFiles(baseConfig);
 
-  it('should log progress for each generator', async () => {
-    await generateAllWrapper('/test/project');
-
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generating robots.txt'));
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generating sitemap.xml'));
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generating llms.txt'));
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generating llms-full.txt'));
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generating docs.json'));
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generating ai-index.json'));
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Copying raw markdown'));
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toContain('robots.txt');
+    expect(result.files).toContain('llms.txt');
+    expect(result.files).toContain('sitemap.xml');
   });
 
   it('should complete even if all generators fail', async () => {
-    const { generateRobots } = await import('./robots');
-    const { generateSitemap } = await import('./sitemap');
-    const { generateLlmsTxt } = await import('./llms-txt');
-    const { generateLlmsFull } = await import('./llms-full');
-    const { generateManifest } = await import('./manifest');
-    const { generateAiIndex } = await import('./ai-index');
-    const { copyRawMarkdown } = await import('./raw-markdown');
+    vi.spyOn(robots, 'generateRobotsTxt').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(llmsTxt, 'generateLlmsTxt').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(llmsFull, 'generateLlmsFullTxt').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(manifest, 'generateManifest').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(sitemap, 'generateSitemap').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(aiIndex, 'generateAIIndex').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(rawMarkdown, 'generatePageMarkdownFiles').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(rawMarkdown, 'copyMarkdownFiles').mockImplementation(() => { throw new Error('fail'); });
 
-    const error = new Error('Generator failed');
-    vi.mocked(generateRobots).mockRejectedValue(error);
-    vi.mocked(generateSitemap).mockRejectedValue(error);
-    vi.mocked(generateLlmsTxt).mockRejectedValue(error);
-    vi.mocked(generateLlmsFull).mockRejectedValue(error);
-    vi.mocked(generateManifest).mockRejectedValue(error);
-    vi.mocked(generateAiIndex).mockRejectedValue(error);
-    vi.mocked(copyRawMarkdown).mockRejectedValue(error);
+    const result = await generateAEOFiles(baseConfig);
 
-    await expect(generateAllWrapper('/test/project')).resolves.not.toThrow();
-    
-    expect(console.error).toHaveBeenCalledTimes(7);
+    expect(result.files).toEqual([]);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it('should use default config when generators not specified', async () => {
-    const { resolveConfig } = await import('./utils');
-    vi.mocked(resolveConfig).mockResolvedValueOnce({
-      routes: [],
-      baseUrl: 'https://example.com'
-    });
+  it('should return result shape with files and errors arrays', async () => {
+    const result = await generateAEOFiles(baseConfig);
 
-    const { generateRobots } = await import('./robots');
-    const { generateSitemap } = await import('./sitemap');
-    
-    await generateAllWrapper('/test/project');
-
-    // Should call all generators by default
-    expect(generateRobots).toHaveBeenCalled();
-    expect(generateSitemap).toHaveBeenCalled();
-  });
-
-  it('should pass correct project root to each generator', async () => {
-    const projectRoot = '/my/custom/project';
-    
-    const { generateRobots } = await import('./robots');
-    const { generateSitemap } = await import('./sitemap');
-    const { generateLlmsTxt } = await import('./llms-txt');
-
-    await generateAllWrapper(projectRoot);
-
-    expect(generateRobots).toHaveBeenCalledWith(projectRoot);
-    expect(generateSitemap).toHaveBeenCalledWith(projectRoot);
-    expect(generateLlmsTxt).toHaveBeenCalledWith(projectRoot);
+    expect(result).toHaveProperty('files');
+    expect(result).toHaveProperty('errors');
+    expect(Array.isArray(result.files)).toBe(true);
+    expect(Array.isArray(result.errors)).toBe(true);
   });
 });

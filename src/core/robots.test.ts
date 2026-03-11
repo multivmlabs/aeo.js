@@ -9,6 +9,7 @@ describe('generateRobotsTxt', () => {
     description: 'Test description',
     contentDir: 'content',
     outDir: 'public',
+    pages: [],
     generators: {
       robotsTxt: true,
       llmsTxt: true,
@@ -17,7 +18,16 @@ describe('generateRobotsTxt', () => {
       manifest: true,
       sitemap: true,
       aiIndex: true,
-    }
+    },
+    robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
+    widget: {
+      enabled: true,
+      position: 'bottom-right',
+      theme: { background: '#000', text: '#fff', accent: '#eee', badge: '#4ADE80' },
+      humanLabel: 'Human',
+      aiLabel: 'AI',
+      showBadge: true,
+    },
   }
 
   it('should generate robots.txt with AI crawler rules', () => {

@@ -206,14 +206,33 @@ export function aeoAstroIntegration(options: AeoConfig = {}): any {
         }
 
         if (resolvedConfig.widget.enabled && injectScript) {
-          const widgetOpts = JSON.stringify(resolvedConfig.widget);
+          const widgetConfig = JSON.stringify({
+            title: resolvedConfig.title,
+            description: resolvedConfig.description,
+            url: resolvedConfig.url,
+            widget: resolvedConfig.widget,
+          });
           injectScript(
             'page',
             `import { AeoWidget } from 'aeo.js/widget';
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => { new AeoWidget(${widgetOpts}); });
-} else {
-  new AeoWidget(${widgetOpts});
+let __aeoWidget;
+function __initAeoWidget() {
+  if (__aeoWidget) __aeoWidget.destroy();
+  try {
+    __aeoWidget = new AeoWidget({ config: ${widgetConfig} });
+  } catch (e) {
+    console.warn('[aeo.js] Widget initialization failed:', e);
+  }
+}
+// astro:page-load fires on initial load AND after every View Transition navigation
+document.addEventListener('astro:page-load', __initAeoWidget);
+// Fallback for Astro sites without View Transitions
+if (!document.querySelector('meta[name="astro-view-transitions-enabled"]')) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', __initAeoWidget);
+  } else {
+    __initAeoWidget();
+  }
 }`
           );
         }

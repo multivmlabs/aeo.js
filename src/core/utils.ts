@@ -4,9 +4,31 @@ import type { AeoConfig, ResolvedAeoConfig, MarkdownFile } from '../types';
 import { detectFramework } from './detect';
 import { minimatch } from 'minimatch';
 
+export function validateConfig(config: AeoConfig): string[] {
+  const warnings: string[] = [];
+
+  if (config.url && !/^https?:\/\//.test(config.url)) {
+    warnings.push(`url "${config.url}" should start with http:// or https://`);
+  }
+
+  if (config.url === 'https://example.com') {
+    warnings.push('url is set to the default "https://example.com" — set your actual site URL');
+  }
+
+  if (!config.title) {
+    warnings.push('title is not set — your generated files will use "My Site"');
+  }
+
+  if (config.robots?.crawlDelay && config.robots.crawlDelay < 0) {
+    warnings.push('robots.crawlDelay should be a positive number');
+  }
+
+  return warnings;
+}
+
 export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
   const frameworkInfo = detectFramework();
-  
+
   return {
     title: config.title || 'My Site',
     description: config.description || '',

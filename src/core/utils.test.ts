@@ -1,176 +1,125 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { 
-  resolveConfig, 
-  getAllMarkdownFiles, 
-  getProjectStructure,
-  generateHash,
-  ensureDirectoryExists 
-} from './utils'
-import fs from 'fs'
-import path from 'path'
-import crypto from 'crypto'
+import { describe, it, expect, vi } from 'vitest';
+import {
+  resolveConfig,
+  parseFrontmatter,
+  bumpHeadings,
+  extractTitle,
+} from './utils';
 
-vi.mock('fs')
-vi.mock('path')
-vi.mock('crypto')
+vi.mock('./detect', () => ({
+  detectFramework: vi.fn().mockReturnValue({
+    framework: 'unknown',
+    contentDir: 'src',
+    outDir: 'dist',
+  }),
+}));
 
 describe('utils', () => {
-  const mockFs = fs as any
-  const mockPath = path as any
-  const mockCrypto = crypto as any
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mockPath.join.mockImplementation((...args: string[]) => args.join('/'))
-    mockPath.resolve.mockImplementation((p: string) => `/absolute${p}`)
-    mockPath.relative.mockImplementation((from: string, to: string) => to.replace(from, ''))
-    mockPath.dirname.mockImplementation((p: string) => {
-      const parts = p.split('/')
-      parts.pop()
-      return parts.join('/')
-    })
-  })
-
   describe('resolveConfig', () => {
-    it('should merge default config with user config', () => {
-      const userConfig = {
-        output: 'custom-output',
-        baseUrl: 'https://custom.com',
-        include: ['*.mdx']
-      }
+    it('should return default config when no user config provided', () => {
+      const result = resolveConfig();
 
-      const result = resolveConfig(userConfig)
-      
-      expect(result.output).toBe('custom-output')
-      expect(result.baseUrl).toBe('https://custom.com')
-      expect(result.include).toContain('*.mdx')
-      expect(result.include).toContain('**/*.md')
-      expect(result.exclude).toContain('**/node_modules/**')
-    })
+      expect(result.title).toBe('My Site');
+      expect(result.description).toBe('');
+      expect(result.url).toBe('https://example.com');
+      expect(result.generators.robotsTxt).toBe(true);
+      expect(result.generators.llmsTxt).toBe(true);
+      expect(result.widget.enabled).toBe(true);
+      expect(result.widget.position).toBe('bottom-right');
+    });
 
-    it('should use default config when no user config provided', () => {
-      const result = resolveConfig()
-      
-      expect(result.output).toBe('public/aeo')
-      expect(result.baseUrl).toBe('')
-      expect(result.include).toEqual(['**/*.md', '**/*.mdx'])
-      expect(result.exclude).toContain('**/node_modules/**')
-    })
+    it('should merge user config with defaults', () => {
+      const result = resolveConfig({
+        title: 'Custom Title',
+        url: 'https://custom.com',
+        generators: { sitemap: false },
+      });
 
-    it('should handle partial user config', () => {
-      const userConfig = {
-        baseUrl: 'https://example.com'
-      }
+      expect(result.title).toBe('Custom Title');
+      expect(result.url).toBe('https://custom.com');
+      expect(result.generators.sitemap).toBe(false);
+      expect(result.generators.robotsTxt).toBe(true);
+    });
 
-      const result = resolveConfig(userConfig)
-      
-      expect(result.output).toBe('public/aeo')
-      expect(result.baseUrl).toBe('https://example.com')
-    })
-  })
+    it('should handle partial widget config', () => {
+      const result = resolveConfig({
+        widget: {
+          position: 'top-left',
+          theme: { accent: '#FF0000' },
+        },
+      });
 
-  describe('getAllMarkdownFiles', () => {
-    it('should find all markdown files matching patterns', () => {
-      mockFs.readdirSync.mockReturnValue(['file1.md', 'file2.mdx', 'file3.txt'])
-      mockFs.statSync.mockImplementation((path: string) => ({
-        isDirectory: () => path.includes('subdir'),
-        isFile: () => !path.includes('subdir')
-      }))
-      mockFs.existsSync.mockReturnValue(true)
+      expect(result.widget.position).toBe('top-left');
+      expect(result.widget.theme.accent).toBe('#FF0000');
+      expect(result.widget.theme.background).toBe('rgba(18, 18, 24, 0.9)');
+    });
 
-      const files = getAllMarkdownFiles('/root', ['*.md', '*.mdx'], [])
-      
-      expect(files.length).toBeGreaterThan(0)
-    })
+    it('should resolve robots config', () => {
+      const result = resolveConfig({
+        robots: { disallow: ['/admin'], crawlDelay: 5 },
+      });
 
-    it('should exclude files matching exclude patterns', () => {
-      mockFs.readdirSync.mockReturnValue(['file1.md', 'node_modules', 'file2.md'])
-      mockFs.statSync.mockImplementation((path: string) => ({
-        isDirectory: () => path.includes('node_modules'),
-        isFile: () => !path.includes('node_modules')
-      }))
+      expect(result.robots.disallow).toEqual(['/admin']);
+      expect(result.robots.crawlDelay).toBe(5);
+      expect(result.robots.allow).toEqual(['/']);
+    });
+  });
 
-      const files = getAllMarkdownFiles('/root', ['**/*.md'], ['**/node_modules/**'])
-      
-      expect(files.every(f => !f.includes('node_modules'))).toBe(true)
-    })
-  })
+  describe('parseFrontmatter', () => {
+    it('should extract frontmatter from markdown', () => {
+      const input = '---\ntitle: My Title\ndescription: My Desc\n---\n# Content';
+      const result = parseFrontmatter(input);
 
-  describe('getProjectStructure', () => {
-    it('should generate project structure tree', () => {
-      mockFs.readdirSync.mockImplementation((dir: string) => {
-        if (dir === '/root') return ['src', 'package.json']
-        if (dir.includes('src')) return ['index.js', 'utils.js']
-        return []
-      })
-      mockFs.statSync.mockImplementation((path: string) => ({
-        isDirectory: () => path.includes('src') && !path.includes('.'),
-        isFile: () => path.includes('.')
-      }))
+      expect(result.frontmatter.title).toBe('My Title');
+      expect(result.frontmatter.description).toBe('My Desc');
+      expect(result.content).toContain('# Content');
+    });
 
-      const structure = getProjectStructure('/root')
-      
-      expect(structure).toContain('src/')
-      expect(structure).toContain('package.json')
-    })
+    it('should return empty frontmatter when none exists', () => {
+      const input = '# Just Content\nNo frontmatter here';
+      const result = parseFrontmatter(input);
 
-    it('should respect max depth limit', () => {
-      mockFs.readdirSync.mockReturnValue(['deep'])
-      mockFs.statSync.mockReturnValue({ isDirectory: () => true, isFile: () => false })
+      expect(result.frontmatter).toEqual({});
+      expect(result.content).toBe(input);
+    });
 
-      const structure = getProjectStructure('/root', 2)
-      const lines = structure.split('\n')
-      
-      expect(lines.length).toBeLessThanOrEqual(10)
-    })
-  })
+    it('should handle quoted values', () => {
+      const input = '---\ntitle: "Quoted Title"\n---\nContent';
+      const result = parseFrontmatter(input);
 
-  describe('generateHash', () => {
-    it('should generate consistent hash for same content', () => {
-      const mockHash = {
-        update: vi.fn().mockReturnThis(),
-        digest: vi.fn().mockReturnValue('abc123')
-      }
-      mockCrypto.createHash.mockReturnValue(mockHash)
+      expect(result.frontmatter.title).toBe('Quoted Title');
+    });
+  });
 
-      const hash1 = generateHash('test content')
-      const hash2 = generateHash('test content')
-      
-      expect(hash1).toBe(hash2)
-      expect(hash1).toBe('abc123')
-    })
+  describe('bumpHeadings', () => {
+    it('should increase heading levels by specified amount', () => {
+      const input = '# H1\n## H2\n### H3';
+      const result = bumpHeadings(input, 1);
 
-    it('should generate different hash for different content', () => {
-      let callCount = 0
-      const mockHash = {
-        update: vi.fn().mockReturnThis(),
-        digest: vi.fn(() => `hash${++callCount}`)
-      }
-      mockCrypto.createHash.mockReturnValue(mockHash)
+      expect(result).toContain('## H1');
+      expect(result).toContain('### H2');
+      expect(result).toContain('#### H3');
+    });
 
-      const hash1 = generateHash('content1')
-      const hash2 = generateHash('content2')
-      
-      expect(hash1).not.toBe(hash2)
-    })
-  })
+    it('should cap at h6', () => {
+      const input = '###### H6';
+      const result = bumpHeadings(input, 1);
 
-  describe('ensureDirectoryExists', () => {
-    it('should create directory if it does not exist', () => {
-      mockFs.existsSync.mockReturnValue(false)
-      mockFs.mkdirSync.mockReturnValue(undefined)
+      expect(result).toContain('###### H6');
+    });
+  });
 
-      ensureDirectoryExists('/new/path')
-      
-      expect(mockFs.mkdirSync).toHaveBeenCalledWith('/new/path', { recursive: true })
-    })
+  describe('extractTitle', () => {
+    it('should extract h1 title', () => {
+      expect(extractTitle('# My Title\nContent')).toBe('My Title');
+    });
 
-    it('should not create directory if it already exists', () => {
-      mockFs.existsSync.mockReturnValue(true)
+    it('should fall back to h2', () => {
+      expect(extractTitle('## Sub Title\nContent')).toBe('Sub Title');
+    });
 
-      ensureDirectoryExists('/existing/path')
-      
-      expect(mockFs.mkdirSync).not.toHaveBeenCalled()
-    })
-  })
-})
+    it('should fall back to first line', () => {
+      expect(extractTitle('Some text\nMore text')).toBe('Some text');
+    });
+  });
+});
