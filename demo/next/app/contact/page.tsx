@@ -1,26 +1,18 @@
 import type { Metadata } from 'next';
+import { PAGES, SITE } from '../../../../shared/content';
+
+const page = PAGES.contact;
 
 export const metadata: Metadata = {
-  title: 'Contact | AEO Demo Site',
-  description: 'Get in touch with us.',
+  title: `${page.title} | ${SITE.title}`,
+  description: page.description,
 };
 
 export default function ContactPage() {
   return (
     <>
-      <h1>Contact</h1>
-      <p>
-        Have questions about aeo.js or this demo? We would love to hear from you.
-      </p>
-      <p>
-        <strong>Email:</strong> hello@aeojs.org
-      </p>
-      <p>
-        <strong>GitHub:</strong>{' '}
-        <a href="https://github.com/multivmlabs/aeojs" target="_blank" rel="noopener noreferrer">
-          multivmlabs/aeojs
-        </a>
-      </p>
+      <h1>{page.heading}</h1>
+      <p>{page.body}</p>
     </>
   );
 }

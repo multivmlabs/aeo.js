@@ -1,16 +1,21 @@
+import { PAGES } from '../../../../shared/content';
+
+const { about } = PAGES;
+
 function About() {
   return (
     <div>
-      <h1>About</h1>
-      <p>
-        AEO (AI Engine Optimization) helps websites provide structured,
-        machine-readable content so that AI-powered search engines and assistants
-        can better understand and surface your information.
-      </p>
-      <p>
-        This demo site is a minimal example of how to configure aeo.js with the
-        Vite plugin in a React Router application.
-      </p>
+      <h1>{about.heading}</h1>
+      <p>{about.description}</p>
+      {about.body.split('\n\n').map((paragraph, i) => (
+        <p key={i}>{paragraph}</p>
+      ))}
+      <h2>Key Features</h2>
+      <ul>
+        {about.features.map((feature) => (
+          <li key={feature}>{feature}</li>
+        ))}
+      </ul>
     </div>
   );
 }

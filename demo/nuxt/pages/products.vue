@@ -1,16 +1,21 @@
+<script setup lang="ts">
+import { PAGES } from '../../shared/content';
+
+const page = PAGES.products;
+</script>
+
 <template>
   <div>
     <Head>
-      <title>Products - AEO Demo</title>
-      <meta name="description" content="Browse the products available in the AEO.js demo store." />
+      <title>{{ page.title }} - AEO Demo</title>
+      <meta name="description" :content="page.description" />
     </Head>
-    <h1>Products</h1>
-    <p>Below is a sample list of products to demonstrate list-style page content.</p>
+    <h1>{{ page.heading }}</h1>
+    <p>{{ page.body }}</p>
     <ul>
-      <li><strong>Widget Alpha</strong> — A versatile widget for everyday tasks. $9.99</li>
-      <li><strong>Widget Beta</strong> — An upgraded widget with extended features. $19.99</li>
-      <li><strong>Widget Gamma</strong> — The premium widget for power users. $29.99</li>
-      <li><strong>Accessory Pack</strong> — Essential add-ons for any widget. $4.99</li>
+      <li v-for="item in page.items" :key="item.name">
+        <strong>{{ item.name }}</strong> — {{ item.description }}
+      </li>
     </ul>
   </div>
 </template>

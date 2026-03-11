@@ -7,17 +7,12 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   template: `
     <h1>Contact Us</h1>
     <p>
-      Have questions about aeo.js or need help with your integration? We would love to hear
-      from you.
+      Get in touch with the aeo.js team for support, partnerships, or contributions.
     </p>
     <p>
-      <strong>Email:</strong> hello&#64;aeojs.org
-    </p>
-    <p>
-      <strong>GitHub:</strong> github.com/multivmlabs/aeojs
-    </p>
-    <p>
-      <strong>Documentation:</strong> docs.aeojs.org
+      Reach us at hello&#64;aeojs.org or visit our GitHub repository at
+      github.com/multivmlabs/aeo.js. We welcome contributions, bug reports, and feature requests.
+      For enterprise inquiries, email enterprise&#64;aeojs.org.
     </p>
   `,
 })

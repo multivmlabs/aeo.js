@@ -1,10 +1,13 @@
+<script setup lang="ts">
+import { NAV_LINKS } from '../shared/content';
+
+const navLinks = NAV_LINKS;
+</script>
+
 <template>
   <div id="app">
     <nav>
-      <NuxtLink to="/">Home</NuxtLink>
-      <NuxtLink to="/about">About</NuxtLink>
-      <NuxtLink to="/products">Products</NuxtLink>
-      <NuxtLink to="/contact">Contact</NuxtLink>
+      <NuxtLink v-for="link in navLinks" :key="link.href" :to="link.href">{{ link.label }}</NuxtLink>
     </nav>
     <main>
       <NuxtPage />
@@ -33,7 +36,8 @@ body {
 
 nav {
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
   padding-bottom: 1.5rem;
   margin-bottom: 2rem;
   border-bottom: 1px solid #e0e0e0;

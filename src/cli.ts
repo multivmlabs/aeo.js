@@ -3,6 +3,8 @@
 import { generateAEOFiles } from './core/generate-wrapper';
 import { resolveConfig } from './core/utils';
 import { detectFramework } from './core/detect';
+import { auditSite, formatAuditReport } from './core/audit';
+import { generateReport, formatReportMarkdown, formatReportJson } from './core/report';
 import { writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -17,13 +19,15 @@ Usage:
 Commands:
   generate    Generate all AEO files (robots.txt, llms.txt, sitemap.xml, etc.)
   init        Create an aeo.config.ts configuration file
-  check       Validate your AEO setup and show what would be generated
+  check       Validate AEO setup + GEO readiness score (0-100)
+  report      Full AEO/GEO report with citability scores and platform hints
 
 Options:
   --out <dir>       Output directory (default: auto-detected)
   --url <url>       Site URL (default: https://example.com)
   --title <title>   Site title (default: My Site)
   --no-widget       Disable widget generation
+  --json            Output audit results as JSON (check command)
   --help, -h        Show this help message
   --version, -v     Show version
 
@@ -32,6 +36,9 @@ Examples:
   npx aeo.js generate --url https://mysite.com --title "My Site"
   npx aeo.js init
   npx aeo.js check
+  npx aeo.js check --json
+  npx aeo.js report
+  npx aeo.js report --json
 `;
 
 function parseArgs(args: string[]): { command: string; flags: Record<string, string | boolean> } {
@@ -46,6 +53,8 @@ function parseArgs(args: string[]): { command: string; flags: Record<string, str
       flags.version = true;
     } else if (arg === '--no-widget') {
       flags.noWidget = true;
+    } else if (arg === '--json') {
+      flags.json = true;
     } else if (arg.startsWith('--') && i + 1 < args.length) {
       const key = arg.slice(2);
       flags[key] = args[++i];
@@ -149,9 +158,21 @@ export default defineConfig({
   console.log('[aeo.js] Edit the config and run `npx aeo.js generate` to generate AEO files.');
 }
 
-function cmdCheck(): void {
+function cmdCheck(flags: Record<string, string | boolean>): void {
   const framework = detectFramework();
-  const config = resolveConfig();
+  const config = resolveConfig({
+    title: typeof flags.title === 'string' ? flags.title : undefined,
+    url: typeof flags.url === 'string' ? flags.url : undefined,
+    outDir: typeof flags.out === 'string' ? flags.out : undefined,
+  });
+
+  // Run the GEO audit
+  const auditResult = auditSite(config);
+
+  if (flags.json) {
+    console.log(JSON.stringify({ framework: framework.framework, config: { title: config.title, url: config.url, outDir: config.outDir }, audit: auditResult }, null, 2));
+    return;
+  }
 
   console.log(`[aeo.js] AEO Configuration Check`);
   console.log(`${'─'.repeat(40)}`);
@@ -172,6 +193,7 @@ function cmdCheck(): void {
     ['docs.json', config.generators.manifest],
     ['sitemap.xml', config.generators.sitemap],
     ['ai-index.json', config.generators.aiIndex],
+    ['schema.json', config.generators.schema],
   ] as const;
 
   for (const [name, enabled] of generators) {
@@ -191,10 +213,24 @@ function cmdCheck(): void {
     console.log(`  Run \`npx aeo.js init\` to create one.`);
   }
 
-  if (config.url === 'https://example.com') {
-    console.log();
-    console.log(`  Warning: Using default URL (https://example.com).`);
-    console.log(`  Set your actual URL in the config or pass --url.`);
+  // GEO Readiness Audit
+  console.log();
+  console.log(formatAuditReport(auditResult));
+}
+
+function cmdReport(flags: Record<string, string | boolean>): void {
+  const config = resolveConfig({
+    title: typeof flags.title === 'string' ? flags.title : undefined,
+    url: typeof flags.url === 'string' ? flags.url : undefined,
+    outDir: typeof flags.out === 'string' ? flags.out : undefined,
+  });
+
+  const report = generateReport(config);
+
+  if (flags.json) {
+    console.log(formatReportJson(report));
+  } else {
+    console.log(formatReportMarkdown(report));
   }
 }
 
@@ -220,7 +256,10 @@ async function main(): Promise<void> {
       cmdInit();
       break;
     case 'check':
-      cmdCheck();
+      cmdCheck(flags);
+      break;
+    case 'report':
+      cmdReport(flags);
       break;
     default:
       console.error(`Unknown command: ${command}`);

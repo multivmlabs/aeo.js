@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SITE, NAV_LINKS } from '../../../shared/content';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AEO Demo Site',
-  description: 'A demo site showcasing aeo.js integration with Next.js',
+  title: SITE.title,
+  description: SITE.description,
 };
 
 export default function RootLayout({
@@ -17,10 +18,11 @@ export default function RootLayout({
       <body>
         <nav>
           <ul>
-            <li><Link href="/">Home</Link></li>
-            <li><Link href="/about">About</Link></li>
-            <li><Link href="/products">Products</Link></li>
-            <li><Link href="/contact">Contact</Link></li>
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href}>{link.label}</Link>
+              </li>
+            ))}
           </ul>
         </nav>
         <main>{children}</main>

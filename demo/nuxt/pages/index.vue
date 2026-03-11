@@ -1,18 +1,24 @@
+<script setup lang="ts">
+import { PAGES } from '../../shared/content';
+
+const page = PAGES.home;
+</script>
+
 <template>
   <div>
     <Head>
-      <title>Home - AEO Demo</title>
-      <meta name="description" content="Welcome to the AEO.js Nuxt demo site." />
+      <title>{{ page.title }} - AEO Demo</title>
+      <meta name="description" :content="page.description" />
     </Head>
-    <h1>Welcome to the AEO Demo</h1>
-    <p>
-      This is a minimal Nuxt 3 application demonstrating how aeo.js integrates
-      as a Nuxt module. It automatically generates structured data and
-      answer-engine-optimised metadata for every page in your site.
-    </p>
-    <p>
-      Navigate through the pages using the links above to see different content
-      types and how aeo.js handles them.
-    </p>
+    <h1>{{ page.heading }}</h1>
+    <p v-for="(paragraph, i) in page.body.split('\n\n')" :key="i">{{ paragraph }}</p>
+    <section style="margin-top: 2rem;">
+      <h2>By the Numbers</h2>
+      <ul>
+        <li v-for="stat in page.stats" :key="stat.label">
+          <strong>{{ stat.label }}:</strong> {{ stat.value }}
+        </li>
+      </ul>
+    </section>
   </div>
 </template>

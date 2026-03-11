@@ -1,6 +1,6 @@
 # aeo.js Demo Projects
 
-Live testing demos for each supported framework. Each demo is a minimal project with 4 pages (Home, About, Products, Contact) integrated with aeo.js.
+Live testing demos for each supported framework. Each demo has 8 pages (Home, About, Products, Docs, FAQ, Pricing, Blog, Contact) integrated with aeo.js, showcasing schema generation, OG tags, and all AEO file types.
 
 ## Quick Start
 
@@ -49,4 +49,25 @@ After running a demo, check that aeo.js generates:
 - `llms.txt` — lightweight site summary for LLMs
 - `llms-full.txt` — full markdown content
 - `sitemap.xml` — standard sitemap
+- `schema.json` — Schema.org JSON-LD (WebSite, Organization, Article, FAQPage, BreadcrumbList)
+- `ai-index.json` — structured AI index
+- `docs.json` — documentation manifest
 - Per-page `.md` files — structured markdown for each route
+
+Also verify in HTML source:
+- JSON-LD `<script type="application/ld+json">` tags (Vite, Astro)
+- Open Graph `<meta property="og:*">` tags
+- Twitter Card `<meta name="twitter:*">` tags
+
+## Deploying to Vercel
+
+Each demo includes a `vercel.json` that builds the parent aeo.js package first.
+
+To deploy a demo to Vercel:
+
+1. Create a new Vercel project from the GitHub repo
+2. Set **Root Directory** to the demo subfolder (e.g., `demo/astro`)
+3. Vercel will use the `vercel.json` config for install/build commands
+4. Deploy
+
+Each demo can be deployed independently as its own Vercel project.

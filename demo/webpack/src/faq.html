@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ - AEO Demo Site</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #fafafa; }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+    nav { background: #1a1a2e; padding: 1rem; margin-bottom: 2rem; }
+    nav a { color: #e0e0e0; text-decoration: none; margin-right: 1.5rem; font-size: 0.95rem; }
+    nav a:hover { color: #fff; text-decoration: underline; }
+    h1 { margin-bottom: 1rem; color: #1a1a2e; }
+    h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1a1a2e; }
+    p { margin-bottom: 1rem; }
+    .faq-item { margin-bottom: 1.5rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 1.5rem; }
+    .faq-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="products.html">Products</a>
+      <a href="docs.html">Docs</a>
+      <a href="faq.html">FAQ</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </nav>
+  <main class="container">
+    <h1>Frequently Asked Questions</h1>
+    <p>Common questions about aeo.js, answer engine optimization, and AI discoverability.</p>
+    <div class="faq-item">
+      <h3>What is Answer Engine Optimization (AEO)?</h3>
+      <p>Answer Engine Optimization is the practice of making your website content easily discoverable and extractable by AI-powered search engines and answer engines. Unlike traditional SEO which focuses on ranking in search results, AEO ensures that AI systems like ChatGPT, Perplexity, and Google AI Overviews can accurately understand, cite, and surface your content.</p>
+    </div>
+    <div class="faq-item">
+      <h3>How is AEO different from SEO?</h3>
+      <p>SEO focuses on ranking signals like backlinks, keywords, and page speed to appear in traditional search results. AEO focuses on content structure, machine-readable formats, and Schema.org markup to help AI systems extract and cite your content. AEO and SEO are complementary — good AEO practices also improve SEO.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does aeo.js work with my framework?</h3>
+      <p>aeo.js supports 6 major frameworks out of the box: Next.js (App Router and Pages Router), Astro, Nuxt 3, Vite (with any frontend library), Angular 17+, and Webpack. Each framework has a dedicated plugin that integrates with its build pipeline.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What is a GEO Readiness Score?</h3>
+      <p>The GEO Readiness Score is a 0-100 rating that measures how well your site is optimized for AI discovery. It evaluates 5 categories: AI Access, Content Structure, Schema Presence, Meta Quality, and Citability.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does aeo.js require any external APIs?</h3>
+      <p>No. aeo.js is a zero-dependency, build-time library. It runs entirely on your machine during the build process with no external API calls, no cloud services, and no tracking.</p>
+    </div>
+    <div class="faq-item">
+      <h3>How do I improve my AI Citability Score?</h3>
+      <p>Write self-contained paragraphs, include concrete statistics and dates, use FAQ-style headings ending with question marks, structure content with lists and short paragraphs under 167 words, and add a summary section at the top of long pages.</p>
+    </div>
+  </main>
+</body>
+</html>

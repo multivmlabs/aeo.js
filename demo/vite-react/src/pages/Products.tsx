@@ -1,18 +1,17 @@
-const products = [
-  { name: 'AEO Starter', description: 'Basic AEO integration for small sites.' },
-  { name: 'AEO Pro', description: 'Advanced optimization with analytics.' },
-  { name: 'AEO Enterprise', description: 'Full-featured solution for large-scale deployments.' },
-];
+import { PAGES } from '../../../../shared/content';
+
+const { products } = PAGES;
 
 function Products() {
   return (
     <div>
-      <h1>Products</h1>
-      <p>Explore our range of AEO products designed for every scale.</p>
+      <h1>{products.heading}</h1>
+      <p>{products.description}</p>
+      <p>{products.body}</p>
       <ul>
-        {products.map((product) => (
-          <li key={product.name}>
-            <strong>{product.name}</strong> &mdash; {product.description}
+        {products.items.map((item) => (
+          <li key={item.name}>
+            <strong>{item.name}</strong> &mdash; {item.description}
           </li>
         ))}
       </ul>

@@ -1,8 +1,8 @@
-// @ts-expect-error @nuxt/kit is an optional peer dep, types resolved at runtime in Nuxt projects
 import { defineNuxtModule, createResolver, addPluginTemplate } from '@nuxt/kit';
 import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig, PageEntry } from '../types';
+import { extractTextFromHtml, extractTitle, extractDescription } from '../core/html-extract';
 import { join } from 'path';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'fs';
 
@@ -38,54 +38,6 @@ function scanNuxtPages(rootDir: string): PageEntry[] {
   return pages;
 }
 
-function extractText(html: string): string {
-  let text = html;
-  text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
-  text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
-  text = text.replace(/<svg[\s\S]*?<\/svg>/gi, '');
-  const mainMatch = text.match(/<main[^>]*>([\s\S]*)<\/main>/i);
-  if (mainMatch) {
-    text = mainMatch[1];
-  } else {
-    text = text.replace(/<nav[\s\S]*?<\/nav>/gi, '');
-    text = text.replace(/<header[\s\S]*?<\/header>/gi, '');
-    text = text.replace(/<footer[\s\S]*?<\/footer>/gi, '');
-  }
-  text = text.replace(/<a[^>]+href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, url, inner) => {
-    if (/<(?:h[1-6]|div|p|section)[^>]*>/i.test(inner)) {
-      const cleanInner = inner.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      return `\n[${cleanInner.slice(0, 120).trim()}](${url})\n`;
-    }
-    return `[${inner}](${url})`;
-  });
-  text = text.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n\n## $1\n\n');
-  text = text.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n\n## $1\n\n');
-  text = text.replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n\n### $1\n\n');
-  text = text.replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, '\n\n#### $1\n\n');
-  text = text.replace(/<h5[^>]*>([\s\S]*?)<\/h5>/gi, '\n\n##### $1\n\n');
-  text = text.replace(/<h6[^>]*>([\s\S]*?)<\/h6>/gi, '\n\n###### $1\n\n');
-  text = text.replace(/<a[^>]+href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
-  text = text.replace(/<(?:strong|b)[^>]*>([\s\S]*?)<\/(?:strong|b)>/gi, '**$1**');
-  text = text.replace(/<(?:em|i)[^>]*>([\s\S]*?)<\/(?:em|i)>/gi, '*$1*');
-  text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1');
-  text = text.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, '\n\n> $1\n\n');
-  text = text.replace(/<hr[^>]*\/?>/gi, '\n\n---\n\n');
-  text = text.replace(/<br[^>]*\/?>/gi, '\n');
-  text = text.replace(/<\/p>/gi, '\n\n');
-  text = text.replace(/<p[^>]*>/gi, '');
-  text = text.replace(/<\/?(?:div|section|article|header|main|aside|figure|figcaption|table|thead|tbody|tr|td|th|ul|ol|dl|dt|dd)[^>]*>/gi, '\n');
-  text = text.replace(/<[^>]+>/g, '');
-  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&copy;/g, '(c)');
-  text = text.replace(/[\u{1F1E0}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}]/gu, '');
-  text = text.split('\n').map(l => l.replace(/\s+/g, ' ').trim()).join('\n');
-  text = text.replace(/\n{3,}/g, '\n\n');
-  text = text.replace(/\[[\s\n]+/g, '[').replace(/[\s\n]+\]/g, ']');
-  text = text.replace(/(#{2,6})\s*\n+\s*/g, '$1 ');
-  text = text.replace(/^#{2,6}\s*$/gm, '');
-  text = text.replace(/\n{3,}/g, '\n\n');
-  return text.trim().slice(0, 8000);
-}
-
 function scanNuxtBuildOutput(projectRoot: string): PageEntry[] {
   const pages: PageEntry[] = [];
   const outputDir = join(projectRoot, '.output', 'public');
@@ -101,9 +53,9 @@ function scanNuxtBuildOutput(projectRoot: string): PageEntry[] {
           walk(fullPath, `${basePath}/${entry}`);
         } else if (entry === 'index.html' || (entry.endsWith('.html') && entry !== '200.html' && entry !== '404.html')) {
           const html = readFileSync(fullPath, 'utf-8');
-          const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
-          const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
-          const textContent = extractText(html);
+          const title = extractTitle(html);
+          const description = extractDescription(html);
+          const textContent = extractTextFromHtml(html);
           let pathname: string;
           if (entry === 'index.html') {
             pathname = basePath || '/';
@@ -112,8 +64,8 @@ function scanNuxtBuildOutput(projectRoot: string): PageEntry[] {
           }
           pages.push({
             pathname,
-            title: titleMatch?.[1]?.split('|')[0]?.trim(),
-            description: descMatch?.[1],
+            title,
+            description,
             content: textContent,
           });
         }
@@ -283,6 +235,35 @@ export default defineNuxtPlugin((nuxtApp) => {
       { name: 'aeo:description', content: resolvedConfig.description },
       { name: 'aeo:url', content: resolvedConfig.url }
     );
+
+    // OG / Twitter Card meta tags (site-level defaults)
+    if (resolvedConfig.og.enabled) {
+      nuxt.options.app.head.meta.push(
+        { property: 'og:type', content: resolvedConfig.og.type },
+        { property: 'og:title', content: resolvedConfig.title },
+        { property: 'og:site_name', content: resolvedConfig.title },
+        { property: 'og:url', content: resolvedConfig.url },
+        { name: 'twitter:card', content: resolvedConfig.og.image ? 'summary_large_image' : 'summary' },
+        { name: 'twitter:title', content: resolvedConfig.title }
+      );
+      if (resolvedConfig.description) {
+        nuxt.options.app.head.meta.push(
+          { property: 'og:description', content: resolvedConfig.description },
+          { name: 'twitter:description', content: resolvedConfig.description }
+        );
+      }
+      if (resolvedConfig.og.image) {
+        nuxt.options.app.head.meta.push(
+          { property: 'og:image', content: resolvedConfig.og.image },
+          { name: 'twitter:image', content: resolvedConfig.og.image }
+        );
+      }
+      if (resolvedConfig.og.twitterHandle) {
+        nuxt.options.app.head.meta.push(
+          { name: 'twitter:site', content: resolvedConfig.og.twitterHandle }
+        );
+      }
+    }
   },
 });
 

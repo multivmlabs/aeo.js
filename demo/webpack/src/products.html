@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Products - AEO Demo</title>
+  <title>Products - AEO Demo Site</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #fafafa; }
@@ -14,7 +14,7 @@
     h1 { margin-bottom: 1rem; color: #1a1a2e; }
     p { margin-bottom: 1rem; }
     ul { margin: 1rem 0; padding-left: 1.5rem; }
-    li { margin-bottom: 0.5rem; }
+    li { margin-bottom: 0.75rem; }
   </style>
 </head>
 <body>
@@ -23,16 +23,26 @@
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="products.html">Products</a>
+      <a href="docs.html">Docs</a>
+      <a href="faq.html">FAQ</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="blog.html">Blog</a>
       <a href="contact.html">Contact</a>
     </div>
   </nav>
   <main class="container">
-    <h1>Our Products</h1>
-    <p>Explore our range of products designed to enhance your web presence and improve discoverability across answer engines.</p>
+    <h1>What aeo.js Generates</h1>
+    <p>Discover the 8 file types that aeo.js generates to make your site AI-discoverable.</p>
+    <p>aeo.js generates 8 types of files from your existing content, each targeting a different aspect of AI discoverability:</p>
     <ul>
-      <li><strong>Alpha</strong> — Core optimization engine for structured data and metadata generation.</li>
-      <li><strong>Beta</strong> — Advanced analytics dashboard for tracking answer engine performance.</li>
-      <li><strong>Gamma</strong> — Enterprise integration suite with support for custom pipelines.</li>
+      <li><strong>robots.txt</strong> — AI-aware directives that allow GPTBot, ClaudeBot, Bingbot, and other AI crawlers to index your content. Includes sitemap references and crawl delay settings.</li>
+      <li><strong>llms.txt</strong> — A concise summary of your site optimized for LLM context windows. Contains site metadata, page list with descriptions, and navigation structure.</li>
+      <li><strong>llms-full.txt</strong> — Complete content export with full markdown text for every page. Designed for AI systems that need deep content understanding.</li>
+      <li><strong>sitemap.xml</strong> — Standard XML sitemap with all discoverable pages, last-modified dates, and change frequency hints for search engines and AI crawlers.</li>
+      <li><strong>ai-index.json</strong> — Structured JSON index with page content, descriptions, keywords, and metadata — purpose-built for AI ingestion pipelines.</li>
+      <li><strong>schema.json</strong> — Schema.org JSON-LD structured data including WebSite, Organization, Article/WebPage, BreadcrumbList, and auto-detected FAQPage schemas.</li>
+      <li><strong>docs.json</strong> — Documentation manifest with categorized content, markdown URLs, and content summaries for AI documentation assistants.</li>
+      <li><strong>Per-page .md files</strong> — Individual markdown files for each page with YAML frontmatter, clean content extraction, and structural preservation.</li>
     </ul>
   </main>
 </body>

@@ -20,12 +20,29 @@ export interface AeoConfig {
     manifest?: boolean;
     sitemap?: boolean;
     aiIndex?: boolean;
+    schema?: boolean;
   };
   robots?: {
     allow?: string[];
     disallow?: string[];
     crawlDelay?: number;
     sitemap?: string;
+  };
+  schema?: {
+    enabled?: boolean;
+    organization?: {
+      name?: string;
+      url?: string;
+      logo?: string;
+      sameAs?: string[];
+    };
+    defaultType?: 'Article' | 'WebPage';
+  };
+  og?: {
+    enabled?: boolean;
+    image?: string;
+    twitterHandle?: string;
+    type?: 'website' | 'article';
   };
   widget?: {
     enabled?: boolean;
@@ -57,12 +74,29 @@ export interface ResolvedAeoConfig {
     manifest: boolean;
     sitemap: boolean;
     aiIndex: boolean;
+    schema: boolean;
   };
   robots: {
     allow: string[];
     disallow: string[];
     crawlDelay: number;
     sitemap: string;
+  };
+  schema: {
+    enabled: boolean;
+    organization: {
+      name: string;
+      url: string;
+      logo: string;
+      sameAs: string[];
+    };
+    defaultType: 'Article' | 'WebPage';
+  };
+  og: {
+    enabled: boolean;
+    image: string;
+    twitterHandle: string;
+    type: 'website' | 'article';
   };
   widget: {
     enabled: boolean;

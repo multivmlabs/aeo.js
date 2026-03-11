@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog - AEO Demo Site</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #fafafa; }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+    nav { background: #1a1a2e; padding: 1rem; margin-bottom: 2rem; }
+    nav a { color: #e0e0e0; text-decoration: none; margin-right: 1.5rem; font-size: 0.95rem; }
+    nav a:hover { color: #fff; text-decoration: underline; }
+    h1 { margin-bottom: 1rem; color: #1a1a2e; }
+    h2 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1a1a2e; }
+    p { margin-bottom: 1rem; }
+    .post { margin-bottom: 2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 2rem; }
+    .post:last-child { border-bottom: none; }
+    .post-date { font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; }
+    .post-excerpt { font-style: italic; color: #555; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="products.html">Products</a>
+      <a href="docs.html">Docs</a>
+      <a href="faq.html">FAQ</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </nav>
+  <main class="container">
+    <h1>Latest from aeo.js</h1>
+    <p>News, updates, and insights about answer engine optimization and AI discoverability.</p>
+    <article class="post">
+      <h2>Why Your Website is Invisible to AI</h2>
+      <p class="post-date">December 15, 2024</p>
+      <p class="post-excerpt">Over 90% of websites lack the structured files that AI systems need to cite their content.</p>
+      <p>Most websites today are invisible to AI-powered search engines. AI systems need content in formats like markdown, JSON-LD, and plain text. Without these files, your content does not exist in the AI knowledge base. Studies show that websites with structured AI-ready files are cited 3.2x more frequently by answer engines.</p>
+    </article>
+    <article class="post">
+      <h2>GEO vs SEO: The New Landscape</h2>
+      <p class="post-date">January 20, 2025</p>
+      <p class="post-excerpt">Generative Engine Optimization is reshaping how we think about web content.</p>
+      <p>Research from Georgia Tech found that 47% of AI-generated answers cite content from sources that optimize for machine readability. Self-contained factual paragraphs are cited 2.1x more than context-dependent text. Content with statistics is cited 1.8x more than content without.</p>
+    </article>
+  </main>
+</body>
+</html>

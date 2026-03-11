@@ -1,6 +1,7 @@
 import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig, PageEntry } from '../types';
+import { extractTextFromHtml, extractTitle, extractDescription } from '../core/html-extract';
 import { join } from 'path';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 
@@ -148,7 +149,7 @@ export async function generateAeoMetadata(config?: AeoConfig) {
     await generateAEOFiles(resolvedConfig);
   }
 
-  return {
+  const metadata: Record<string, any> = {
     title: resolvedConfig.title,
     description: resolvedConfig.description,
     alternates: {
@@ -164,54 +165,27 @@ export async function generateAeoMetadata(config?: AeoConfig) {
       },
     },
   };
-}
 
-function extractText(html: string): string {
-  let text = html;
-  text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
-  text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
-  text = text.replace(/<svg[\s\S]*?<\/svg>/gi, '');
-  const mainMatch = text.match(/<main[^>]*>([\s\S]*)<\/main>/i);
-  if (mainMatch) {
-    text = mainMatch[1];
-  } else {
-    text = text.replace(/<nav[\s\S]*?<\/nav>/gi, '');
-    text = text.replace(/<header[\s\S]*?<\/header>/gi, '');
-    text = text.replace(/<footer[\s\S]*?<\/footer>/gi, '');
+  // OG / Twitter Card metadata
+  if (resolvedConfig.og.enabled) {
+    metadata.openGraph = {
+      type: resolvedConfig.og.type,
+      title: resolvedConfig.title,
+      description: resolvedConfig.description,
+      url: resolvedConfig.url,
+      siteName: resolvedConfig.title,
+      ...(resolvedConfig.og.image ? { images: [{ url: resolvedConfig.og.image }] } : {}),
+    };
+    metadata.twitter = {
+      card: resolvedConfig.og.image ? 'summary_large_image' : 'summary',
+      title: resolvedConfig.title,
+      description: resolvedConfig.description,
+      ...(resolvedConfig.og.twitterHandle ? { site: resolvedConfig.og.twitterHandle } : {}),
+      ...(resolvedConfig.og.image ? { images: [resolvedConfig.og.image] } : {}),
+    };
   }
-  text = text.replace(/<a[^>]+href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, url, inner) => {
-    if (/<(?:h[1-6]|div|p|section)[^>]*>/i.test(inner)) {
-      const cleanInner = inner.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      return `\n[${cleanInner.slice(0, 120).trim()}](${url})\n`;
-    }
-    return `[${inner}](${url})`;
-  });
-  text = text.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n\n## $1\n\n');
-  text = text.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n\n## $1\n\n');
-  text = text.replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n\n### $1\n\n');
-  text = text.replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, '\n\n#### $1\n\n');
-  text = text.replace(/<h5[^>]*>([\s\S]*?)<\/h5>/gi, '\n\n##### $1\n\n');
-  text = text.replace(/<h6[^>]*>([\s\S]*?)<\/h6>/gi, '\n\n###### $1\n\n');
-  text = text.replace(/<a[^>]+href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
-  text = text.replace(/<(?:strong|b)[^>]*>([\s\S]*?)<\/(?:strong|b)>/gi, '**$1**');
-  text = text.replace(/<(?:em|i)[^>]*>([\s\S]*?)<\/(?:em|i)>/gi, '*$1*');
-  text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1');
-  text = text.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, '\n\n> $1\n\n');
-  text = text.replace(/<hr[^>]*\/?>/gi, '\n\n---\n\n');
-  text = text.replace(/<br[^>]*\/?>/gi, '\n');
-  text = text.replace(/<\/p>/gi, '\n\n');
-  text = text.replace(/<p[^>]*>/gi, '');
-  text = text.replace(/<\/?(?:div|section|article|header|main|aside|figure|figcaption|table|thead|tbody|tr|td|th|ul|ol|dl|dt|dd)[^>]*>/gi, '\n');
-  text = text.replace(/<[^>]+>/g, '');
-  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&copy;/g, '(c)');
-  text = text.replace(/[\u{1F1E0}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}]/gu, '');
-  text = text.split('\n').map(l => l.replace(/\s+/g, ' ').trim()).join('\n');
-  text = text.replace(/\n{3,}/g, '\n\n');
-  text = text.replace(/\[[\s\n]+/g, '[').replace(/[\s\n]+\]/g, ']');
-  text = text.replace(/(#{2,6})\s*\n+\s*/g, '$1 ');
-  text = text.replace(/^#{2,6}\s*$/gm, '');
-  text = text.replace(/\n{3,}/g, '\n\n');
-  return text.trim().slice(0, 8000);
+
+  return metadata;
 }
 
 function scanNextBuildOutput(projectRoot: string): PageEntry[] {
@@ -230,14 +204,14 @@ function scanNextBuildOutput(projectRoot: string): PageEntry[] {
           walk(fullPath, `${basePath}/${entry}`);
         } else if (entry === 'index.html') {
           const html = readFileSync(fullPath, 'utf-8');
-          const titleMatch = html.match(/<title>([^<]*)<\/title>/i);
-          const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
-          const textContent = extractText(html);
+          const title = extractTitle(html);
+          const description = extractDescription(html);
+          const textContent = extractTextFromHtml(html);
           const pathname = basePath || '/';
           pages.push({
             pathname,
-            title: titleMatch?.[1]?.split('|')[0]?.trim(),
-            description: descMatch?.[1],
+            title,
+            description,
             content: textContent,
           });
         }

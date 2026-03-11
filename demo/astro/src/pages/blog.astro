@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PAGES } from '../../../shared/content';
+
+const page = PAGES.blog;
+---
+
+<Layout title={page.title}>
+  <h1>{page.heading}</h1>
+  <p class="description">{page.description}</p>
+
+  <div class="posts">
+    {page.posts.map((post) => (
+      <article>
+        <time datetime={post.date}>{post.date}</time>
+        <h2>{post.title}</h2>
+        <p class="excerpt">{post.excerpt}</p>
+        <p class="content">{post.content}</p>
+      </article>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: #555;
+    margin-bottom: 1.5rem;
+  }
+
+  .posts {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  article {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: #fff;
+  }
+
+  time {
+    font-size: 0.85rem;
+    color: #888;
+  }
+
+  article h2 {
+    font-size: 1.15rem;
+    margin: 0.25rem 0 0.5rem;
+  }
+
+  .excerpt {
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .content {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+</style>

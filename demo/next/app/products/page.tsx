@@ -1,27 +1,23 @@
 import type { Metadata } from 'next';
+import { PAGES, SITE } from '../../../../shared/content';
+
+const page = PAGES.products;
 
 export const metadata: Metadata = {
-  title: 'Products | AEO Demo Site',
-  description: 'Explore our demo product catalog powered by aeo.js.',
+  title: `${page.title} | ${SITE.title}`,
+  description: page.description,
 };
-
-const products = [
-  { name: 'Widget Alpha', description: 'A versatile widget for everyday use.' },
-  { name: 'Widget Beta', description: 'An advanced widget with premium features.' },
-  { name: 'Widget Gamma', description: 'A lightweight widget optimized for speed.' },
-  { name: 'Widget Delta', description: 'A heavy-duty widget built for enterprise scale.' },
-];
 
 export default function ProductsPage() {
   return (
     <>
-      <h1>Products</h1>
-      <p>Browse our catalog of demo products below.</p>
+      <h1>{page.heading}</h1>
+      <p>{page.body}</p>
       <ul>
-        {products.map((product) => (
-          <li key={product.name}>
-            <h2>{product.name}</h2>
-            <p>{product.description}</p>
+        {page.items.map((item) => (
+          <li key={item.name}>
+            <h2>{item.name}</h2>
+            <p>{item.description}</p>
           </li>
         ))}
       </ul>

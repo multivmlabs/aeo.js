@@ -9,13 +9,15 @@ const page = PAGES.products;
   <h1>{page.heading}</h1>
   <p class="description">{page.description}</p>
   <p>{page.body}</p>
-  <ul>
+
+  <div class="items">
     {page.items.map((item) => (
-      <li>
-        <strong>{item.name}</strong> — {item.description}
-      </li>
+      <div class="item">
+        <h3>{item.name}</h3>
+        <p>{item.description}</p>
+      </div>
     ))}
-  </ul>
+  </div>
 </Layout>
 
 <style>
@@ -28,12 +30,28 @@ const page = PAGES.products;
     margin-bottom: 1rem;
   }
 
-  ul {
-    margin-top: 1rem;
-    padding-left: 1.5rem;
+  .items {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1rem;
   }
 
-  li {
-    margin-bottom: 0.5rem;
+  .item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: #fff;
+  }
+
+  .item h3 {
+    margin-bottom: 0.25rem;
+    font-family: monospace;
+    font-size: 1rem;
+    color: #2563eb;
+  }
+
+  .item p {
+    color: #555;
+    font-size: 0.95rem;
   }
 </style>
