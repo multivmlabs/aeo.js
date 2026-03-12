@@ -163,6 +163,10 @@ export class AeoWidget {
       <div class="aeo-topbar">
         ${this.config.widget?.showBadge !== false ? '<span class="aeo-badge"><span class="aeo-badge-dot"></span>LLM-READY</span>' : ''}
         <span class="aeo-route-tab">${mdPath}</span>
+        <div class="aeo-view-tabs">
+          <button class="aeo-view-tab aeo-view-active" data-view="rendered">Rendered</button>
+          <button class="aeo-view-tab" data-view="source">Source</button>
+        </div>
         <div class="aeo-topbar-spacer"></div>
         <div class="aeo-topbar-actions">
           <button class="aeo-topbar-btn aeo-copy-btn" disabled>
@@ -194,7 +198,138 @@ export class AeoWidget {
     const closeBtn = this.overlayElement.querySelector('.aeo-close-btn');
     closeBtn?.addEventListener('click', () => this.closeOverlay());
 
+    // View tab switching
+    const viewTabs = this.overlayElement.querySelectorAll('.aeo-view-tab');
+    viewTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        viewTabs.forEach(t => t.classList.remove('aeo-view-active'));
+        tab.classList.add('aeo-view-active');
+        const view = (tab as HTMLElement).dataset.view;
+        const rendered = this.overlayElement?.querySelector('.aeo-rendered') as HTMLElement;
+        const source = this.overlayElement?.querySelector('.aeo-markdown-source') as HTMLElement;
+        if (rendered && source) {
+          rendered.style.display = view === 'rendered' ? 'block' : 'none';
+          source.style.display = view === 'source' ? 'block' : 'none';
+        }
+      });
+    });
+
     await this.loadContent();
+  }
+
+  /**
+   * Strip YAML frontmatter from markdown content.
+   */
+  private stripFrontmatter(md: string): { frontmatter: Record<string, string>; body: string } {
+    const frontmatter: Record<string, string> = {};
+    let body = md;
+
+    if (md.startsWith('---')) {
+      const endIndex = md.indexOf('---', 3);
+      if (endIndex !== -1) {
+        const fmBlock = md.slice(3, endIndex).trim();
+        body = md.slice(endIndex + 3).trim();
+        for (const line of fmBlock.split('\n')) {
+          const colonIdx = line.indexOf(':');
+          if (colonIdx > 0) {
+            const key = line.slice(0, colonIdx).trim();
+            const val = line.slice(colonIdx + 1).trim().replace(/^["']|["']$/g, '');
+            frontmatter[key] = val;
+          }
+        }
+      }
+    }
+
+    return { frontmatter, body };
+  }
+
+  /**
+   * Convert markdown to simple rendered HTML for the "Rendered" view.
+   */
+  private renderMarkdown(md: string): string {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    const lines = md.split('\n');
+    const html: string[] = [];
+    let inList = false;
+    let inCode = false;
+    let codeContent: string[] = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      // Code blocks
+      if (trimmed.startsWith('```')) {
+        if (inCode) {
+          html.push(`<pre class="aeo-r-code"><code>${esc(codeContent.join('\n'))}</code></pre>`);
+          codeContent = [];
+          inCode = false;
+        } else {
+          if (inList) { html.push('</ul>'); inList = false; }
+          inCode = true;
+        }
+        continue;
+      }
+      if (inCode) { codeContent.push(line); continue; }
+
+      // Empty line
+      if (!trimmed) {
+        if (inList) { html.push('</ul>'); inList = false; }
+        continue;
+      }
+
+      // Headings
+      const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)/);
+      if (headingMatch) {
+        if (inList) { html.push('</ul>'); inList = false; }
+        const level = headingMatch[1].length;
+        html.push(`<h${level} class="aeo-r-h${level}">${this.renderInlineMarkdown(esc(headingMatch[2]))}</h${level}>`);
+        continue;
+      }
+
+      // Horizontal rule
+      if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+        if (inList) { html.push('</ul>'); inList = false; }
+        html.push('<hr class="aeo-r-hr">');
+        continue;
+      }
+
+      // Blockquote
+      if (trimmed.startsWith('>')) {
+        if (inList) { html.push('</ul>'); inList = false; }
+        html.push(`<blockquote class="aeo-r-quote">${this.renderInlineMarkdown(esc(trimmed.slice(1).trim()))}</blockquote>`);
+        continue;
+      }
+
+      // List items
+      const listMatch = trimmed.match(/^[-*+]\s+(.*)/);
+      if (listMatch) {
+        if (!inList) { html.push('<ul class="aeo-r-list">'); inList = true; }
+        html.push(`<li>${this.renderInlineMarkdown(esc(listMatch[1]))}</li>`);
+        continue;
+      }
+
+      // Regular paragraph
+      if (inList) { html.push('</ul>'); inList = false; }
+      html.push(`<p class="aeo-r-p">${this.renderInlineMarkdown(esc(trimmed))}</p>`);
+    }
+
+    if (inList) html.push('</ul>');
+    if (inCode) html.push(`<pre class="aeo-r-code"><code>${esc(codeContent.join('\n'))}</code></pre>`);
+
+    return html.join('\n');
+  }
+
+  private renderInlineMarkdown(text: string): string {
+    // Bold
+    let out = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    out = out.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    // Inline code
+    out = out.replace(/`([^`]+)`/g, '<code class="aeo-r-inline-code">$1</code>');
+    // Links
+    out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a class="aeo-r-link" href="$2" target="_blank" rel="noopener">$1</a>');
+    return out;
   }
 
   private async loadContent(): Promise<void> {
@@ -214,8 +349,20 @@ export class AeoWidget {
         content = extractDOMToMarkdown();
       }
 
+      const { frontmatter, body } = this.stripFrontmatter(content);
+
+      // Build frontmatter metadata bar
+      const metaItems: string[] = [];
+      if (frontmatter.title) metaItems.push(`<span class="aeo-meta-label">Title:</span> ${this.escHtml(frontmatter.title)}`);
+      if (frontmatter.url) metaItems.push(`<span class="aeo-meta-label">URL:</span> <a class="aeo-r-link" href="${this.escHtml(frontmatter.url)}" target="_blank">${this.escHtml(frontmatter.url)}</a>`);
+      const metaBar = metaItems.length > 0
+        ? `<div class="aeo-meta-bar">${metaItems.join('<span class="aeo-meta-sep"></span>')}</div>`
+        : '';
+
       wrapper.innerHTML = `
-        <pre class="aeo-markdown-source"><code>${this.highlightMarkdown(content)}</code></pre>
+        ${metaBar}
+        <div class="aeo-rendered">${this.renderMarkdown(body)}</div>
+        <pre class="aeo-markdown-source" style="display:none"><code>${this.highlightMarkdown(content)}</code></pre>
       `;
 
       const copyBtn = this.overlayElement.querySelector('.aeo-copy-btn') as HTMLButtonElement;
@@ -243,6 +390,10 @@ export class AeoWidget {
         </div>
       `;
     }
+  }
+
+  private escHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   private highlightMarkdown(md: string): string {

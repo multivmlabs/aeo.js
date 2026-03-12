@@ -1,14 +1,19 @@
 import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
-import type { AeoConfig, PageEntry } from '../types';
+import type { AeoConfig, PageEntry, ResolvedAeoConfig } from '../types';
 import { join } from 'path';
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { extractTextFromHtml, extractTitle, extractDescription, htmlToMarkdown } from '../core/html-extract';
-import { generatePageSchemas, generateJsonLdScript } from '../core/schema';
+import { generateSiteSchemas, generatePageSchemas, generateJsonLdScript } from '../core/schema';
 import { generateOGTagsHtml } from '../core/opengraph';
 
-function scanBuiltPages(dir: string, baseUrl: string): PageEntry[] {
-  const pages: PageEntry[] = [];
+interface ScannedPage extends PageEntry {
+  /** Absolute path to the HTML file on disk */
+  filePath: string;
+}
+
+function scanBuiltPages(dir: string, _baseUrl: string): ScannedPage[] {
+  const pages: ScannedPage[] = [];
 
   function walk(currentDir: string): void {
     try {
@@ -41,6 +46,7 @@ function scanBuiltPages(dir: string, baseUrl: string): PageEntry[] {
               title,
               description,
               content: textContent,
+              filePath: fullPath,
             });
           } catch { /* skip unreadable files */ }
         }
@@ -84,6 +90,80 @@ function scanDevPages(pagesDir: string): PageEntry[] {
     walk(resolvedPagesDir, resolvedPagesDir);
   }
   return pages;
+}
+
+function escapeAttr(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * Inject meta description, canonical URL, OG tags, and JSON-LD into each built HTML page's <head>.
+ * Skips tags that already exist in the page.
+ */
+function injectHeadTags(pages: ScannedPage[], config: ResolvedAeoConfig): number {
+  let injectedCount = 0;
+
+  for (const page of pages) {
+    let html: string;
+    try {
+      html = readFileSync(page.filePath, 'utf-8');
+    } catch {
+      continue;
+    }
+
+    const tags: string[] = [];
+
+    // Meta description — only if page doesn't already have one
+    if (!/name=["']description["']/i.test(html)) {
+      const desc = page.description || config.description;
+      if (desc) {
+        tags.push(`<meta name="description" content="${escapeAttr(desc)}" />`);
+      }
+    }
+
+    // Canonical URL — only if page doesn't already have one
+    if (!/rel=["']canonical["']/i.test(html)) {
+      const pageUrl = page.pathname === '/'
+        ? config.url
+        : `${config.url.replace(/\/$/, '')}${page.pathname}`;
+      tags.push(`<link rel="canonical" href="${escapeAttr(pageUrl)}" />`);
+    }
+
+    // Open Graph + Twitter Card tags — only if no OG tags exist
+    if (config.og.enabled && !/property=["']og:/i.test(html)) {
+      const ogHtml = generateOGTagsHtml(page, config);
+      if (ogHtml) tags.push(ogHtml);
+    }
+
+    // JSON-LD structured data — only if no JSON-LD exists
+    if (config.schema.enabled && !/application\/ld\+json/i.test(html)) {
+      const siteSchemas = generateSiteSchemas(config);
+      const pageSchemas = generatePageSchemas(page, config);
+      const jsonLdHtml = generateJsonLdScript([...siteSchemas, ...pageSchemas]);
+      if (jsonLdHtml) tags.push(jsonLdHtml);
+    }
+
+    // Link alternate tags for AEO files — only if not already present
+    if (!/rel=["']alternate["'][^>]*llms\.txt/i.test(html)) {
+      tags.push(`<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Summary" />`);
+      tags.push(`<link rel="alternate" type="text/plain" href="/llms-full.txt" title="Full Content for LLMs" />`);
+      tags.push(`<link rel="alternate" type="application/json" href="/docs.json" title="Documentation Manifest" />`);
+      tags.push(`<link rel="alternate" type="application/json" href="/ai-index.json" title="AI-Optimized Index" />`);
+    }
+
+    if (tags.length === 0) continue;
+
+    // Inject before </head>
+    const injection = '\n    ' + tags.join('\n    ') + '\n  ';
+    const newHtml = html.replace('</head>', injection + '</head>');
+
+    if (newHtml !== html) {
+      writeFileSync(page.filePath, newHtml, 'utf-8');
+      injectedCount++;
+    }
+  }
+
+  return injectedCount;
 }
 
 export function aeoAstroIntegration(options: AeoConfig = {}): any {
@@ -177,6 +257,16 @@ if (!document.querySelector('meta[name="astro-view-transitions-enabled"]')) {
           }
         } catch (error) {
           buildLogger.error(`Failed to generate AEO files: ${error}`);
+        }
+
+        // Auto-inject meta tags, OG, canonical, and JSON-LD into built HTML pages
+        try {
+          const injected = injectHeadTags(discoveredPages, resolvedConfig);
+          if (injected > 0) {
+            buildLogger.info(`Injected head tags into ${injected} pages`);
+          }
+        } catch (error) {
+          buildLogger.error(`Failed to inject head tags: ${error}`);
         }
       },
 

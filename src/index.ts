@@ -1,6 +1,6 @@
 import type { AeoConfig } from './types';
 
-export const VERSION = '0.0.3';
+export const VERSION = '0.0.4';
 
 export function defineConfig(config: AeoConfig): AeoConfig {
   return config;
@@ -24,10 +24,10 @@ export type {
 export { detectFramework } from './core/detect';
 export { generateAEOFiles as generateAll, generateAEOFiles } from './core/generate';
 export { resolveConfig, validateConfig } from './core/utils';
-export { generateSchema, generateSchemaObjects, generatePageSchemas, generateJsonLdScript } from './core/schema';
+export { generateSchema, generateSchemaObjects, generateSiteSchemas, generatePageSchemas, generateJsonLdScript } from './core/schema';
 export { extractTextFromHtml, extractTitle, extractDescription, extractJsonLd, htmlToMarkdown } from './core/html-extract';
 export { generateOGTags, generateOGTagsHtml } from './core/opengraph';
-export { auditSite, formatAuditReport } from './core/audit';
+export { auditSite, formatAuditReport, getGrade } from './core/audit';
 export type { AuditResult, AuditCategory, AuditIssue } from './core/audit';
 export type { MetaTag } from './core/opengraph';
 export { scorePageCitability, scoreSiteCitability, formatPageCitability } from './core/citability';

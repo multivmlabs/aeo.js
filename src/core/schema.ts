@@ -34,7 +34,7 @@ export function generateSchemaObjects(config: ResolvedAeoConfig): SchemaOutput {
 /**
  * Generate site-level schemas: WebSite + Organization.
  */
-function generateSiteSchemas(config: ResolvedAeoConfig): object[] {
+export function generateSiteSchemas(config: ResolvedAeoConfig): object[] {
   const schemas: object[] = [];
 
   // WebSite schema

@@ -18,7 +18,7 @@ export function getStyles(theme?: ThemeConfig): string {
 
     .aeo-toggle {
       position: fixed;
-      z-index: 10001;
+      z-index: 2147483647;
       font-family: 'JetBrains Mono', monospace;
       font-size: 14px;
       animation: aeo-fade-in 0.3s ease;
@@ -92,12 +92,15 @@ export function getStyles(theme?: ThemeConfig): string {
       left: 0;
       right: 0;
       bottom: 0;
+      width: 100vw;
+      height: 100vh;
       background: ${t.background};
-      z-index: 10000;
+      z-index: 2147483646;
       display: flex;
       flex-direction: column;
       animation: aeo-fade-in 0.2s ease;
       font-family: 'JetBrains Mono', monospace;
+      isolation: isolate;
     }
 
     /* Top bar */
@@ -218,6 +221,177 @@ export function getStyles(theme?: ThemeConfig): string {
       height: 14px;
       fill: none;
       stroke: currentColor;
+    }
+
+    /* View tabs */
+    .aeo-view-tabs {
+      display: flex;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .aeo-view-tab {
+      padding: 5px 12px;
+      background: transparent;
+      color: ${t.text};
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .aeo-view-tab:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .aeo-view-tab.aeo-view-active {
+      background: rgba(255, 255, 255, 0.1);
+      color: ${t.accent};
+    }
+
+    /* Metadata bar */
+    .aeo-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      font-size: 12px;
+      color: ${t.text};
+    }
+
+    .aeo-meta-label {
+      color: rgba(160, 160, 168, 0.5);
+      margin-right: 4px;
+    }
+
+    .aeo-meta-sep {
+      width: 1px;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Rendered markdown view */
+    .aeo-rendered {
+      color: ${t.text};
+      line-height: 1.75;
+      font-size: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .aeo-rendered .aeo-r-h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: ${t.accent};
+      margin: 0 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      line-height: 1.3;
+    }
+
+    .aeo-rendered .aeo-r-h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: ${t.accent};
+      margin: 32px 0 12px;
+      line-height: 1.3;
+    }
+
+    .aeo-rendered .aeo-r-h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: ${t.accent};
+      margin: 24px 0 8px;
+      line-height: 1.4;
+    }
+
+    .aeo-rendered .aeo-r-h4,
+    .aeo-rendered .aeo-r-h5,
+    .aeo-rendered .aeo-r-h6 {
+      font-size: 15px;
+      font-weight: 600;
+      color: ${t.accent};
+      margin: 20px 0 8px;
+    }
+
+    .aeo-rendered .aeo-r-p {
+      margin: 0 0 12px;
+    }
+
+    .aeo-rendered .aeo-r-list {
+      margin: 0 0 16px;
+      padding-left: 24px;
+    }
+
+    .aeo-rendered .aeo-r-list li {
+      margin: 4px 0;
+    }
+
+    .aeo-rendered .aeo-r-quote {
+      margin: 16px 0;
+      padding: 12px 20px;
+      border-left: 3px solid ${t.badge};
+      background: rgba(255, 255, 255, 0.02);
+      color: ${t.text};
+      font-style: italic;
+    }
+
+    .aeo-rendered .aeo-r-hr {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 24px 0;
+    }
+
+    .aeo-rendered .aeo-r-code {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      color: ${t.badge};
+    }
+
+    .aeo-rendered .aeo-r-inline-code {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      color: ${t.badge};
+    }
+
+    .aeo-rendered .aeo-r-link {
+      color: ${t.badge};
+      text-decoration: none;
+      border-bottom: 1px solid rgba(74, 222, 128, 0.3);
+      transition: border-color 0.15s ease;
+    }
+
+    .aeo-rendered .aeo-r-link:hover {
+      border-color: ${t.badge};
+    }
+
+    .aeo-rendered strong {
+      color: ${t.accent};
+      font-weight: 600;
+    }
+
+    .aeo-rendered em {
+      font-style: italic;
+      opacity: 0.9;
     }
 
     /* Content area */
@@ -362,7 +536,7 @@ export function getStyles(theme?: ThemeConfig): string {
       font-size: 13px;
       opacity: 0;
       transition: all 0.3s ease;
-      z-index: 10002;
+      z-index: 2147483647;
     }
 
     .aeo-toast.aeo-toast-show {
@@ -409,6 +583,17 @@ export function getStyles(theme?: ThemeConfig): string {
 
       .aeo-close-btn span {
         display: none;
+      }
+
+      .aeo-view-tabs {
+        order: 10;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .aeo-meta-bar {
+        font-size: 11px;
+        gap: 8px;
       }
 
       .aeo-content-area {

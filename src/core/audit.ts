@@ -362,7 +362,7 @@ export function formatAuditReport(result: AuditResult): string {
   return lines.join('\n');
 }
 
-function getGrade(score: number): string {
+export function getGrade(score: number): string {
   if (score >= 90) return 'Excellent';
   if (score >= 75) return 'Good';
   if (score >= 50) return 'Fair';

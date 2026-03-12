@@ -2,23 +2,23 @@ import { defineConfig } from 'astro/config';
 import aeoAstroIntegration from 'aeo.js/astro';
 
 export default defineConfig({
-  site: 'https://demo.aeojs.org',
+  site: 'https://aeo-js.vercel.app',
   integrations: [
     aeoAstroIntegration({
       title: 'AEO Demo Site',
       description: 'A demo site showcasing aeo.js — the open-source Answer Engine Optimization library for modern web frameworks',
-      url: 'https://demo.aeojs.org',
+      url: 'https://aeo-js.vercel.app',
       schema: {
         organization: {
           name: 'aeo.js',
-          url: 'https://demo.aeojs.org',
-          logo: 'https://demo.aeojs.org/logo.png',
+          url: 'https://aeo-js.vercel.app',
+          logo: 'https://aeo-js.vercel.app/logo.png',
           sameAs: ['https://github.com/multivmlabs/aeo.js', 'https://x.com/aeojs'],
         },
         defaultType: 'Article',
       },
       og: {
-        image: 'https://demo.aeojs.org/og-image.png',
+        image: 'https://aeo-js.vercel.app/og-image.png',
         twitterHandle: '@aeojs',
       },
     }),
