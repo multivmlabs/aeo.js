@@ -374,14 +374,14 @@ export function getStyles(theme?: ThemeConfig): string {
     }
 
     .aeo-rendered .aeo-r-link {
-      color: ${t.badge};
+      color: #fff;
       text-decoration: none;
-      border-bottom: 1px solid rgba(74, 222, 128, 0.3);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
       transition: border-color 0.15s ease;
     }
 
     .aeo-rendered .aeo-r-link:hover {
-      border-color: ${t.badge};
+      border-color: #fff;
     }
 
     .aeo-rendered strong {
@@ -477,7 +477,7 @@ export function getStyles(theme?: ThemeConfig): string {
     }
 
     .aeo-markdown-source .hl-link-text {
-      color: ${t.badge};
+      color: #fff;
     }
 
     .aeo-markdown-source .hl-link-url {
@@ -505,8 +505,22 @@ export function getStyles(theme?: ThemeConfig): string {
       font-size: 14px;
     }
 
-    .aeo-error a {
+    .aeo-attribution {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: rgba(160, 160, 168, 0.5);
+      font-size: 11px;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .aeo-attribution:hover {
       color: ${t.accent};
+    }
+
+    .aeo-error a {
+      color: #fff;
       text-decoration: none;
       padding: 8px 16px;
       border: 1px solid rgba(255, 255, 255, 0.15);

@@ -168,6 +168,7 @@ export class AeoWidget {
           <button class="aeo-view-tab" data-view="source">Source</button>
         </div>
         <div class="aeo-topbar-spacer"></div>
+        <a class="aeo-attribution" href="https://aeojs.org" target="_blank" rel="noopener">by aeo.js</a>
         <div class="aeo-topbar-actions">
           <button class="aeo-topbar-btn aeo-copy-btn" disabled>
             ${icons.copy}
@@ -354,7 +355,7 @@ export class AeoWidget {
       // Build frontmatter metadata bar
       const metaItems: string[] = [];
       if (frontmatter.title) metaItems.push(`<span class="aeo-meta-label">Title:</span> ${this.escHtml(frontmatter.title)}`);
-      if (frontmatter.url) metaItems.push(`<span class="aeo-meta-label">URL:</span> <a class="aeo-r-link" href="${this.escHtml(frontmatter.url)}" target="_blank">${this.escHtml(frontmatter.url)}</a>`);
+      if (frontmatter.url) metaItems.push(`<span class="aeo-meta-label">URL:</span> <a class="aeo-r-link" href="${this.escHtml(frontmatter.url)}" target="_blank" rel="noopener">${this.escHtml(frontmatter.url)}</a>`);
       const metaBar = metaItems.length > 0
         ? `<div class="aeo-meta-bar">${metaItems.join('<span class="aeo-meta-sep"></span>')}</div>`
         : '';
