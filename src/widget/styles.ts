@@ -94,7 +94,7 @@ export function getStyles(theme?: ThemeConfig): string {
       bottom: 0;
       width: 100vw;
       height: 100vh;
-      background: ${t.background};
+      background: #000;
       z-index: 2147483646;
       display: flex;
       flex-direction: column;
