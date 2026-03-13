@@ -1,0 +1,85 @@
+---
+title: Schema & Open Graph
+description: Auto-generated JSON-LD structured data and Open Graph meta tags.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+aeo.js can generate JSON-LD structured data and Open Graph meta tags for your pages.
+
+## JSON-LD Schema
+
+Enable schema generation in your config:
+
+```js
+{
+  schema: {
+    enabled: true,
+    organization: {
+      name: 'My Company',
+      url: 'https://mysite.com',
+      logo: 'https://mysite.com/logo.png',
+      sameAs: [
+        'https://twitter.com/mycompany',
+        'https://github.com/mycompany',
+      ],
+    },
+    defaultType: 'WebPage', // or 'Article'
+  },
+}
+```
+
+This generates `<script type="application/ld+json">` blocks with:
+
+- **Organization** schema for your site
+- **WebPage** or **Article** schema for each page
+- Proper `@context`, `@type`, `name`, `description`, and `url` fields
+
+## Open Graph tags
+
+Enable OG tag generation:
+
+```js
+{
+  og: {
+    enabled: true,
+    image: 'https://mysite.com/og.png',
+    twitterHandle: '@mycompany',
+    type: 'website', // or 'article'
+  },
+}
+```
+
+This generates meta tags like:
+
+```html
+<meta property="og:title" content="Page Title" />
+<meta property="og:description" content="Page description" />
+<meta property="og:image" content="https://mysite.com/og.png" />
+<meta property="og:url" content="https://mysite.com/page" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@mycompany" />
+```
+
+## Programmatic API
+
+```ts
+import { generateSchema, generateSchemaObjects, generateJsonLdScript } from 'aeo.js';
+import { generateOGTags, generateOGTagsHtml } from 'aeo.js';
+
+// Get schema objects
+const schemas = generateSchemaObjects(config);
+
+// Get a <script> tag string
+const script = generateJsonLdScript(config);
+
+// Get OG meta tag objects
+const tags = generateOGTags(config, page);
+
+// Get OG meta tags as HTML string
+const html = generateOGTagsHtml(config, page);
+```
+
+<Aside type="tip">
+Schema and OG generators work independently — you can enable one without the other.
+</Aside>

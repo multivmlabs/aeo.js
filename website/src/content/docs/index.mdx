@@ -1,0 +1,303 @@
+---
+title: aeo.js
+description: Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.
+template: splash
+hero:
+  tagline: Make your site discoverable by ChatGPT, Claude, Perplexity, and every AI answer engine — automatically.
+  actions:
+    - text: Get Started
+      link: /getting-started/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub
+      link: https://github.com/multivmlabs/aeo.js
+      icon: external
+      variant: minimal
+    - text: npm
+      link: https://www.npmjs.com/package/aeo.js
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## What is AEO?
+
+Answer Engine Optimization (AEO) is the practice of making your website discoverable and citable by AI-powered answer engines like ChatGPT, Claude, Perplexity, and SearchGPT.
+
+**aeo.js** auto-generates the files these engines look for and provides a drop-in widget that shows visitors how your site appears to AI.
+
+<CardGrid>
+  <Card title="llms.txt & llms-full.txt" icon="document">
+    LLM-readable summaries of your site, auto-generated from your pages.
+  </Card>
+  <Card title="robots.txt" icon="setting">
+    AI-crawler-aware robots directives with sensible defaults for all major AI bots.
+  </Card>
+  <Card title="Sitemap & AI Index" icon="list-format">
+    Standard sitemap.xml plus an ai-index.json optimized for RAG pipelines.
+  </Card>
+  <Card title="Human/AI Widget" icon="rocket">
+    Drop-in toggle showing the AI-readable version of any page.
+  </Card>
+  <Card title="6 Frameworks" icon="puzzle">
+    First-class support for Astro, Next.js, Vite, Nuxt, Angular, and Webpack.
+  </Card>
+  <Card title="CLI" icon="laptop">
+    Run standalone with npx aeo.js generate — no framework integration needed.
+  </Card>
+</CardGrid>
+
+## Quick Start
+
+```bash
+npm install aeo.js
+```
+
+<Tabs>
+  <TabItem label="Astro">
+    ```js
+    // astro.config.mjs
+    import { defineConfig } from 'astro/config';
+    import { aeoAstroIntegration } from 'aeo.js/astro';
+
+    export default defineConfig({
+      site: 'https://mysite.com',
+      integrations: [
+        aeoAstroIntegration({
+          title: 'My Site',
+          description: 'A site optimized for AI discovery',
+          url: 'https://mysite.com',
+        }),
+      ],
+    });
+    ```
+  </TabItem>
+  <TabItem label="Next.js">
+    ```js
+    // next.config.mjs
+    import { withAeo } from 'aeo.js/next';
+
+    export default withAeo({
+      aeo: {
+        title: 'My Site',
+        description: 'A site optimized for AI discovery',
+        url: 'https://mysite.com',
+      },
+    });
+    ```
+
+    Add the post-build step to `package.json`:
+
+    ```json
+    {
+      "scripts": {
+        "postbuild": "node -e \"import('aeo.js/next').then(m => m.postBuild({ title: 'My Site', url: 'https://mysite.com' }))\""
+      }
+    }
+    ```
+  </TabItem>
+  <TabItem label="Vite">
+    ```js
+    // vite.config.ts
+    import { defineConfig } from 'vite';
+    import { aeoVitePlugin } from 'aeo.js/vite';
+
+    export default defineConfig({
+      plugins: [
+        aeoVitePlugin({
+          title: 'My Site',
+          description: 'A site optimized for AI discovery',
+          url: 'https://mysite.com',
+        }),
+      ],
+    });
+    ```
+  </TabItem>
+  <TabItem label="Nuxt">
+    ```ts
+    // nuxt.config.ts
+    export default defineNuxtConfig({
+      modules: ['aeo.js/nuxt'],
+      aeo: {
+        title: 'My Site',
+        description: 'A site optimized for AI discovery',
+        url: 'https://mysite.com',
+      },
+    });
+    ```
+  </TabItem>
+  <TabItem label="Angular">
+    Add a post-build step to `package.json`:
+
+    ```json
+    {
+      "scripts": {
+        "postbuild": "node -e \"import('aeo.js/angular').then(m => m.postBuild({ title: 'My App', url: 'https://myapp.com' }))\""
+      }
+    }
+    ```
+
+    Or generate programmatically:
+
+    ```ts
+    import { generate } from 'aeo.js/angular';
+    await generate({ title: 'My App', url: 'https://myapp.com' });
+    ```
+  </TabItem>
+  <TabItem label="Webpack">
+    ```js
+    // webpack.config.js
+    const { AeoWebpackPlugin } = require('aeo.js/webpack');
+
+    module.exports = {
+      plugins: [
+        new AeoWebpackPlugin({
+          title: 'My Site',
+          description: 'A site optimized for AI discovery',
+          url: 'https://mysite.com',
+        }),
+      ],
+    };
+    ```
+  </TabItem>
+  <TabItem label="CLI">
+    No framework needed — run standalone:
+
+    ```bash
+    # Generate all AEO files
+    npx aeo.js generate --url https://mysite.com --title "My Site"
+
+    # Scaffold a config file
+    npx aeo.js init
+
+    # Check your setup
+    npx aeo.js check
+    ```
+  </TabItem>
+</Tabs>
+
+## Widget
+
+The Human/AI widget lets visitors toggle between the normal page and its AI-readable markdown version. Framework plugins inject it automatically — for Next.js or manual setups:
+
+```tsx
+'use client';
+import { useEffect } from 'react';
+
+export function AeoWidgetLoader() {
+  useEffect(() => {
+    import('aeo.js/widget').then(({ AeoWidget }) => {
+      new AeoWidget({
+        config: {
+          title: 'My Site',
+          url: 'https://mysite.com',
+          widget: { enabled: true, position: 'bottom-right' },
+        },
+      });
+    });
+  }, []);
+  return null;
+}
+```
+
+React and Vue wrapper components are also available:
+
+<Tabs>
+  <TabItem label="React">
+    ```tsx
+    import { AeoReactWidget } from 'aeo.js/react';
+
+    <AeoReactWidget config={{ title: 'My Site', url: 'https://mysite.com' }} />
+    ```
+  </TabItem>
+  <TabItem label="Vue">
+    ```vue
+    <script setup>
+    import { AeoVueWidget } from 'aeo.js/vue';
+    </script>
+
+    <template>
+      <AeoVueWidget :config="{ title: 'My Site', url: 'https://mysite.com' }" />
+    </template>
+    ```
+  </TabItem>
+</Tabs>
+
+## Configuration
+
+All frameworks use the same config shape — [see full reference](/reference/configuration/):
+
+```ts
+import { defineConfig } from 'aeo.js';
+
+export default defineConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  description: 'A site optimized for AI discovery',
+
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    llmsFullTxt: true,
+    rawMarkdown: true,
+    sitemap: true,
+    aiIndex: true,
+    schema: true,
+  },
+
+  schema: {
+    enabled: true,
+    organization: { name: 'My Company', url: 'https://mysite.com' },
+    defaultType: 'WebPage',
+  },
+
+  og: {
+    enabled: true,
+    image: 'https://mysite.com/og.png',
+    twitterHandle: '@mycompany',
+  },
+
+  widget: {
+    enabled: true,
+    position: 'bottom-right',
+    theme: { accent: '#4ADE80', badge: '#4ADE80' },
+  },
+});
+```
+
+## Generated Files
+
+After building, your output directory contains:
+
+```
+public/
+  robots.txt          # AI-crawler-aware directives
+  llms.txt            # Short LLM-readable summary
+  llms-full.txt       # Full content for LLMs
+  sitemap.xml         # Standard sitemap
+  docs.json           # Documentation manifest
+  ai-index.json       # AI-optimized content index
+  index.md            # Markdown for /
+  about.md            # Markdown for /about
+  …                   # One .md per page
+```
+
+## Check your site's AEO readiness
+
+<div class="aeo-checker-widget" style={{marginTop: '1rem', marginBottom: '0.5rem'}}>
+  <form id="aeo-check-form" class="aeo-checker-input-wrap" action="https://check.aeojs.org" method="GET">
+    <input
+      type="text"
+      name="q"
+      class="aeo-checker-input"
+      placeholder="Enter your website URL…"
+      required
+    />
+    <button type="submit" class="aeo-checker-btn">
+      Scan
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </button>
+  </form>
+  <p style={{textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.75rem'}}>Free — no signup required. Powered by <a href="https://check.aeojs.org" style={{color: 'rgba(255,255,255,0.5)', textDecoration: 'underline', textUnderlineOffset: '2px'}}>AEO Checker</a></p>
+</div>

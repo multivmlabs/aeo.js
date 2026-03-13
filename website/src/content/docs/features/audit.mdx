@@ -1,0 +1,81 @@
+---
+title: Audit & Citability
+description: Audit your AEO setup and measure your site's citability score.
+---
+
+## Site Audit
+
+The `auditSite` function checks your site for AEO best practices and returns a detailed report:
+
+```ts
+import { auditSite, formatAuditReport, getGrade } from 'aeo.js';
+
+const result = await auditSite('https://mysite.com');
+
+console.log(formatAuditReport(result));
+console.log('Grade:', getGrade(result));
+```
+
+The audit checks for:
+
+- Presence of `robots.txt`, `llms.txt`, `llms-full.txt`
+- Sitemap accessibility
+- Structured data (JSON-LD)
+- Open Graph meta tags
+- AI crawler accessibility
+
+You can also run it from the CLI:
+
+```bash
+npx aeo.js check
+```
+
+## Citability Score
+
+Measure how likely AI engines are to cite your content:
+
+```ts
+import { scorePageCitability, scoreSiteCitability, formatPageCitability } from 'aeo.js';
+
+// Score a single page
+const pageScore = await scorePageCitability(url, html);
+console.log(formatPageCitability(pageScore));
+
+// Score the whole site
+const siteScore = await scoreSiteCitability('https://mysite.com', pages);
+```
+
+The citability score evaluates:
+
+- Content structure and headings
+- Factual density and specificity
+- Source attribution
+- Unique data and statistics
+- Clear definitions and explanations
+
+## Reports
+
+Generate a comprehensive AEO report:
+
+```ts
+import { generateReport, formatReportMarkdown, formatReportJson } from 'aeo.js';
+
+const report = await generateReport(config);
+
+// Get as markdown
+console.log(formatReportMarkdown(report));
+
+// Get as JSON
+console.log(formatReportJson(report));
+```
+
+## Platform Hints
+
+Get platform-specific optimization suggestions:
+
+```ts
+import { generatePlatformHints } from 'aeo.js';
+
+const hints = generatePlatformHints('next');
+// Returns hints specific to Next.js optimization
+```

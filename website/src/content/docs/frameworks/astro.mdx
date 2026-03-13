@@ -1,0 +1,70 @@
+---
+title: Astro
+description: Use aeo.js with Astro.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the integration to your Astro config:
+   ```js
+   // astro.config.mjs
+   import { defineConfig } from 'astro/config';
+   import { aeoAstroIntegration } from 'aeo.js/astro';
+
+   export default defineConfig({
+     site: 'https://mysite.com',
+     integrations: [
+       aeoAstroIntegration({
+         title: 'My Site',
+         description: 'A site optimized for AI discovery',
+         url: 'https://mysite.com',
+       }),
+     ],
+   });
+   ```
+
+3. Build your site:
+   ```bash
+   npm run build
+   ```
+</Steps>
+
+## How it works
+
+The Astro integration:
+
+- Hooks into the Astro build pipeline via `astro:build:done`
+- Scans all rendered HTML pages for content extraction
+- Generates all AEO files in your output directory
+- Automatically injects the Human/AI widget
+- Persists the widget across View Transitions
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options to the integration:
+
+```js
+aeoAstroIntegration({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    sitemap: false, // Astro has its own sitemap
+  },
+  widget: {
+    position: 'bottom-left',
+    theme: {
+      accent: '#6366f1',
+    },
+  },
+});
+```

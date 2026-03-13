@@ -1,0 +1,54 @@
+---
+title: Webpack
+description: Use aeo.js with Webpack.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the plugin to your Webpack config:
+   ```js
+   // webpack.config.js
+   const { AeoWebpackPlugin } = require('aeo.js/webpack');
+
+   module.exports = {
+     plugins: [
+       new AeoWebpackPlugin({
+         title: 'My Site',
+         description: 'A site optimized for AI discovery',
+         url: 'https://mysite.com',
+       }),
+     ],
+   };
+   ```
+</Steps>
+
+## How it works
+
+The Webpack plugin:
+
+- Runs during the `emit` phase of the Webpack compilation
+- Generates all AEO files in your output directory
+- Injects the widget into your HTML entry point
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options to the plugin:
+
+```js
+new AeoWebpackPlugin({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  widget: {
+    enabled: true,
+    position: 'bottom-right',
+  },
+});
+```

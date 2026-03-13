@@ -1,0 +1,60 @@
+---
+title: Vite
+description: Use aeo.js with Vite (React, Vue, Svelte, etc.).
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the plugin to your Vite config:
+   ```js
+   // vite.config.ts
+   import { defineConfig } from 'vite';
+   import { aeoVitePlugin } from 'aeo.js/vite';
+
+   export default defineConfig({
+     plugins: [
+       aeoVitePlugin({
+         title: 'My Site',
+         description: 'A site optimized for AI discovery',
+         url: 'https://mysite.com',
+       }),
+     ],
+   });
+   ```
+</Steps>
+
+## How it works
+
+The Vite plugin:
+
+- Generates AEO files on both `vite dev` and `vite build`
+- Injects the Human/AI widget automatically via HTML transform
+- Serves dynamic `.md` files during development (extracts content from your running app)
+- Detects SPA shells and falls back to client-side DOM extraction
+- Works with React, Vue, Svelte, or any Vite-based framework
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options to the plugin:
+
+```js
+aeoVitePlugin({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  widget: {
+    position: 'top-right',
+    theme: {
+      background: 'rgba(0, 0, 0, 0.85)',
+      accent: '#f59e0b',
+    },
+  },
+});
+```

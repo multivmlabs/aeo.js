@@ -1,0 +1,61 @@
+---
+title: Nuxt
+description: Use aeo.js with Nuxt 3.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the module to your Nuxt config:
+   ```ts
+   // nuxt.config.ts
+   export default defineNuxtConfig({
+     modules: ['aeo.js/nuxt'],
+     aeo: {
+       title: 'My Site',
+       description: 'A site optimized for AI discovery',
+       url: 'https://mysite.com',
+     },
+   });
+   ```
+</Steps>
+
+## How it works
+
+The Nuxt module:
+
+- Scans your `pages/` directory for routes
+- Generates AEO files during dev and production builds
+- Scans pre-rendered HTML from `.output/public/` for full page content
+- Injects the widget as a client-side Nuxt plugin
+- Adds `<link>` and `<meta>` tags for AEO discoverability
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options in the `aeo` key:
+
+```ts
+export default defineNuxtConfig({
+  modules: ['aeo.js/nuxt'],
+  aeo: {
+    title: 'My Site',
+    url: 'https://mysite.com',
+    generators: {
+      robotsTxt: true,
+      llmsTxt: true,
+      rawMarkdown: true,
+    },
+    widget: {
+      enabled: true,
+      position: 'bottom-left',
+    },
+  },
+});
+```

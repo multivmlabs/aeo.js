@@ -1,0 +1,105 @@
+---
+title: Quick Start
+description: Get aeo.js running in under 2 minutes.
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+The fastest way to add AEO to your site depends on your framework.
+
+## Astro
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the integration to your Astro config:
+   ```js
+   // astro.config.mjs
+   import { defineConfig } from 'astro/config';
+   import { aeoAstroIntegration } from 'aeo.js/astro';
+
+   export default defineConfig({
+     site: 'https://mysite.com',
+     integrations: [
+       aeoAstroIntegration({
+         title: 'My Site',
+         description: 'A site optimized for AI discovery',
+         url: 'https://mysite.com',
+       }),
+     ],
+   });
+   ```
+
+3. Build your site — all AEO files are generated automatically.
+</Steps>
+
+## Next.js
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Wrap your Next.js config:
+   ```js
+   // next.config.mjs
+   import { withAeo } from 'aeo.js/next';
+
+   export default withAeo({
+     aeo: {
+       title: 'My Site',
+       description: 'A site optimized for AI discovery',
+       url: 'https://mysite.com',
+     },
+   });
+   ```
+
+3. Add the post-build step to `package.json`:
+   ```json
+   {
+     "scripts": {
+       "postbuild": "node -e \"import('aeo.js/next').then(m => m.postBuild({ title: 'My Site', url: 'https://mysite.com' }))\""
+     }
+   }
+   ```
+</Steps>
+
+## Vite
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the plugin to your Vite config:
+   ```js
+   // vite.config.ts
+   import { defineConfig } from 'vite';
+   import { aeoVitePlugin } from 'aeo.js/vite';
+
+   export default defineConfig({
+     plugins: [
+       aeoVitePlugin({
+         title: 'My Site',
+         description: 'A site optimized for AI discovery',
+         url: 'https://mysite.com',
+       }),
+     ],
+   });
+   ```
+</Steps>
+
+## CLI (any site)
+
+No framework integration needed:
+
+```bash
+npx aeo.js generate --url https://mysite.com --title "My Site"
+```
+
+See [CLI docs](/features/cli/) for all commands and options.

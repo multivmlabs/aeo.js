@@ -41,7 +41,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy website/build --project-name=aeojs --branch=main
+          command: pages deploy website/dist --project-name=aeojs --branch=main
 
       # Preview deploy (pull requests)
       - name: Deploy Preview
@@ -51,7 +51,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy website/build --project-name=aeojs --branch=${{ github.head_ref }}
+          command: pages deploy website/dist --project-name=aeojs --branch=${{ github.head_ref }}
 
       # Comment preview URL on the PR
       - name: Comment Preview URL

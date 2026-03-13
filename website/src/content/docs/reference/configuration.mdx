@@ -1,0 +1,147 @@
+---
+title: Configuration
+description: Full configuration reference for aeo.js.
+---
+
+All framework plugins and the CLI accept the same `AeoConfig` object.
+
+## Full example
+
+```ts
+import { defineConfig } from 'aeo.js';
+
+export default defineConfig({
+  // Required
+  title: 'My Site',
+  url: 'https://mysite.com',
+
+  // Optional
+  description: 'A description of your site',
+  contentDir: 'docs',        // Directory with handwritten .md files
+  outDir: 'public',          // Output directory for generated files
+
+  // Toggle individual generators
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    llmsFullTxt: true,
+    rawMarkdown: true,
+    manifest: true,
+    sitemap: true,
+    aiIndex: true,
+    schema: true,
+  },
+
+  // Customize robots.txt
+  robots: {
+    allow: ['/'],
+    disallow: ['/admin'],
+    crawlDelay: 0,
+    sitemap: 'https://mysite.com/sitemap.xml',
+  },
+
+  // JSON-LD structured data
+  schema: {
+    enabled: true,
+    organization: {
+      name: 'My Company',
+      url: 'https://mysite.com',
+      logo: 'https://mysite.com/logo.png',
+      sameAs: ['https://twitter.com/mycompany'],
+    },
+    defaultType: 'WebPage',
+  },
+
+  // Open Graph meta tags
+  og: {
+    enabled: true,
+    image: 'https://mysite.com/og.png',
+    twitterHandle: '@mycompany',
+    type: 'website',
+  },
+
+  // Widget configuration
+  widget: {
+    enabled: true,
+    position: 'bottom-right',
+    humanLabel: 'Human',
+    aiLabel: 'AI',
+    showBadge: true,
+    theme: {
+      background: 'rgba(18, 18, 24, 0.9)',
+      text: '#C0C0C5',
+      accent: '#E8E8EA',
+      badge: '#4ADE80',
+    },
+  },
+});
+```
+
+## Options reference
+
+### Top-level
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `title` | `string` | `''` | Site title |
+| `description` | `string` | `''` | Site description |
+| `url` | `string` | `''` | Site URL (used for absolute URLs in generated files) |
+| `contentDir` | `string` | `'docs'` | Directory with handwritten markdown files |
+| `outDir` | `string` | auto-detected | Output directory for generated files |
+| `pages` | `PageEntry[]` | `[]` | Manually specify pages to include |
+
+### `generators`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `robotsTxt` | `boolean` | `true` | Generate `robots.txt` |
+| `llmsTxt` | `boolean` | `true` | Generate `llms.txt` |
+| `llmsFullTxt` | `boolean` | `true` | Generate `llms-full.txt` |
+| `rawMarkdown` | `boolean` | `true` | Generate per-page `.md` files |
+| `manifest` | `boolean` | `true` | Generate `docs.json` |
+| `sitemap` | `boolean` | `true` | Generate `sitemap.xml` |
+| `aiIndex` | `boolean` | `true` | Generate `ai-index.json` |
+| `schema` | `boolean` | `false` | Generate JSON-LD structured data |
+
+### `robots`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `allow` | `string[]` | `['/']` | Allowed paths |
+| `disallow` | `string[]` | `[]` | Disallowed paths |
+| `crawlDelay` | `number` | `0` | Crawl delay in seconds |
+| `sitemap` | `string` | auto | Sitemap URL |
+
+### `schema`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `false` | Enable schema generation |
+| `organization.name` | `string` | `''` | Organization name |
+| `organization.url` | `string` | `''` | Organization URL |
+| `organization.logo` | `string` | `''` | Organization logo URL |
+| `organization.sameAs` | `string[]` | `[]` | Social profile URLs |
+| `defaultType` | `'Article' \| 'WebPage'` | `'WebPage'` | Default schema type for pages |
+
+### `og`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `false` | Enable OG tag generation |
+| `image` | `string` | `''` | Default OG image URL |
+| `twitterHandle` | `string` | `''` | Twitter handle (e.g. `@company`) |
+| `type` | `'website' \| 'article'` | `'website'` | Default OG type |
+
+### `widget`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable the widget |
+| `position` | `string` | `'bottom-right'` | Widget position |
+| `humanLabel` | `string` | `'Human'` | Label for human view |
+| `aiLabel` | `string` | `'AI'` | Label for AI view |
+| `showBadge` | `boolean` | `true` | Show the AEO badge |
+| `theme.background` | `string` | `'rgba(18, 18, 24, 0.9)'` | Widget background |
+| `theme.text` | `string` | `'#C0C0C5'` | Text color |
+| `theme.accent` | `string` | `'#E8E8EA'` | Accent color |
+| `theme.badge` | `string` | `'#4ADE80'` | Badge color |

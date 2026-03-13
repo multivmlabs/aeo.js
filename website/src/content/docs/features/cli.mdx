@@ -1,0 +1,67 @@
+---
+title: CLI
+description: Run aeo.js from the command line without any framework integration.
+---
+
+## Usage
+
+```bash
+npx aeo.js <command> [options]
+```
+
+## Commands
+
+### `generate`
+
+Generate all AEO files (robots.txt, llms.txt, sitemap.xml, etc.):
+
+```bash
+npx aeo.js generate
+npx aeo.js generate --url https://mysite.com --title "My Site" --out public
+```
+
+### `init`
+
+Create an `aeo.config.ts` configuration file in your project:
+
+```bash
+npx aeo.js init
+```
+
+This generates a starter config with all options documented.
+
+### `check`
+
+Validate your AEO setup and show what would be generated:
+
+```bash
+npx aeo.js check
+```
+
+## Options
+
+| Flag | Description |
+|------|-------------|
+| `--out <dir>` | Output directory (default: auto-detected) |
+| `--url <url>` | Site URL |
+| `--title <title>` | Site title |
+| `--no-widget` | Disable widget generation |
+| `--help`, `-h` | Show help |
+| `--version`, `-v` | Show version |
+
+## Configuration file
+
+The CLI looks for `aeo.config.ts` (or `aeo.config.js`) in your project root. Create one with `npx aeo.js init`:
+
+```ts
+import { defineConfig } from 'aeo.js';
+
+export default defineConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  description: 'A site optimized for AI discovery',
+  outDir: 'public',
+});
+```
+
+See the full [Configuration reference](/reference/configuration/) for all options.

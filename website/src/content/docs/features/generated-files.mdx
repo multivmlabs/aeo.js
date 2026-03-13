@@ -1,0 +1,114 @@
+---
+title: Generated Files
+description: All the files aeo.js generates and what they're for.
+---
+
+After building, aeo.js generates these files in your output directory:
+
+## robots.txt
+
+AI-crawler-aware robots directives. Includes rules for all known AI crawlers (GPTBot, ClaudeBot, PerplexityBot, etc.) with sensible defaults.
+
+```txt
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+```
+
+## llms.txt
+
+A concise, LLM-readable summary of your site. This is the first file AI crawlers look for — it tells them what your site is about and where to find content.
+
+```txt
+# My Site
+
+A site optimized for AI discovery
+
+## Pages
+
+- [Home](https://mysite.com/)
+- [About](https://mysite.com/about)
+- [Blog](https://mysite.com/blog)
+```
+
+## llms-full.txt
+
+Full concatenated content of all pages in a single file. Useful for LLMs that want to ingest your entire site at once.
+
+## sitemap.xml
+
+Standard XML sitemap for search engines and AI crawlers.
+
+## docs.json
+
+A structured documentation manifest:
+
+```json
+{
+  "name": "My Site",
+  "description": "A site optimized for AI discovery",
+  "baseUrl": "https://mysite.com",
+  "totalDocs": 5,
+  "docs": [
+    {
+      "title": "Home",
+      "path": "/",
+      "markdownUrl": "https://mysite.com/index.md",
+      "htmlUrl": "https://mysite.com/",
+      "content": "..."
+    }
+  ]
+}
+```
+
+## ai-index.json
+
+An AI-optimized content index designed for RAG (Retrieval-Augmented Generation) pipelines:
+
+```json
+[
+  {
+    "id": "index",
+    "url": "https://mysite.com/",
+    "title": "Home",
+    "content": "Full page content in markdown...",
+    "description": "Page description",
+    "keywords": ["keyword1", "keyword2"]
+  }
+]
+```
+
+## Raw Markdown
+
+One `.md` file per page, extracted from your rendered HTML:
+
+```
+public/
+  index.md     # Markdown for /
+  about.md     # Markdown for /about
+  blog.md      # Markdown for /blog
+```
+
+## Toggling generators
+
+You can enable or disable individual generators:
+
+```js
+{
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    llmsFullTxt: true,
+    rawMarkdown: true,
+    manifest: true,
+    sitemap: true,
+    aiIndex: true,
+    schema: true,
+  }
+}
+```

@@ -1,0 +1,89 @@
+---
+title: Next.js
+description: Use aeo.js with Next.js.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Wrap your Next.js config with `withAeo`:
+   ```js
+   // next.config.mjs
+   import { withAeo } from 'aeo.js/next';
+
+   export default withAeo({
+     aeo: {
+       title: 'My Site',
+       description: 'A site optimized for AI discovery',
+       url: 'https://mysite.com',
+     },
+   });
+   ```
+
+3. Add the post-build step to your `package.json`:
+   ```json
+   {
+     "scripts": {
+       "postbuild": "node -e \"import('aeo.js/next').then(m => m.postBuild({ title: 'My Site', url: 'https://mysite.com' }))\""
+     }
+   }
+   ```
+</Steps>
+
+<Aside type="tip">
+The `postbuild` step is needed because Next.js pre-renders pages during build. The post-build step scans the rendered HTML to extract full page content.
+</Aside>
+
+## Widget
+
+For Next.js, add the widget manually as a client component:
+
+```tsx
+// app/layout.tsx (or any client component)
+'use client';
+import { useEffect } from 'react';
+
+export function AeoWidgetLoader() {
+  useEffect(() => {
+    import('aeo.js/widget').then(({ AeoWidget }) => {
+      new AeoWidget({
+        config: {
+          title: 'My Site',
+          url: 'https://mysite.com',
+          widget: { enabled: true, position: 'bottom-right' },
+        },
+      });
+    });
+  }, []);
+  return null;
+}
+```
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options in the `aeo` key:
+
+```js
+export default withAeo({
+  aeo: {
+    title: 'My Site',
+    url: 'https://mysite.com',
+    generators: {
+      robotsTxt: true,
+      llmsTxt: true,
+      schema: true,
+    },
+    widget: {
+      enabled: true,
+      position: 'bottom-right',
+    },
+  },
+});
+```

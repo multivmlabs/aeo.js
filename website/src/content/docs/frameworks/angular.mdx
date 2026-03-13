@@ -1,0 +1,70 @@
+---
+title: Angular
+description: Use aeo.js with Angular.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add a post-build step to your `package.json`:
+   ```json
+   {
+     "scripts": {
+       "postbuild": "node -e \"import('aeo.js/angular').then(m => m.postBuild({ title: 'My App', url: 'https://myapp.com' }))\""
+     }
+   }
+   ```
+
+3. Build your app:
+   ```bash
+   npm run build
+   ```
+</Steps>
+
+## How it works
+
+The Angular plugin:
+
+- Reads `angular.json` to auto-detect the output directory (`dist/<project>/browser/`)
+- Scans route config files (`*.routes.ts`) and component directories for routes
+- Scans pre-rendered HTML from the build output for full page content
+- Injects the widget into `index.html` automatically
+
+## Programmatic usage
+
+You can also generate AEO files from source routes without building:
+
+```ts
+import { generate } from 'aeo.js/angular';
+
+await generate({ title: 'My App', url: 'https://myapp.com' });
+```
+
+<Aside type="note">
+Angular SSR (with `@angular/ssr`) is supported. The plugin will scan pre-rendered HTML for content extraction.
+</Aside>
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options to `postBuild` or `generate`:
+
+```ts
+import { postBuild } from 'aeo.js/angular';
+
+await postBuild({
+  title: 'My App',
+  url: 'https://myapp.com',
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    schema: true,
+  },
+});
+```

@@ -1,0 +1,212 @@
+---
+title: API Reference
+description: Programmatic API for aeo.js.
+---
+
+## Core
+
+### `defineConfig(config)`
+
+Type-safe configuration helper:
+
+```ts
+import { defineConfig } from 'aeo.js';
+
+export default defineConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+});
+```
+
+### `generateAll(config)`
+
+Generate all AEO files programmatically:
+
+```ts
+import { generateAll } from 'aeo.js';
+
+await generateAll({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  outDir: 'dist',
+});
+```
+
+### `resolveConfig(config)`
+
+Resolve a partial config into a fully resolved config with defaults:
+
+```ts
+import { resolveConfig } from 'aeo.js';
+
+const resolved = resolveConfig({ title: 'My Site' });
+// All fields now have defaults
+```
+
+### `validateConfig(config)`
+
+Validate a config object and return any errors:
+
+```ts
+import { validateConfig } from 'aeo.js';
+
+const errors = validateConfig(config);
+```
+
+### `detectFramework()`
+
+Auto-detect the framework used in the current project:
+
+```ts
+import { detectFramework } from 'aeo.js';
+
+const info = detectFramework();
+// { framework: 'next', contentDir: 'pages', outDir: '.next' }
+```
+
+## HTML Extraction
+
+### `htmlToMarkdown(html)`
+
+Convert HTML to clean markdown:
+
+```ts
+import { htmlToMarkdown } from 'aeo.js';
+
+const md = htmlToMarkdown('<h1>Hello</h1><p>World</p>');
+// '# Hello\n\nWorld'
+```
+
+### `extractTextFromHtml(html)`
+
+Extract plain text from HTML:
+
+```ts
+import { extractTextFromHtml } from 'aeo.js';
+
+const text = extractTextFromHtml('<p>Hello <strong>world</strong></p>');
+```
+
+### `extractTitle(html)` / `extractDescription(html)`
+
+Extract the title or meta description from an HTML document.
+
+### `extractJsonLd(html)`
+
+Extract JSON-LD structured data from an HTML document.
+
+## Schema
+
+### `generateSchemaObjects(config)`
+
+Generate JSON-LD schema objects:
+
+```ts
+import { generateSchemaObjects } from 'aeo.js';
+
+const schemas = generateSchemaObjects(resolvedConfig);
+```
+
+### `generateJsonLdScript(config)`
+
+Generate a `<script type="application/ld+json">` tag:
+
+```ts
+import { generateJsonLdScript } from 'aeo.js';
+
+const script = generateJsonLdScript(resolvedConfig);
+```
+
+### `generateSiteSchemas(config)` / `generatePageSchemas(config, page)`
+
+Generate schemas for the site or individual pages.
+
+## Open Graph
+
+### `generateOGTags(config, page)`
+
+Returns an array of `MetaTag` objects:
+
+```ts
+import { generateOGTags } from 'aeo.js';
+
+const tags = generateOGTags(config, { pathname: '/', title: 'Home' });
+// [{ property: 'og:title', content: 'Home' }, ...]
+```
+
+### `generateOGTagsHtml(config, page)`
+
+Returns OG tags as an HTML string.
+
+## Audit
+
+### `auditSite(url)`
+
+Audit a site for AEO best practices:
+
+```ts
+import { auditSite, formatAuditReport, getGrade } from 'aeo.js';
+
+const result = await auditSite('https://mysite.com');
+console.log(formatAuditReport(result));
+console.log(getGrade(result)); // 'A', 'B', 'C', etc.
+```
+
+## Citability
+
+### `scorePageCitability(url, html)`
+
+Score how likely a page is to be cited by AI:
+
+```ts
+import { scorePageCitability, formatPageCitability } from 'aeo.js';
+
+const score = await scorePageCitability(url, html);
+console.log(formatPageCitability(score));
+```
+
+### `scoreSiteCitability(url, pages)`
+
+Score citability across your entire site.
+
+## Reports
+
+### `generateReport(config)`
+
+Generate a comprehensive AEO report:
+
+```ts
+import { generateReport, formatReportMarkdown } from 'aeo.js';
+
+const report = await generateReport(config);
+console.log(formatReportMarkdown(report));
+```
+
+## Types
+
+All types are exported from the main entry:
+
+```ts
+import type {
+  AeoConfig,
+  ResolvedAeoConfig,
+  PageEntry,
+  DocEntry,
+  AeoManifest,
+  MarkdownFile,
+  ManifestEntry,
+  AIIndexEntry,
+  FrameworkType,
+  FrameworkInfo,
+  AuditResult,
+  AuditCategory,
+  AuditIssue,
+  MetaTag,
+  PageCitabilityResult,
+  SiteCitabilityResult,
+  CitabilityDimension,
+  ContentHint,
+  AeoReport,
+  PlatformHint,
+} from 'aeo.js';
+```

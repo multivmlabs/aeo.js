@@ -1,0 +1,91 @@
+---
+title: Human/AI Widget
+description: The drop-in toggle that shows how AI sees your pages.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The Human/AI widget is a floating toggle that lets visitors switch between the normal page and its AI-readable markdown version.
+
+## How it works
+
+When a visitor clicks **AI**, the widget:
+
+1. Fetches the `.md` file for the current page
+2. Falls back to extracting markdown from the live DOM if no `.md` exists
+3. Displays the markdown in a slide-out panel
+4. Offers copy-to-clipboard and download actions
+
+## Automatic injection
+
+Framework plugins (Astro, Vite, Nuxt, Angular) inject the widget automatically. No extra code needed.
+
+## Manual setup (Next.js / React)
+
+For Next.js or other manual setups, create a client component:
+
+```tsx
+'use client';
+import { useEffect } from 'react';
+
+export function AeoWidgetLoader() {
+  useEffect(() => {
+    import('aeo.js/widget').then(({ AeoWidget }) => {
+      new AeoWidget({
+        config: {
+          title: 'My Site',
+          url: 'https://mysite.com',
+          widget: { enabled: true, position: 'bottom-right' },
+        },
+      });
+    });
+  }, []);
+  return null;
+}
+```
+
+## Framework components
+
+aeo.js ships React, Vue, and Svelte wrapper components:
+
+### React
+
+```tsx
+import { AeoReactWidget } from 'aeo.js/react';
+
+<AeoReactWidget config={{ title: 'My Site', url: 'https://mysite.com' }} />
+```
+
+### Vue
+
+```vue
+<script setup>
+import { AeoVueWidget } from 'aeo.js/vue';
+</script>
+
+<template>
+  <AeoVueWidget :config="{ title: 'My Site', url: 'https://mysite.com' }" />
+</template>
+```
+
+## Configuration
+
+```js
+widget: {
+  enabled: true,
+  position: 'bottom-right', // 'bottom-left' | 'top-right' | 'top-left'
+  humanLabel: 'Human',
+  aiLabel: 'AI',
+  showBadge: true,
+  theme: {
+    background: 'rgba(18, 18, 24, 0.9)',
+    text: '#C0C0C5',
+    accent: '#E8E8EA',
+    badge: '#4ADE80',
+  },
+}
+```
+
+<Aside type="tip">
+Set `widget.enabled: false` to disable the widget entirely while still generating AEO files.
+</Aside>

@@ -1,0 +1,41 @@
+---
+title: Introduction
+description: What is aeo.js and why you need Answer Engine Optimization.
+---
+
+## What is Answer Engine Optimization?
+
+Answer Engine Optimization (AEO) is the practice of making your website discoverable and citable by AI-powered answer engines like **ChatGPT**, **Claude**, **Perplexity**, and **SearchGPT**.
+
+Unlike traditional SEO which focuses on search engine result pages (SERPs), AEO ensures your content is understood and referenced by Large Language Models (LLMs) when they generate answers.
+
+## Why aeo.js?
+
+AI crawlers and LLMs look for specific files and formats that most websites don't provide:
+
+- **`llms.txt`** — A concise summary of your site written for LLMs
+- **`llms-full.txt`** — Full content concatenated for deep ingestion
+- **`ai-index.json`** — Structured content optimized for RAG pipelines
+- **`docs.json`** — Documentation manifest for content discovery
+- **Raw Markdown** — Per-page `.md` files for clean content extraction
+
+**aeo.js** generates all of these automatically from your existing pages — no manual work required.
+
+## How it works
+
+1. **Install** the package and add the plugin for your framework
+2. **Build** your site as usual
+3. **aeo.js** scans your output, extracts content, and generates all AEO files
+4. The optional **widget** lets visitors toggle between human and AI views of your pages
+
+## Supported Frameworks
+
+| Framework | Import |
+|-----------|--------|
+| Astro | `aeo.js/astro` |
+| Next.js | `aeo.js/next` |
+| Vite (React, Vue, Svelte) | `aeo.js/vite` |
+| Nuxt | `aeo.js/nuxt` |
+| Angular | `aeo.js/angular` |
+| Webpack | `aeo.js/webpack` |
+| Any (CLI) | `npx aeo.js generate` |
