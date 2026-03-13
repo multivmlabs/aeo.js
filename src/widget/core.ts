@@ -344,8 +344,16 @@ export class AeoWidget {
       const response = await fetch(mdPath);
       let content: string;
 
-      if (response.ok) {
-        content = await response.text();
+      const contentType = response.headers.get('content-type') || '';
+      if (response.ok && !contentType.includes('text/html')) {
+        const text = await response.text();
+        // Guard against HTML being served from catch-all routes
+        const trimmed = text.trimStart();
+        if (trimmed.startsWith('<!') || trimmed.startsWith('<html') || trimmed.startsWith('<HTML')) {
+          content = extractDOMToMarkdown();
+        } else {
+          content = text;
+        }
       } else {
         content = extractDOMToMarkdown();
       }
