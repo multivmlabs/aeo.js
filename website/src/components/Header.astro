@@ -1,0 +1,81 @@
+---
+import Default from '@astrojs/starlight/components/Header.astro';
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<nav class="custom-header-links">
+  <a href="/getting-started/introduction/" class="header-link">Docs</a>
+  <a href="https://github.com/multivmlabs/aeo.js" target="_blank" rel="noopener" class="header-star-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Star on GitHub
+  </a>
+</nav>
+
+<style>
+  .custom-header-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: absolute;
+    right: calc(var(--sl-nav-pad-x, 1rem) + 5rem);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .header-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .header-link:hover {
+    color: var(--sl-color-white);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .header-star-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #000;
+    text-decoration: none;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
+  }
+
+  .header-star-btn:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.14);
+    transform: translateY(-1px);
+  }
+
+  :global([data-theme="light"]) .header-link:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  :global([data-theme="light"]) .header-star-btn {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 50rem) {
+    .custom-header-links {
+      display: none;
+    }
+  }
+</style>

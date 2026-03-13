@@ -29,6 +29,9 @@ export default defineConfig({
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/multivmlabs/aeo.js' },
 				{ icon: 'npm', label: 'npm', href: 'https://www.npmjs.com/package/aeo.js' },
 			],
+			components: {
+				Header: './src/components/Header.astro',
+			},
 			customCss: ['./src/styles/custom.css'],
 			head: [
 				{ tag: 'meta', attrs: { property: 'og:image', content: 'https://aeojs.org/og.png' } },
