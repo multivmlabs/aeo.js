@@ -1,39 +1,22 @@
-# aeo.js
-
-Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.
-
 <p align="center">
-  <a href="https://ralphstarter.ai/badge"><img src="https://ralphstarter.ai/img/badge-built-with@2x.png" alt="built with ralph-starter" height="28"></a>
+  <h1 align="center">aeo.js</h1>
+  <p align="center">Answer Engine Optimization for the modern web.<br/>Make your site discoverable by ChatGPT, Claude, Perplexity, and every AI answer engine.</p>
 </p>
 
-## What is AEO?
+<p align="center">
+  <a href="https://www.npmjs.com/package/aeo.js"><img src="https://img.shields.io/npm/v/aeo.js?style=flat&colorA=0d0d0d&colorB=1a1a1a" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/aeo.js"><img src="https://img.shields.io/npm/dm/aeo.js?style=flat&colorA=0d0d0d&colorB=1a1a1a" alt="npm downloads"></a>
+  <a href="https://github.com/multivmlabs/aeo.js"><img src="https://img.shields.io/github/stars/multivmlabs/aeo.js?style=flat&colorA=0d0d0d&colorB=1a1a1a" alt="GitHub stars"></a>
+  <a href="https://github.com/multivmlabs/aeo.js/blob/main/LICENSE"><img src="https://img.shields.io/github/license/multivmlabs/aeo.js?style=flat&colorA=0d0d0d&colorB=1a1a1a" alt="License"></a>
+</p>
 
-Answer Engine Optimization (AEO) is the practice of making your website discoverable and citable by AI-powered answer engines like ChatGPT, Claude, Perplexity, and SearchGPT.
+<p align="center">
+  <a href="https://aeojs.org">Documentation</a> · <a href="https://check.aeojs.org">AEO Checker</a> · <a href="https://www.npmjs.com/package/aeo.js">npm</a>
+</p>
 
-aeo.js auto-generates the files these engines look for and provides a drop-in widget that shows visitors how your site appears to AI.
-
-## Features
-
-- **`llms.txt` / `llms-full.txt`** -- LLM-readable summaries of your site
-- **`robots.txt`** -- AI-crawler-aware robots directives
-- **`sitemap.xml`** -- Standard sitemap generation
-- **`docs.json`** -- Structured documentation manifest
-- **`ai-index.json`** -- AI-optimized content index
-- **Raw Markdown** -- Per-page `.md` files extracted from your HTML
-- **Human/AI Widget** -- Drop-in toggle showing the AI-readable version of any page
-- **CLI** -- `npx aeo.js generate` to run standalone
-
-## Supported Frameworks
-
-| Framework | Status | Import |
-|-----------|--------|--------|
-| Astro | Stable | `aeo.js/astro` |
-| Next.js | Stable | `aeo.js/next` |
-| Vite / React | Stable | `aeo.js/vite` |
-| Nuxt | Stable | `aeo.js/nuxt` |
-| Angular | Stable | `aeo.js/angular` |
-| Webpack | Stable | `aeo.js/webpack` |
-| Any (CLI) | Stable | `npx aeo.js generate` |
+<p align="center">
+  <img src="example.gif" alt="aeo.js in action" width="700">
+</p>
 
 ## Install
 
@@ -62,11 +45,7 @@ export default defineConfig({
 });
 ```
 
-The widget is automatically injected and persists across View Transitions.
-
 ### Next.js
-
-Wrap your Next.js config with `withAeo`:
 
 ```js
 // next.config.mjs
@@ -81,7 +60,7 @@ export default withAeo({
 });
 ```
 
-After building, run the post-build step to extract content from pre-rendered pages:
+Add the post-build step to `package.json`:
 
 ```json
 {
@@ -91,7 +70,7 @@ After building, run the post-build step to extract content from pre-rendered pag
 }
 ```
 
-### Vite (React, Vue, Svelte, etc.)
+### Vite
 
 ```js
 // vite.config.ts
@@ -109,15 +88,7 @@ export default defineConfig({
 });
 ```
 
-The Vite plugin:
-- Generates AEO files on `vite dev` and `vite build`
-- Injects the widget automatically
-- Serves dynamic `.md` files in dev (extracts content from your running app)
-- Detects SPA shells and falls back to client-side DOM extraction
-
 ### Nuxt
-
-Add the module to your Nuxt config:
 
 ```ts
 // nuxt.config.ts
@@ -131,16 +102,7 @@ export default defineNuxtConfig({
 });
 ```
 
-The Nuxt module:
-- Scans your `pages/` directory for routes
-- Generates AEO files during dev and production builds
-- Scans pre-rendered HTML from `.output/public/` for full page content
-- Injects the widget as a client-side Nuxt plugin
-- Adds `<link>` and `<meta>` tags for AEO discoverability
-
 ### Angular
-
-Add a post-build step to your `package.json`:
 
 ```json
 {
@@ -148,20 +110,6 @@ Add a post-build step to your `package.json`:
     "postbuild": "node -e \"import('aeo.js/angular').then(m => m.postBuild({ title: 'My App', url: 'https://myapp.com' }))\""
   }
 }
-```
-
-The Angular plugin:
-- Reads `angular.json` to auto-detect the output directory (`dist/<project>/browser/`)
-- Scans route config files (`*.routes.ts`) and component directories for routes
-- Scans pre-rendered HTML from the build output for full page content
-- Injects the widget into `index.html` automatically
-
-You can also generate AEO files from source routes without building:
-
-```ts
-import { generate } from 'aeo.js/angular';
-
-await generate({ title: 'My App', url: 'https://myapp.com' });
 ```
 
 ### Webpack
@@ -181,101 +129,39 @@ module.exports = {
 };
 ```
 
-## CLI
+### CLI
 
-Run aeo.js from the command line without any framework integration:
+No framework needed — run standalone:
 
 ```bash
-# Generate all AEO files
-npx aeo.js generate
-
-# Generate with options
-npx aeo.js generate --url https://mysite.com --title "My Site" --out public
-
-# Create a config file
+npx aeo.js generate --url https://mysite.com --title "My Site"
 npx aeo.js init
-
-# Check your setup
 npx aeo.js check
 ```
 
-### Commands
+## Supported Frameworks
 
-| Command | Description |
-|---------|-------------|
-| `generate` | Generate all AEO files (robots.txt, llms.txt, sitemap.xml, etc.) |
-| `init` | Create an `aeo.config.ts` configuration file |
-| `check` | Validate your AEO setup and show what would be generated |
-
-### Options
-
-| Flag | Description |
-|------|-------------|
-| `--out <dir>` | Output directory (default: auto-detected) |
-| `--url <url>` | Site URL |
-| `--title <title>` | Site title |
-| `--no-widget` | Disable widget generation |
-| `--help`, `-h` | Show help |
-| `--version`, `-v` | Show version |
-
-## Configuration
-
-All framework plugins accept the same config object. You can also use `defineConfig` for standalone configs:
-
-```js
-import { defineConfig } from 'aeo.js';
-
-export default defineConfig({
-  // Required
-  title: 'My Site',
-  url: 'https://mysite.com',
-
-  // Optional
-  description: 'A description of your site',
-  contentDir: 'docs',        // Directory with handwritten .md files
-  outDir: 'public',          // Output directory for generated files
-
-  // Toggle individual generators
-  generators: {
-    robotsTxt: true,          // robots.txt
-    llmsTxt: true,            // llms.txt
-    llmsFullTxt: true,        // llms-full.txt
-    rawMarkdown: true,        // Per-page .md files
-    manifest: true,           // docs.json
-    sitemap: true,            // sitemap.xml
-    aiIndex: true,            // ai-index.json
-  },
-
-  // Customize robots.txt
-  robots: {
-    allow: ['/'],
-    disallow: ['/admin'],
-    crawlDelay: 0,
-  },
-
-  // Widget configuration
-  widget: {
-    enabled: true,
-    position: 'bottom-right', // 'bottom-left' | 'top-right' | 'top-left'
-    humanLabel: 'Human',
-    aiLabel: 'AI',
-    showBadge: true,
-    theme: {
-      background: 'rgba(18, 18, 24, 0.9)',
-      text: '#C0C0C5',
-      accent: '#E8E8EA',
-      badge: '#4ADE80',
-    },
-  },
-});
-```
+| Framework | Import |
+|-----------|--------|
+| Astro | `aeo.js/astro` |
+| Next.js | `aeo.js/next` |
+| Vite | `aeo.js/vite` |
+| Nuxt | `aeo.js/nuxt` |
+| Angular | `aeo.js/angular` |
+| Webpack | `aeo.js/webpack` |
+| CLI | `npx aeo.js generate` |
 
 ## Widget
 
-The Human/AI widget is a floating toggle that lets visitors switch between the normal page and its AI-readable markdown version. Framework plugins (Astro, Vite, Nuxt, Angular) inject it automatically. For Next.js or manual setups:
+The Human/AI widget lets visitors toggle between the normal page and its AI-readable markdown version.
+
+| Default | Small | Icon |
+|---------|-------|------|
+| <img src="widget-default.gif" alt="Default widget" width="220"> | <img src="widget-small.gif" alt="Small widget" width="220"> | <img src="widget-icon.gif" alt="Icon widget" width="220"> |
+
+Framework plugins inject it automatically. For Next.js or manual setups:
 
 ```tsx
-// app/layout.tsx (or any client component)
 'use client';
 import { useEffect } from 'react';
 
@@ -295,28 +181,97 @@ export function AeoWidgetLoader() {
 }
 ```
 
-When a visitor clicks **AI**, the widget:
-1. Fetches the `.md` file for the current page
-2. Falls back to extracting markdown from the live DOM if no `.md` exists
-3. Displays the markdown in a slide-out panel
-4. Offers copy-to-clipboard and download actions
+React and Vue wrapper components are also available:
+
+```tsx
+import { AeoReactWidget } from 'aeo.js/react';
+
+<AeoReactWidget config={{ title: 'My Site', url: 'https://mysite.com' }} />
+```
+
+```vue
+<script setup>
+import { AeoVueWidget } from 'aeo.js/vue';
+</script>
+
+<template>
+  <AeoVueWidget :config="{ title: 'My Site', url: 'https://mysite.com' }" />
+</template>
+```
 
 ## Generated Files
 
-After building, your output directory will contain:
+After building, your output directory contains:
 
 ```
 public/
-  robots.txt          # AI-crawler-aware directives
-  llms.txt            # Short LLM-readable summary
-  llms-full.txt       # Full content for LLMs
-  sitemap.xml         # Standard sitemap
-  docs.json           # Documentation manifest
-  ai-index.json       # AI-optimized content index
-  index.md            # Markdown for /
-  about.md            # Markdown for /about
-  ...                 # One .md per discovered page
+├── robots.txt        # AI-crawler directives
+├── llms.txt          # Short LLM-readable summary
+├── llms-full.txt     # Full content for LLMs
+├── sitemap.xml       # Standard sitemap
+├── docs.json         # Documentation manifest
+├── ai-index.json     # AI content index
+├── index.md          # Markdown for /
+└── about.md          # Markdown for /about
 ```
+
+## Configuration
+
+```js
+import { defineConfig } from 'aeo.js';
+
+export default defineConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  description: 'A description of your site',
+
+  generators: {
+    robotsTxt: true,
+    llmsTxt: true,
+    llmsFullTxt: true,
+    rawMarkdown: true,
+    sitemap: true,
+    aiIndex: true,
+    schema: true,
+  },
+
+  schema: {
+    enabled: true,
+    organization: { name: 'My Company', url: 'https://mysite.com' },
+    defaultType: 'WebPage',
+  },
+
+  og: {
+    enabled: true,
+    image: 'https://mysite.com/og.png',
+    twitterHandle: '@mycompany',
+  },
+
+  widget: {
+    enabled: true,
+    position: 'bottom-right',
+    theme: { accent: '#4ADE80', badge: '#4ADE80' },
+  },
+});
+```
+
+Full configuration reference → [aeojs.org/reference/configuration](https://aeojs.org/reference/configuration/)
+
+## Why AEO?
+
+- **58% of searches** end without a click — AI gives the answer directly
+- **40% of Gen Z** prefer AI assistants over traditional search engines
+- **97% of sites** have no `llms.txt` or structured data for AI crawlers
+- **1 minute** to set up with aeo.js
+
+If your site isn't optimized for AI engines, you're invisible to a growing share of users who never open a search results page.
+
+## Links
+
+- [Documentation](https://aeojs.org)
+- [AEO Checker](https://check.aeojs.org)
+- [npm](https://www.npmjs.com/package/aeo.js)
+- [GitHub](https://github.com/multivmlabs/aeo.js)
 
 ## License
 
