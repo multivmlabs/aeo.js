@@ -3,50 +3,18 @@ title: aeo.js
 description: Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.
 template: splash
 hero:
-  tagline: Make your site discoverable by ChatGPT, Claude, Perplexity, and every AI answer engine — automatically.
+  tagline: Make your site discoverable by ChatGPT, Claude, Perplexity, and every AI answer engine, automatically.
   actions:
     - text: Get Started
       link: /getting-started/introduction/
       icon: right-arrow
       variant: primary
-    - text: GitHub
-      link: https://github.com/multivmlabs/aeo.js
-      icon: external
-      variant: minimal
-    - text: npm
-      link: https://www.npmjs.com/package/aeo.js
-      icon: external
-      variant: minimal
 ---
 
-import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import StickyNav from '../../components/StickyNav.astro';
 
-## What is AEO?
-
-Answer Engine Optimization (AEO) is the practice of making your website discoverable and citable by AI-powered answer engines like ChatGPT, Claude, Perplexity, and SearchGPT.
-
-**aeo.js** auto-generates the files these engines look for and provides a drop-in widget that shows visitors how your site appears to AI.
-
-<CardGrid>
-  <Card title="llms.txt & llms-full.txt" icon="document">
-    LLM-readable summaries of your site, auto-generated from your pages.
-  </Card>
-  <Card title="robots.txt" icon="setting">
-    AI-crawler-aware robots directives with sensible defaults for all major AI bots.
-  </Card>
-  <Card title="Sitemap & AI Index" icon="list-format">
-    Standard sitemap.xml plus an ai-index.json optimized for RAG pipelines.
-  </Card>
-  <Card title="Human/AI Widget" icon="rocket">
-    Drop-in toggle showing the AI-readable version of any page.
-  </Card>
-  <Card title="6 Frameworks" icon="puzzle">
-    First-class support for Astro, Next.js, Vite, Nuxt, Angular, and Webpack.
-  </Card>
-  <Card title="CLI" icon="laptop">
-    Run standalone with npx aeo.js generate — no framework integration needed.
-  </Card>
-</CardGrid>
+<StickyNav />
 
 ## Quick Start
 
@@ -177,6 +145,39 @@ npm install aeo.js
   </TabItem>
 </Tabs>
 
+## What is AEO?
+
+Answer Engine Optimization (AEO) is the practice of making your website discoverable and citable by AI-powered answer engines like ChatGPT, Claude, Perplexity, and SearchGPT.
+
+**aeo.js** auto-generates the files these engines look for and provides a drop-in widget that shows visitors how your site appears to AI. First-class support for Astro, Next.js, Vite, Nuxt, Angular, and Webpack — or run standalone via CLI.
+
+## Why AEO matters
+
+<div class="why-aeo-grid">
+  <div class="why-card">
+    <div class="why-stat">58%</div>
+    <div class="why-label">of searches</div>
+    <div class="why-desc">end without a click — AI gives the answer directly</div>
+  </div>
+  <div class="why-card">
+    <div class="why-stat">40%</div>
+    <div class="why-label">of Gen Z</div>
+    <div class="why-desc">prefer AI assistants over traditional search engines</div>
+  </div>
+  <div class="why-card">
+    <div class="why-stat">97%</div>
+    <div class="why-label">of sites</div>
+    <div class="why-desc">have no llms.txt or structured data for AI crawlers</div>
+  </div>
+  <div class="why-card">
+    <div class="why-stat">1 min</div>
+    <div class="why-label">to set up</div>
+    <div class="why-desc">aeo.js generates robots.txt, llms.txt, schema &amp; more</div>
+  </div>
+</div>
+
+If your site isn't optimized for AI engines, you're invisible to a growing share of users who never open a search results page. AEO is the new SEO.
+
 ## Widget
 
 The Human/AI widget lets visitors toggle between the normal page and its AI-readable markdown version. Framework plugins inject it automatically — for Next.js or manual setups:
@@ -272,18 +273,17 @@ After building, your output directory contains:
 
 ```
 public/
-  robots.txt          # AI-crawler-aware directives
-  llms.txt            # Short LLM-readable summary
-  llms-full.txt       # Full content for LLMs
-  sitemap.xml         # Standard sitemap
-  docs.json           # Documentation manifest
-  ai-index.json       # AI-optimized content index
-  index.md            # Markdown for /
-  about.md            # Markdown for /about
-  …                   # One .md per page
+├── robots.txt          # AI-crawler directives
+├── llms.txt            # Short LLM-readable summary
+├── llms-full.txt       # Full content for LLMs
+├── sitemap.xml         # Standard sitemap
+├── docs.json           # Documentation manifest
+├── ai-index.json       # AI content index
+├── index.md            # Markdown for /
+└── about.md            # Markdown for /about
 ```
 
-## Check your site's AEO readiness
+## Checker
 
 <div class="aeo-checker-widget" style={{marginTop: '1rem', marginBottom: '0.5rem'}}>
   <form id="aeo-check-form" class="aeo-checker-input-wrap" action="https://check.aeojs.org" method="GET">
