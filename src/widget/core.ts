@@ -69,16 +69,17 @@ export class AeoWidget {
     if (this.styleElement) return;
 
     this.styleElement = document.createElement('style');
-    this.styleElement.textContent = getStyles(this.config.widget?.theme);
+    this.styleElement.textContent = getStyles(this.config.widget?.theme, this.config.widget?.size);
     document.head.appendChild(this.styleElement);
   }
 
   private createToggle(): void {
     const position = this.config.widget?.position || 'bottom-right';
+    const size = this.config.widget?.size || 'default';
     const icons = getIcons();
 
     this.toggleElement = document.createElement('div');
-    this.toggleElement.className = `aeo-toggle aeo-${position}`;
+    this.toggleElement.className = `aeo-toggle aeo-${position}${size === 'small' ? ' aeo-small' : ''}`;
     this.toggleElement.innerHTML = `
       <div class="aeo-toggle-inner">
         <button class="aeo-toggle-btn aeo-human-btn aeo-active" data-mode="human">

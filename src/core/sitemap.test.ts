@@ -56,6 +56,7 @@ describe('generateSitemap', () => {
       humanLabel: 'Human',
       aiLabel: 'AI',
       showBadge: true,
+      size: 'default' as const,
     },
   };
 

@@ -17,7 +17,7 @@ function makeConfig(): ResolvedAeoConfig {
     robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '/sitemap.xml' },
     schema: { enabled: true, organization: { name: 'Test Co', url: 'https://test.com', logo: '', sameAs: [] }, defaultType: 'WebPage' },
     og: { enabled: true, image: '', twitterHandle: '', type: 'website' },
-    widget: { enabled: false, position: 'bottom-right', theme: { background: '', text: '', accent: '', badge: '' }, humanLabel: '', aiLabel: '', showBadge: false },
+    widget: { enabled: false, position: 'bottom-right', size: 'default' as const, theme: { background: '', text: '', accent: '', badge: '' }, humanLabel: '', aiLabel: '', showBadge: false },
   } as ResolvedAeoConfig;
 }
 
