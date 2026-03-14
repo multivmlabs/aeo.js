@@ -33,6 +33,7 @@ const baseConfig: ResolvedAeoConfig = {
     humanLabel: 'Human',
     aiLabel: 'AI',
     showBadge: true,
+    size: 'default' as const,
   },
 };
 

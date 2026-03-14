@@ -47,6 +47,7 @@ export interface AeoConfig {
   widget?: {
     enabled?: boolean;
     position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+    size?: 'default' | 'small' | 'icon-only';
     theme?: {
       background?: string;
       text?: string;
@@ -101,6 +102,7 @@ export interface ResolvedAeoConfig {
   widget: {
     enabled: boolean;
     position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+    size: 'default' | 'small' | 'icon-only';
     theme: {
       background: string;
       text: string;

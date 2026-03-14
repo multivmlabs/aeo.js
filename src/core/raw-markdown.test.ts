@@ -55,6 +55,7 @@ const createConfig = (overrides = {}): ResolvedAeoConfig => ({
     humanLabel: 'Human',
     aiLabel: 'AI',
     showBadge: true,
+    size: 'default' as const,
   },
   ...overrides,
 });

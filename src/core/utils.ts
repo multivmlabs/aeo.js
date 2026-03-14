@@ -71,6 +71,7 @@ export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
     widget: {
       enabled: config.widget?.enabled !== false,
       position: config.widget?.position || 'bottom-right',
+      size: config.widget?.size || 'default',
       theme: {
         background: config.widget?.theme?.background || 'rgba(18, 18, 24, 0.9)',
         text: config.widget?.theme?.text || '#C0C0C5',

@@ -18,7 +18,7 @@ function makeConfig(overrides: Partial<ResolvedAeoConfig> = {}): ResolvedAeoConf
       defaultType: 'WebPage',
     },
     og: { enabled: true, image: 'https://example.com/og.png', twitterHandle: '@test', type: 'website' },
-    widget: { enabled: false, position: 'bottom-right', theme: { background: '', text: '', accent: '', badge: '' }, humanLabel: '', aiLabel: '', showBadge: false },
+    widget: { enabled: false, position: 'bottom-right', size: 'default' as const, theme: { background: '', text: '', accent: '', badge: '' }, humanLabel: '', aiLabel: '', showBadge: false },
     ...overrides,
   } as ResolvedAeoConfig;
 }
