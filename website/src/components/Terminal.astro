@@ -1,0 +1,329 @@
+---
+---
+
+<div class="terminal" id="hero-terminal">
+  <div class="terminal-header">
+    <div class="terminal-dots">
+      <span class="dot dot-red"></span>
+      <span class="dot dot-yellow"></span>
+      <span class="dot dot-green"></span>
+    </div>
+    <div class="terminal-tabs">
+      <button class="terminal-tab active" data-tab="install">Install</button>
+      <button class="terminal-tab" data-tab="audit">Audit</button>
+      <button class="terminal-tab" data-tab="generate">Generate</button>
+      <button class="terminal-tab" data-tab="config">Config</button>
+    </div>
+  </div>
+  <div class="terminal-body">
+    <div class="terminal-panel active" id="panel-install">
+      <div class="terminal-line">
+        <span class="t-prompt">$</span>
+        <span class="t-cmd" id="cmd-install"></span><span class="t-cursor">▌</span>
+      </div>
+      <div class="terminal-output" id="out-install">
+        <div class="t-dim">added 1 package in 2s</div>
+        <br/>
+        <div><span class="t-green">✓</span> <span class="t-dim">Ready — run</span> <span class="t-white">npx aeo.js init</span> <span class="t-dim">to get started</span></div>
+      </div>
+    </div>
+
+    <div class="terminal-panel" id="panel-audit">
+      <div class="terminal-line">
+        <span class="t-prompt">$</span>
+        <span class="t-cmd" id="cmd-audit"></span><span class="t-cursor">▌</span>
+      </div>
+      <div class="terminal-output" id="out-audit">
+        <br/>
+        <div class="t-white">GEO Readiness Score: 92/100 (Excellent)</div>
+        <div class="t-dim">══════════════════════════════════════</div>
+        <br/>
+        <div><span class="t-green">✓</span> <span class="t-dim">AI Access:</span> <span class="t-white">20/20</span></div>
+        <div><span class="t-green">✓</span> <span class="t-dim">Content Structure:</span> <span class="t-white">20/20</span></div>
+        <div><span class="t-green">✓</span> <span class="t-dim">Schema Presence:</span> <span class="t-white">20/20</span></div>
+        <div><span class="t-green">✓</span> <span class="t-dim">Meta Quality:</span> <span class="t-white">16/20</span></div>
+        <div><span class="t-green">✓</span> <span class="t-dim">Citability:</span> <span class="t-white">16/20</span></div>
+      </div>
+    </div>
+
+    <div class="terminal-panel" id="panel-generate">
+      <div class="terminal-line">
+        <span class="t-prompt">$</span>
+        <span class="t-cmd" id="cmd-generate"></span><span class="t-cursor">▌</span>
+      </div>
+      <div class="terminal-output" id="out-generate">
+        <br/>
+        <div class="t-dim">[aeo.js] Generating AEO files...</div>
+        <div><span class="t-green">✓</span> <span class="t-white">robots.txt</span> <span class="t-dim">— AI crawler directives</span></div>
+        <div><span class="t-green">✓</span> <span class="t-white">llms.txt</span> <span class="t-dim">— LLM summary</span></div>
+        <div><span class="t-green">✓</span> <span class="t-white">llms-full.txt</span> <span class="t-dim">— full content for LLMs</span></div>
+        <div><span class="t-green">✓</span> <span class="t-white">sitemap.xml</span> <span class="t-dim">— sitemap</span></div>
+        <div><span class="t-green">✓</span> <span class="t-white">schema.json</span> <span class="t-dim">— JSON-LD structured data</span></div>
+        <div><span class="t-green">✓</span> <span class="t-white">ai-index.json</span> <span class="t-dim">— AI content index</span></div>
+        <br/>
+        <div class="t-dim">Generated <span class="t-white">6 files</span> in 42ms</div>
+      </div>
+    </div>
+
+    <div class="terminal-panel" id="panel-config">
+      <div class="terminal-line">
+        <span class="t-dim">// aeo.config.ts</span>
+      </div>
+      <div class="terminal-output terminal-output-visible">
+        <div><span class="t-purple">import</span> <span class="t-white">{"{ defineConfig }"}</span> <span class="t-purple">from</span> <span class="t-str">'aeo.js'</span></div>
+        <br/>
+        <div><span class="t-purple">export default</span> <span class="t-white">{"defineConfig({"}</span></div>
+        <div><span class="t-white">{"  title: "}</span><span class="t-str">'My Site'</span><span class="t-white">,</span></div>
+        <div><span class="t-white">{"  url: "}</span><span class="t-str">'https://mysite.com'</span><span class="t-white">,</span></div>
+        <div><span class="t-white">{"  schema: { organization: { name: "}</span><span class="t-str">'My Co'</span><span class="t-white">{" } },"}</span></div>
+        <div><span class="t-white">{"  widget: { size: "}</span><span class="t-str">'small'</span><span class="t-white">{" },"}</span></div>
+        <div><span class="t-white">{"});"}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const COMMANDS: Record<string, string> = {
+    install: 'npm install aeo.js',
+    audit: 'npx aeo.js audit',
+    generate: 'npx aeo.js generate',
+  };
+
+  function typeCommand(el: HTMLElement, text: string, cursor: HTMLElement, output: HTMLElement) {
+    el.textContent = '';
+    cursor.style.display = 'inline';
+    output.style.opacity = '0';
+    output.style.transform = 'translateY(6px)';
+    let i = 0;
+    const interval = setInterval(() => {
+      el.textContent += text[i];
+      i++;
+      if (i >= text.length) {
+        clearInterval(interval);
+        cursor.style.display = 'none';
+        setTimeout(() => {
+          output.style.opacity = '1';
+          output.style.transform = 'translateY(0)';
+        }, 200);
+      }
+    }, 45);
+    return interval;
+  }
+
+  let currentInterval: ReturnType<typeof setInterval> | null = null;
+
+  function activateTab(tab: string) {
+    const terminal = document.getElementById('hero-terminal');
+    if (!terminal) return;
+
+    // Clear any running animation
+    if (currentInterval) clearInterval(currentInterval);
+
+    // Switch tabs
+    terminal.querySelectorAll('.terminal-tab').forEach(t => t.classList.remove('active'));
+    terminal.querySelectorAll('.terminal-panel').forEach(p => p.classList.remove('active'));
+    terminal.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+    const panel = document.getElementById(`panel-${tab}`);
+    if (panel) panel.classList.add('active');
+
+    // Type command if applicable
+    const cmd = COMMANDS[tab];
+    if (cmd) {
+      const cmdEl = document.getElementById(`cmd-${tab}`);
+      const cursor = panel?.querySelector('.t-cursor') as HTMLElement;
+      const output = document.getElementById(`out-${tab}`);
+      if (cmdEl && cursor && output) {
+        currentInterval = typeCommand(cmdEl, cmd, cursor, output);
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const terminal = document.getElementById('hero-terminal');
+    if (!terminal) return;
+
+    terminal.querySelectorAll('.terminal-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        activateTab((tab as HTMLElement).dataset.tab!);
+      });
+    });
+
+    // Auto-start first tab
+    activateTab('install');
+  });
+  // Also handle Astro View Transitions
+  document.addEventListener('astro:page-load', () => {
+    const terminal = document.getElementById('hero-terminal');
+    if (terminal) activateTab('install');
+  });
+</script>
+
+<style>
+  .terminal {
+    max-width: 580px;
+    width: 100%;
+    margin: 2rem auto 0;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.015);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .terminal-dots {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+
+  .dot-red { background: #ff5f57; opacity: 0.8; }
+  .dot-yellow { background: #ffbd2e; opacity: 0.8; }
+  .dot-green { background: #28c840; opacity: 0.8; }
+
+  .terminal-tabs {
+    display: flex;
+    gap: 1px;
+    margin-left: 8px;
+  }
+
+  .terminal-tab {
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.15s ease;
+    letter-spacing: 0.01em;
+  }
+
+  .terminal-tab:hover {
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .terminal-tab.active {
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .terminal-body {
+    padding: 18px 18px 22px;
+    min-height: 190px;
+    font-size: 12.5px;
+    line-height: 1.65;
+  }
+
+  .terminal-panel {
+    display: none;
+  }
+
+  .terminal-panel.active {
+    display: block;
+  }
+
+  .terminal-line {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .t-prompt { color: #4ADE80; font-weight: 600; }
+  .t-cmd { color: #fff; }
+  .t-cursor { color: rgba(255,255,255,0.7); animation: blink 1s steps(1) infinite; }
+  .t-dim { color: rgba(255, 255, 255, 0.35); }
+  .t-white { color: #fff; }
+  .t-green { color: #4ADE80; }
+  .t-purple { color: #c084fc; }
+  .t-str { color: #86efac; }
+
+  .terminal-output {
+    margin-top: 8px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .terminal-output-visible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @media (max-width: 640px) {
+    .terminal {
+      margin: 1.5rem 0 0;
+      border-radius: 10px;
+    }
+
+    .terminal-body {
+      padding: 14px;
+      font-size: 11px;
+      min-height: 170px;
+    }
+
+    .terminal-tab {
+      font-size: 9.5px;
+      padding: 3px 7px;
+    }
+  }
+
+  :global([data-theme="light"]) .terminal {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.1);
+  }
+
+  :global([data-theme="light"]) .terminal-header {
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom-color: rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme="light"]) .terminal-tab {
+    color: rgba(0, 0, 0, 0.35);
+  }
+
+  :global([data-theme="light"]) .terminal-tab:hover {
+    color: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  :global([data-theme="light"]) .terminal-tab.active {
+    color: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme="light"]) .t-prompt { color: #16a34a; }
+  :global([data-theme="light"]) .t-cmd { color: #000; }
+  :global([data-theme="light"]) .t-white { color: #000; }
+  :global([data-theme="light"]) .t-dim { color: rgba(0, 0, 0, 0.4); }
+  :global([data-theme="light"]) .t-green { color: #16a34a; }
+  :global([data-theme="light"]) .t-purple { color: #9333ea; }
+  :global([data-theme="light"]) .t-str { color: #16a34a; }
+  :global([data-theme="light"]) .t-cursor { color: rgba(0,0,0,0.5); }
+</style>

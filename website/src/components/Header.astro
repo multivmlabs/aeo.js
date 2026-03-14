@@ -1,81 +1,152 @@
 ---
-import Default from '@astrojs/starlight/components/Header.astro';
+import config from 'virtual:starlight/user-config';
+import Search from 'virtual:starlight/components/Search';
+import SiteTitle from 'virtual:starlight/components/SiteTitle';
+
+const shouldRenderSearch =
+	config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
 ---
 
-<Default {...Astro.props}><slot /></Default>
+<div class="header">
+  <div class="header-left">
+    <div class="title-wrapper sl-flex">
+      <SiteTitle />
+    </div>
+    <nav class="header-nav">
+      <a href="/getting-started/introduction/" class="header-link">Docs</a>
+      <a href="https://check.aeojs.org" target="_blank" rel="noopener" class="header-link">Checker</a>
+    </nav>
+  </div>
 
-<nav class="custom-header-links">
-  <a href="/getting-started/introduction/" class="header-link">Docs</a>
-  <a href="https://github.com/multivmlabs/aeo.js" target="_blank" rel="noopener" class="header-star-btn">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-    Star on GitHub
-  </a>
-</nav>
+  <div class="header-center sl-flex print:hidden">
+    {shouldRenderSearch && <Search />}
+  </div>
+
+  <div class="header-right">
+    <a href="https://www.npmjs.com/package/aeo.js" target="_blank" rel="noopener" class="header-badge" aria-label="npm downloads">
+      <img src="https://img.shields.io/npm/dm/aeo.js?style=flat&colorA=0d0d0d&colorB=1a1a1a&label=downloads" alt="npm downloads" loading="lazy" />
+    </a>
+    <a href="https://github.com/multivmlabs/aeo.js" target="_blank" rel="noopener" class="header-badge" aria-label="GitHub stars">
+      <img src="https://img.shields.io/github/stars/multivmlabs/aeo.js?style=flat&colorA=0d0d0d&colorB=1a1a1a&label=stars" alt="GitHub stars" loading="lazy" />
+    </a>
+    <a
+      href="https://github.com/multivmlabs/aeo.js"
+      target="_blank"
+      rel="noopener"
+      class="header-github"
+      aria-label="GitHub"
+    >
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+    </a>
+  </div>
+</div>
 
 <style>
-  .custom-header-links {
+  .header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    position: absolute;
-    right: calc(var(--sl-nav-pad-x, 1rem) + 5rem);
-    top: 50%;
-    transform: translateY(-50%);
+    gap: 1rem;
+    height: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    width: 100%;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .title-wrapper {
+    overflow: clip;
+    padding: 0.25rem;
+    margin: -0.25rem;
+    min-width: 0;
+  }
+
+  .header-nav {
+    display: none;
+    align-items: center;
+    gap: 0;
+    margin-left: 0.5rem;
   }
 
   .header-link {
     display: inline-flex;
     align-items: center;
-    padding: 0.35rem 0.85rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--sl-color-gray-2);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 450;
+    color: rgba(255, 255, 255, 0.4);
     text-decoration: none;
-    border-radius: 8px;
-    transition: color 0.2s ease, background 0.2s ease;
+    border-radius: 6px;
+    transition: color 0.15s ease;
+    letter-spacing: -0.01em;
   }
 
   .header-link:hover {
-    color: var(--sl-color-white);
-    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
   }
 
-  .header-star-btn {
+  .header-center {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .header-badge {
+    display: none;
+    align-items: center;
+    border-radius: 4px;
+    overflow: hidden;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+    line-height: 0;
+  }
+
+  .header-badge:hover {
+    opacity: 1;
+  }
+
+  .header-badge img {
+    height: 20px;
+    display: block;
+  }
+
+  .header-github {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.85rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #000;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: rgba(255, 255, 255, 0.4);
     text-decoration: none;
-    border-radius: 8px;
-    background: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.2s ease;
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
-    white-space: nowrap;
+    border-radius: 6px;
+    transition: color 0.15s ease;
   }
 
-  .header-star-btn:hover {
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.14);
-    transform: translateY(-1px);
-  }
-
-  :global([data-theme="light"]) .header-link:hover {
-    background: rgba(0, 0, 0, 0.05);
-  }
-
-  :global([data-theme="light"]) .header-star-btn {
-    background: #000;
+  .header-github:hover {
     color: #fff;
-    border-color: #000;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
-  @media (max-width: 50rem) {
-    .custom-header-links {
-      display: none;
+  @media (min-width: 50rem) {
+    .header-nav {
+      display: flex;
+    }
+
+    .header-badge {
+      display: inline-flex;
     }
   }
 </style>

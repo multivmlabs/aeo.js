@@ -1,0 +1,141 @@
+---
+const sections = [
+  { label: 'Quick Start', id: 'quick-start' },
+  { label: 'What is AEO?', id: 'what-is-aeo' },
+  { label: 'Why AEO', id: 'why-aeo-matters' },
+  { label: 'Widget', id: 'widget' },
+  { label: 'Configuration', id: 'configuration' },
+  { label: 'Generated Files', id: 'generated-files' },
+  { label: 'Checker', id: 'checker' },
+];
+---
+
+<nav class="sticky-nav" id="sticky-nav" aria-label="Page sections">
+  <ul>
+    {sections.map(({ label, id }) => (
+      <li>
+        <a href={`#${id}`} data-section={id}>
+          <span class="dot"></span>
+          <span class="label">{label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<script>
+  function initStickyNav() {
+    const nav = document.getElementById('sticky-nav');
+    if (!nav) return;
+
+    const links = nav.querySelectorAll('a[data-section]');
+    const sectionIds = Array.from(links).map(l => (l as HTMLElement).dataset.section!);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            links.forEach(l => l.classList.remove('active'));
+            const active = nav.querySelector(`a[data-section="${entry.target.id}"]`);
+            active?.classList.add('active');
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -60% 0px' }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initStickyNav);
+  document.addEventListener('astro:page-load', initStickyNav);
+</script>
+
+<style>
+  .sticky-nav {
+    position: fixed;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    text-decoration: none;
+    justify-content: flex-end;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+
+  a:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .label {
+    font-size: 0.65rem;
+    font-weight: 450;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.01em;
+    transition: color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+
+  a:hover .label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  a:hover .dot {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  a.active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  a.active .dot {
+    background: #fff;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+  }
+
+  a.active .label {
+    color: #fff;
+    font-weight: 500;
+  }
+
+  @media (max-width: 72rem) {
+    .sticky-nav {
+      display: none;
+    }
+  }
+</style>

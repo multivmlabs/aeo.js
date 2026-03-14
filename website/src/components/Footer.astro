@@ -1,0 +1,52 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<footer class="aeo-footer">
+  <span>Built by</span>
+  <a href="https://github.com/rubenmarcus" target="_blank" rel="noopener">rubenmarcus</a>
+  <span class="sep">&</span>
+  <a href="https://github.com/multivmlabs" target="_blank" rel="noopener">multivmlabs</a>
+</footer>
+
+<style>
+  .aeo-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 1.5rem 1rem;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.25);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .aeo-footer a {
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .aeo-footer a:hover {
+    color: #fff;
+  }
+
+  .sep {
+    opacity: 0.4;
+  }
+
+  :global([data-theme="light"]) .aeo-footer {
+    color: rgba(0, 0, 0, 0.3);
+    border-top-color: rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme="light"]) .aeo-footer a {
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  :global([data-theme="light"]) .aeo-footer a:hover {
+    color: #000;
+  }
+</style>

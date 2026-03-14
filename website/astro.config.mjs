@@ -10,9 +10,21 @@ export default defineConfig({
 			title: 'aeo.js',
 			description: 'Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.',
 			url: 'https://aeojs.org',
+			schema: {
+				organization: {
+					name: 'aeo.js',
+					url: 'https://aeojs.org',
+					logo: 'https://aeojs.org/og.png',
+					sameAs: [
+						'https://github.com/multivmlabs/aeo.js',
+						'https://www.npmjs.com/package/aeo.js',
+					],
+				},
+			},
 			widget: {
 				enabled: true,
 				position: 'bottom-right',
+				size: 'small',
 				showBadge: true,
 				theme: {
 					background: 'rgba(10, 10, 10, 0.95)',
@@ -25,12 +37,11 @@ export default defineConfig({
 		starlight({
 			title: 'aeo.js',
 			description: 'Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.',
-			social: [
-				{ icon: 'github', label: 'GitHub', href: 'https://github.com/multivmlabs/aeo.js' },
-				{ icon: 'npm', label: 'npm', href: 'https://www.npmjs.com/package/aeo.js' },
-			],
+			social: [],
 			components: {
 				Header: './src/components/Header.astro',
+				Hero: './src/components/Hero.astro',
+				Footer: './src/components/Footer.astro',
 			},
 			customCss: ['./src/styles/custom.css'],
 			head: [
