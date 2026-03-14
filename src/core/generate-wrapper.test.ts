@@ -7,6 +7,7 @@ import * as rawMarkdown from './raw-markdown';
 import * as manifest from './manifest';
 import * as sitemap from './sitemap';
 import * as aiIndex from './ai-index';
+import * as schema from './schema';
 import type { ResolvedAeoConfig } from '../types';
 
 vi.mock('fs', () => ({
@@ -34,6 +35,7 @@ const baseConfig: ResolvedAeoConfig = {
     manifest: true,
     sitemap: true,
     aiIndex: true,
+    schema: true,
   },
   robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
   widget: {
@@ -44,6 +46,17 @@ const baseConfig: ResolvedAeoConfig = {
     aiLabel: 'AI',
     showBadge: true,
     size: 'default' as const,
+  },
+  schema: {
+    enabled: true,
+    organization: { name: 'Test', url: 'https://example.com', logo: '', sameAs: [] },
+    defaultType: 'WebPage',
+  },
+  og: {
+    enabled: false,
+    image: '',
+    twitterHandle: '',
+    type: 'website',
   },
 };
 
@@ -90,6 +103,7 @@ describe('generateAEOFiles', () => {
         manifest: true,
         sitemap: false,
         aiIndex: false,
+        schema: false,
       },
     };
 
@@ -129,6 +143,7 @@ describe('generateAEOFiles', () => {
     vi.spyOn(aiIndex, 'generateAIIndex').mockImplementation(() => { throw new Error('fail'); });
     vi.spyOn(rawMarkdown, 'generatePageMarkdownFiles').mockImplementation(() => { throw new Error('fail'); });
     vi.spyOn(rawMarkdown, 'copyMarkdownFiles').mockImplementation(() => { throw new Error('fail'); });
+    vi.spyOn(schema, 'generateSchema').mockImplementation(() => { throw new Error('fail'); });
 
     const result = await generateAEOFiles(baseConfig);
 

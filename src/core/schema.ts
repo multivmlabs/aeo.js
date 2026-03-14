@@ -89,6 +89,24 @@ export function generatePageSchemas(page: PageEntry, config: ResolvedAeoConfig):
     });
   }
 
+  // Detect HowTo patterns (only if no FAQ was detected)
+  if (faqItems.length === 0) {
+    const howToSteps = detectHowToSteps(page.content || '');
+    if (howToSteps.length > 0) {
+      schemas.push({
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: page.title || config.title,
+        step: howToSteps.map((s, i) => ({
+          '@type': 'HowToStep',
+          position: i + 1,
+          name: s.name,
+          text: s.text,
+        })),
+      });
+    }
+  }
+
   // WebPage or Article schema
   const pageType = config.schema.defaultType;
   const pageSchema: Record<string, any> = {
@@ -186,14 +204,65 @@ function detectFaqPatterns(content: string): { question: string; answer: string 
 }
 
 /**
+ * Serialize a value to JSON safe for embedding inside HTML <script> tags.
+ * Escapes characters that could break out of the script context.
+ */
+function serializeJsonForHtml(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+/**
+ * Detect HowTo step patterns in markdown/text content.
+ * Looks for: numbered step headings (Step 1, Step 2, etc.) or ordered list patterns.
+ */
+function detectHowToSteps(content: string): { name: string; text: string }[] {
+  const steps: { name: string; text: string }[] = [];
+  const lines = content.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    // Match: ## Step 1: Title, ## 1. Title, ### Step 2 - Title
+    const stepMatch = line.match(/^#{1,6}\s+(?:Step\s+\d+[\s:.-]*|(\d+)[.)]\s*)(.+)$/i);
+    if (stepMatch) {
+      const name = (stepMatch[2] || stepMatch[1] || '').trim();
+      // Collect body text
+      const bodyLines: string[] = [];
+      for (let j = i + 1; j < lines.length; j++) {
+        const nextLine = lines[j].trim();
+        if (!nextLine) {
+          if (bodyLines.length > 0) break;
+          continue;
+        }
+        if (/^#{1,6}\s/.test(nextLine)) break;
+        bodyLines.push(nextLine);
+      }
+      if (name) {
+        steps.push({
+          name,
+          text: bodyLines.join(' ').slice(0, 500),
+        });
+      }
+    }
+  }
+
+  // Only return if we found 2+ steps to avoid false positives
+  return steps.length >= 2 ? steps : [];
+}
+
+/**
  * Generate a JSON-LD script tag string for injection into HTML.
  */
 export function generateJsonLdScript(schemas: object[]): string {
   if (schemas.length === 0) return '';
   if (schemas.length === 1) {
-    return `<script type="application/ld+json">${JSON.stringify(schemas[0])}</script>`;
+    return `<script type="application/ld+json">${serializeJsonForHtml(schemas[0])}</script>`;
   }
   return schemas
-    .map(s => `<script type="application/ld+json">${JSON.stringify(s)}</script>`)
+    .map(s => `<script type="application/ld+json">${serializeJsonForHtml(s)}</script>`)
     .join('\n');
 }

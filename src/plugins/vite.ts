@@ -1,7 +1,7 @@
 import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import { extractTextFromHtml, extractTitle, extractDescription, htmlToMarkdown } from '../core/html-extract';
-import { generatePageSchemas, generateJsonLdScript } from '../core/schema';
+import { generatePageSchemas, generateSiteSchemas, generateJsonLdScript } from '../core/schema';
 import { generateOGTagsHtml } from '../core/opengraph';
 import type { AeoConfig, PageEntry } from '../types';
 import { join, dirname } from 'path';
@@ -107,8 +107,10 @@ export function aeoVitePlugin(options: AeoConfig = {}): any {
         let pagePath = req.url.replace(/\.md$/, '') || '/';
         if (pagePath === '/index') pagePath = '/';
         try {
-          const host = req.headers.host || 'localhost:5173';
-          const protocol = req.connection?.encrypted ? 'https' : 'http';
+          const rawHost = req.headers.host || 'localhost:5173';
+          // Only allow localhost/127.0.0.1 to prevent SSRF via forged Host headers
+          const host = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(rawHost) ? rawHost : 'localhost:5173';
+          const protocol = 'http';
           const response = await fetch(`${protocol}://${host}${pagePath}`, {
             headers: { 'x-aeo-internal': '1' },
           });
@@ -243,6 +245,23 @@ if (typeof window !== 'undefined') {
           content: extractTextFromHtml(html),
         };
 
+        // Inject canonical URL if not present
+        if (!/rel=["']canonical["']/i.test(result)) {
+          const canonicalUrl = pagePath === '/'
+            ? resolvedConfig.url
+            : `${resolvedConfig.url.replace(/\/$/, '')}${pagePath}`;
+          result = result.replace('</head>', `    <link rel="canonical" href="${canonicalUrl}" />\n</head>`);
+        }
+
+        // Inject meta description if not present
+        if (!/name=["']description["']/i.test(result)) {
+          const desc = pageEntry.description || resolvedConfig.description;
+          if (desc) {
+            const escDesc = desc.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            result = result.replace('</head>', `    <meta name="description" content="${escDesc}" />\n</head>`);
+          }
+        }
+
         // Inject OG meta tags
         if (resolvedConfig.og.enabled) {
           const ogHtml = generateOGTagsHtml(pageEntry, resolvedConfig);
@@ -251,8 +270,9 @@ if (typeof window !== 'undefined') {
 
         // Inject JSON-LD structured data
         if (resolvedConfig.schema.enabled) {
-          const schemas = generatePageSchemas(pageEntry, resolvedConfig);
-          const jsonLd = generateJsonLdScript(schemas);
+          const siteSchemas = generateSiteSchemas(resolvedConfig);
+          const pageSchemas = generatePageSchemas(pageEntry, resolvedConfig);
+          const jsonLd = generateJsonLdScript([...siteSchemas, ...pageSchemas]);
           if (jsonLd) {
             result = result.replace('</head>', `    ${jsonLd}\n</head>`);
           }

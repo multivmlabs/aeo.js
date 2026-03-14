@@ -76,11 +76,20 @@ export function generateRobotsTxt(config: ResolvedAeoConfig): string {
   
   lines.push('# Default for all other bots');
   lines.push('User-agent: *');
-  lines.push('Allow: /');
+  for (const path of (config.robots.allow.length > 0 ? config.robots.allow : ['/'])) {
+    lines.push(`Allow: ${path}`);
+  }
+  for (const path of config.robots.disallow) {
+    lines.push(`Disallow: ${path}`);
+  }
+  if (config.robots.crawlDelay > 0) {
+    lines.push(`Crawl-delay: ${config.robots.crawlDelay}`);
+  }
   lines.push('');
-  
-  if (config.url) {
-    lines.push(`Sitemap: ${config.url}/sitemap.xml`);
+
+  const sitemapUrl = config.robots.sitemap || (config.url ? `${config.url}/sitemap.xml` : '');
+  if (sitemapUrl) {
+    lines.push(`Sitemap: ${sitemapUrl}`);
   }
   
   lines.push('');

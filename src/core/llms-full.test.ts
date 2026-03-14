@@ -24,6 +24,7 @@ const baseConfig: ResolvedAeoConfig = {
     manifest: true,
     sitemap: true,
     aiIndex: true,
+    schema: true,
   },
   robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
   widget: {
@@ -34,6 +35,17 @@ const baseConfig: ResolvedAeoConfig = {
     aiLabel: 'AI',
     showBadge: true,
     size: 'default' as const,
+  },
+  schema: {
+    enabled: true,
+    organization: { name: 'Test', url: 'https://example.com', logo: '', sameAs: [] },
+    defaultType: 'WebPage',
+  },
+  og: {
+    enabled: false,
+    image: '',
+    twitterHandle: '',
+    type: 'website',
   },
 };
 
