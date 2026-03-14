@@ -5,7 +5,7 @@ export interface ThemeConfig {
   badge?: string;
 }
 
-export function getStyles(theme?: ThemeConfig, size?: 'default' | 'small'): string {
+export function getStyles(theme?: ThemeConfig, size?: 'default' | 'small' | 'icon-only'): string {
   const t = {
     background: theme?.background || '#0a0a0f',
     text: theme?.text || '#a0a0a8',
@@ -644,6 +644,27 @@ export function getStyles(theme?: ThemeConfig, size?: 'default' | 'small'): stri
     .aeo-toggle.aeo-small .aeo-toggle-btn svg {
       width: 12px;
       height: 12px;
+    }
+
+    /* Icon-only variant */
+    .aeo-toggle.aeo-icon-only .aeo-toggle-inner {
+      border-radius: 18px;
+      padding: 3px;
+    }
+
+    .aeo-toggle.aeo-icon-only .aeo-toggle-btn {
+      padding: 6px;
+      border-radius: 15px;
+      gap: 0;
+    }
+
+    .aeo-toggle.aeo-icon-only .aeo-toggle-btn span {
+      display: none;
+    }
+
+    .aeo-toggle.aeo-icon-only .aeo-toggle-btn svg {
+      width: 14px;
+      height: 14px;
     }
   `.trim();
 }

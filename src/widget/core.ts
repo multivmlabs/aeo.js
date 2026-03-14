@@ -79,7 +79,8 @@ export class AeoWidget {
     const icons = getIcons();
 
     this.toggleElement = document.createElement('div');
-    this.toggleElement.className = `aeo-toggle aeo-${position}${size === 'small' ? ' aeo-small' : ''}`;
+    const sizeClass = size === 'small' ? ' aeo-small' : size === 'icon-only' ? ' aeo-icon-only' : '';
+    this.toggleElement.className = `aeo-toggle aeo-${position}${sizeClass}`;
     this.toggleElement.innerHTML = `
       <div class="aeo-toggle-inner">
         <button class="aeo-toggle-btn aeo-human-btn aeo-active" data-mode="human">
