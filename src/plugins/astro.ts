@@ -318,8 +318,10 @@ if (!document.querySelector('meta[name="astro-view-transitions-enabled"]')) {
           let pagePath = req.url.replace(/\.md$/, '') || '/';
           if (pagePath === '/index') pagePath = '/';
           try {
-            const host = req.headers.host || 'localhost:4321';
-            const protocol = req.connection?.encrypted ? 'https' : 'http';
+            const rawHost = req.headers.host || 'localhost:4321';
+            // Only allow localhost/127.0.0.1 to prevent SSRF via forged Host headers
+            const host = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(rawHost) ? rawHost : 'localhost:4321';
+            const protocol = 'http';
             const response = await fetch(`${protocol}://${host}${pagePath}`, {
               headers: { 'x-aeo-internal': '1' },
             });

@@ -10,7 +10,7 @@ function makeConfig(overrides: Partial<ResolvedAeoConfig> = {}): ResolvedAeoConf
     pages: [],
     outDir: './out',
     contentDir: '',
-    generators: { robots: true, llmsTxt: true, llmsFullTxt: true, sitemap: true, aiIndex: true, docs: true, schema: true },
+    generators: { robotsTxt: true, llmsTxt: true, llmsFullTxt: true, rawMarkdown: true, manifest: true, sitemap: true, aiIndex: true, schema: true },
     schema: {
       enabled: true,
       organization: { name: 'Test Org', url: 'https://example.com', logo: '', sameAs: [] },

@@ -156,7 +156,7 @@ function auditContentStructure(config: ResolvedAeoConfig, issues: AuditIssue[], 
 
 /**
  * Category 3: Schema Presence (0-20)
- * Checks: schema enabled, organization info, sameAs, defaultType, schema.json generated
+ * Checks: schema enabled, organization info, FAQ/HowTo patterns, Article/WebPage type
  */
 function auditSchemaPresence(config: ResolvedAeoConfig, issues: AuditIssue[], suggestions: string[]): AuditCategory {
   const checks: AuditCategory['checks'] = [];
@@ -182,18 +182,21 @@ function auditSchemaPresence(config: ResolvedAeoConfig, issues: AuditIssue[], su
     suggestions.push('Add schema.organization.logo for richer search results and AI knowledge');
   }
 
-  // sameAs social profiles (4 pts)
-  const hasSameAs = config.schema.organization.sameAs.length > 0;
-  checks.push({ label: 'Social profiles linked (sameAs)', passed: hasSameAs, points: hasSameAs ? 4 : 0 });
-  if (!hasSameAs) {
-    issues.push({ category: 'Schema Presence', severity: 'warning', message: 'No social profiles (sameAs) — critical for GEO/E-E-A-T signals', fix: 'Add schema.organization.sameAs with social profile URLs' });
+  // FAQPage or HowTo schema (4 pts) — matches aeochecker scoring
+  const hasFaqOrHowTo = config.pages.some(p => {
+    const content = p.content || '';
+    return /^#{1,6}\s+.+\?\s*$/m.test(content) || /^#{1,6}\s+(?:Step\s+\d+[\s:.-]|How\s+to)/im.test(content);
+  });
+  checks.push({ label: 'FAQPage or HowTo schema', passed: hasFaqOrHowTo, points: hasFaqOrHowTo ? 4 : 0 });
+  if (!hasFaqOrHowTo) {
+    suggestions.push('Add FAQ sections (question headings) or step-by-step content to auto-generate FAQPage/HowTo schema');
   }
 
-  // URL is not default (4 pts)
-  const hasRealUrl = config.url !== 'https://example.com' && config.url !== '';
-  checks.push({ label: 'Site URL is configured (not default)', passed: hasRealUrl, points: hasRealUrl ? 4 : 0 });
-  if (!hasRealUrl) {
-    issues.push({ category: 'Schema Presence', severity: 'error', message: 'Site URL is still the default (https://example.com)', fix: 'Set url to your actual site URL' });
+  // Article/WebPage schema (4 pts) — always passes when schema is enabled since defaultType is set
+  const hasArticleOrWebPage = schemaEnabled && (config.schema.defaultType === 'Article' || config.schema.defaultType === 'WebPage');
+  checks.push({ label: 'Article/WebPage schema', passed: hasArticleOrWebPage, points: hasArticleOrWebPage ? 4 : 0 });
+  if (!hasArticleOrWebPage && schemaEnabled) {
+    suggestions.push('Set schema.defaultType to "Article" or "WebPage" for per-page structured data');
   }
 
   return {
@@ -247,13 +250,11 @@ function auditMetaQuality(config: ResolvedAeoConfig, issues: AuditIssue[], sugge
     issues.push({ category: 'Meta Quality', severity: 'warning', message: `Only ${pagesWithTitles.length}/${config.pages.length} pages have titles`, fix: 'Add titles to all pages' });
   }
 
-  // Pages have descriptions (4 pts)
-  const pagesWithDesc = config.pages.filter(p => p.description && p.description.length > 0);
-  const descCoverage = config.pages.length > 0 ? pagesWithDesc.length / config.pages.length : 0;
-  const goodDescCoverage = descCoverage >= 0.5;
-  checks.push({ label: '50%+ of pages have descriptions', passed: goodDescCoverage, points: goodDescCoverage ? 4 : 0 });
-  if (!goodDescCoverage && config.pages.length > 0) {
-    suggestions.push(`Only ${pagesWithDesc.length}/${config.pages.length} pages have descriptions — add per-page descriptions`);
+  // OG image set (4 pts)
+  const hasOgImage = !!config.og.image;
+  checks.push({ label: 'OG image configured', passed: hasOgImage, points: hasOgImage ? 4 : 0 });
+  if (!hasOgImage) {
+    suggestions.push('Set og.image for richer social sharing previews and AI citation cards');
   }
 
   return {
