@@ -13,7 +13,8 @@ function collectMarkdownFiles(dir: string, base: string = dir): MarkdownFile[] {
       const fullPath = join(dir, entry);
       const stat = statSync(fullPath);
       
-      if (stat.isDirectory() && !entry.startsWith('.') && entry !== 'node_modules') {
+      const SKIP_DIRS = new Set(['node_modules', 'public', 'dist', '.next', '.nuxt', '.output', '.open-next', 'coverage', '__tests__', '__mocks__']);
+      if (stat.isDirectory() && !entry.startsWith('.') && !SKIP_DIRS.has(entry)) {
         files.push(...collectMarkdownFiles(fullPath, base));
       } else if (stat.isFile() && (extname(entry) === '.md' || extname(entry) === '.mdx')) {
         const content = readFileSync(fullPath, 'utf-8');

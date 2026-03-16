@@ -12,7 +12,8 @@ function collectUrls(dir: string, config: ResolvedAeoConfig, base: string = dir)
       const fullPath = join(dir, entry);
       const stat = statSync(fullPath);
       
-      if (stat.isDirectory() && !entry.startsWith('.') && entry !== 'node_modules') {
+      const SKIP_DIRS = new Set(['node_modules', 'public', 'dist', '.next', '.nuxt', '.output', '.open-next', 'coverage', '__tests__', '__mocks__']);
+      if (stat.isDirectory() && !entry.startsWith('.') && !SKIP_DIRS.has(entry)) {
         urls.push(...collectUrls(fullPath, config, base));
       } else if (stat.isFile() && (extname(entry) === '.md' || extname(entry) === '.mdx' || extname(entry) === '.html')) {
         const relativePath = relative(base, fullPath);
