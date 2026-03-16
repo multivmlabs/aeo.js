@@ -74,6 +74,7 @@ import { AeoVueWidget } from 'aeo.js/vue';
 widget: {
   enabled: true,
   position: 'bottom-right', // 'bottom-left' | 'top-right' | 'top-left'
+  size: 'default',          // 'small' | 'icon-only'
   humanLabel: 'Human',
   aiLabel: 'AI',
   showBadge: true,
@@ -85,6 +86,14 @@ widget: {
   },
 }
 ```
+
+## Size variants
+
+| Default | Small | Icon |
+|---------|-------|------|
+| ![Default widget](/widget-default.gif) | ![Small widget](/widget-small.gif) | ![Icon widget](/widget-icon.gif) |
+| `size: 'default'` | `size: 'small'` | `size: 'icon-only'` |
+| Full labels with icons | Compact — ~30% smaller | Just icons, no labels |
 
 <Aside type="tip">
 Set `widget.enabled: false` to disable the widget entirely while still generating AEO files.
