@@ -99,9 +99,11 @@ export function withAeo(nextConfig: NextAeoConfig = {}): Record<string, any> {
           }
         }
 
-        // Resolve contentDir: prefer user-specified, then src/, then project root
+        // Resolve contentDir: prefer user-specified, then known content dirs, then src/
+        // Never fall back to project root — it causes recursive crawling of public/, .next/, etc.
         const contentDir = aeoOptions.contentDir
-          || (existsSync(join(projectRoot, 'src')) ? join(projectRoot, 'src') : projectRoot);
+          || [join(projectRoot, 'content'), join(projectRoot, 'docs'), join(projectRoot, 'src')].find(d => existsSync(d))
+          || join(projectRoot, 'content');
 
         const resolvedConfig = resolveConfig({
           ...aeoOptions,
@@ -247,7 +249,8 @@ export async function postBuild(config: AeoConfig = {}): Promise<void> {
   }
 
   const contentDir = config.contentDir
-    || (existsSync(join(projectRoot, 'src')) ? join(projectRoot, 'src') : projectRoot);
+    || [join(projectRoot, 'content'), join(projectRoot, 'docs'), join(projectRoot, 'src')].find(d => existsSync(d))
+    || join(projectRoot, 'content');
 
   const resolvedConfig = resolveConfig({
     ...config,
