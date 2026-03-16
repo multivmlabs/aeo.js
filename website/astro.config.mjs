@@ -7,8 +7,8 @@ export default defineConfig({
 	site: 'https://aeojs.org',
 	integrations: [
 		aeoAstroIntegration({
-			title: 'aeo.js',
-			description: 'Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.',
+			title: 'aeo.js — Answer Engine Optimization for the Modern Web',
+			description: 'Make your website discoverable by ChatGPT, Claude, Perplexity & AI search engines. Auto-generates llms.txt, robots.txt, sitemap, JSON-LD structured data & more.',
 			url: 'https://aeojs.org',
 			schema: {
 				organization: {
@@ -35,8 +35,8 @@ export default defineConfig({
 			},
 		}),
 		starlight({
-			title: 'aeo.js',
-			description: 'Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.',
+			title: 'aeo.js — Answer Engine Optimization for the Modern Web',
+			description: 'Make your website discoverable by ChatGPT, Claude, Perplexity & AI search engines. Auto-generates llms.txt, robots.txt, sitemap, JSON-LD structured data & more. Works with Next.js, Astro, Vite, Nuxt & Angular.',
 			social: [],
 			components: {
 				Header: './src/components/Header.astro',
@@ -46,6 +46,10 @@ export default defineConfig({
 			customCss: ['./src/styles/custom.css'],
 			head: [
 				{ tag: 'meta', attrs: { property: 'og:image', content: 'https://aeojs.org/og.png' } },
+				{ tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+				{ tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+				{ tag: 'meta', attrs: { property: 'og:image:type', content: 'image/png' } },
+				{ tag: 'meta', attrs: { name: 'twitter:image', content: 'https://aeojs.org/og.png' } },
 			],
 			sidebar: [
 				{
