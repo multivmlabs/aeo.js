@@ -35,7 +35,7 @@ export default defineConfig({
 			},
 		}),
 		starlight({
-			title: 'aeo.js — Answer Engine Optimization for the Modern Web',
+			title: 'aeo.js',
 			description: 'Make your website discoverable by ChatGPT, Claude, Perplexity & AI search engines. Auto-generates llms.txt, robots.txt, sitemap, JSON-LD structured data & more. Works with Next.js, Astro, Vite, Nuxt & Angular.',
 			social: [],
 			components: {
