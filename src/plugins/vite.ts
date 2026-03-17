@@ -203,6 +203,9 @@ export function aeoVitePlugin(options: AeoConfig = {}): any {
 
     load(id: string) {
       if (id === '\0virtual:aeo-widget') {
+        if (!resolvedConfig.widget.enabled) {
+          return '// aeo.js widget disabled';
+        }
         const widgetConfig = {
           title: resolvedConfig.title,
           description: resolvedConfig.description,
