@@ -176,7 +176,7 @@ export default defineNuxtModule<ModuleOptions>({
     // Dev: watch content directory for changes
     if (nuxt.options.dev) {
       nuxt.hook('builder:watch', async (_event: string, path: string) => {
-        if (path.includes(resolvedConfig.contentDir) && (path.endsWith('.md') || path.endsWith('.yml') || path.endsWith('.yaml'))) {
+        if ((path.startsWith(resolvedConfig.contentDir) || path.startsWith('/' + resolvedConfig.contentDir)) && (path.endsWith('.md') || path.endsWith('.yml') || path.endsWith('.yaml'))) {
           console.log('[aeo.js] Content changed, regenerating AEO files...');
 
           try {

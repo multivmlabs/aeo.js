@@ -12,7 +12,7 @@ export function detectFramework(projectRoot: string = process.cwd()): FrameworkI
     return {
       framework: 'next',
       contentDir: 'app',
-      outDir: 'out',
+      outDir: 'public',
     };
   }
   

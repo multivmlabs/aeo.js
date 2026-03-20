@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'fs';
+import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig, ManifestEntry } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
@@ -51,7 +51,9 @@ export function generateManifest(config: ResolvedAeoConfig): string {
   }
 
   // Add markdown content files
-  entries.push(...collectManifestEntries(config.contentDir, config));
+  if (existsSync(config.contentDir)) {
+    entries.push(...collectManifestEntries(config.contentDir, config));
+  }
   
   const manifest = {
     version: '1.0',

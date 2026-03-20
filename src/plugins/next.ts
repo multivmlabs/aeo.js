@@ -36,14 +36,20 @@ function scanAppRouter(dir: string, base: string, pages: PageEntry[]): void {
     for (const entry of entries) {
       const fullPath = join(dir, entry);
       const stat = statSync(fullPath);
-      if (stat.isDirectory() && !entry.startsWith('.') && !entry.startsWith('_') && !entry.startsWith('(') && entry !== 'api') {
+      if (stat.isDirectory() && !entry.startsWith('.') && !entry.startsWith('_') && entry !== 'api') {
+        // Enter route groups (parenthesized dirs) but also regular dirs and dynamic segments
         scanAppRouter(fullPath, base, pages);
       } else if (entry.match(/^page\.(tsx?|jsx?|mdx?)$/)) {
+        // Build pathname: strip route group segments like (marketing)
         const relative = dir.slice(base.length);
-        const pathname = relative || '/';
-        const name = pathname.split('/').filter(Boolean).pop();
+        const pathname = relative
+          .split('/')
+          .filter(seg => seg && !seg.startsWith('('))
+          .join('/');
+        const cleanPathname = '/' + pathname;
+        const name = cleanPathname.split('/').filter(Boolean).pop();
         pages.push({
-          pathname,
+          pathname: cleanPathname === '/' ? '/' : cleanPathname,
           title: name ? name.charAt(0).toUpperCase() + name.slice(1) : undefined,
         });
       }
@@ -87,7 +93,9 @@ export function withAeo(nextConfig: NextAeoConfig = {}): Record<string, any> {
 
       if (!options.isServer && !options.dev) {
         const projectRoot = process.cwd();
-        const discoveredPages = scanNextPages(projectRoot);
+        const discoveredPages = scanNextPages(projectRoot)
+          // Filter out dynamic route segments — they're templates, not real URLs
+          .filter(p => !p.pathname.includes('['));
 
         // Default root page title/description to config values
         for (const page of discoveredPages) {
@@ -232,14 +240,43 @@ function scanNextBuildOutput(projectRoot: string): PageEntry[] {
  */
 export async function postBuild(config: AeoConfig = {}): Promise<void> {
   const projectRoot = process.cwd();
-  const discoveredPages = scanNextBuildOutput(projectRoot);
 
-  if (discoveredPages.length > 0) {
-    console.log(`[aeo.js] Discovered ${discoveredPages.length} pages from Next.js build output`);
+  // Discover pages from both source files AND build output
+  const sourcePages = scanNextPages(projectRoot);
+  const buildPages = scanNextBuildOutput(projectRoot);
+
+  if (sourcePages.length > 0) {
+    console.log(`[aeo.js] Discovered ${sourcePages.length} routes from source files`);
+  }
+  if (buildPages.length > 0) {
+    console.log(`[aeo.js] Discovered ${buildPages.length} pages from Next.js build output`);
+  }
+
+  // Merge: build output pages have richer content (title, description, content),
+  // so prefer them when available, but keep source-only routes too
+  const buildMap = new Map(buildPages.map(p => [p.pathname, p]));
+  const mergedPages: PageEntry[] = [];
+  const seen = new Set<string>();
+
+  // Add all build output pages first (they have content)
+  for (const page of buildPages) {
+    // Skip dynamic route patterns from build output
+    if (page.pathname.includes('[') || page.pathname.includes('%5B')) continue;
+    mergedPages.push(page);
+    seen.add(page.pathname);
+  }
+
+  // Add source-discovered routes not in build output (SSR/dynamic pages)
+  for (const page of sourcePages) {
+    // Skip dynamic route segments — they're templates, not real URLs
+    if (page.pathname.includes('[')) continue;
+    if (seen.has(page.pathname)) continue;
+    mergedPages.push(page);
+    seen.add(page.pathname);
   }
 
   // Default root page title/description from config
-  for (const page of discoveredPages) {
+  for (const page of mergedPages) {
     if (page.pathname === '/' && !page.title && config.title) {
       page.title = config.title;
     }
@@ -256,7 +293,7 @@ export async function postBuild(config: AeoConfig = {}): Promise<void> {
     ...config,
     outDir: config.outDir || join(projectRoot, 'public'),
     contentDir,
-    pages: [...(config.pages || []), ...discoveredPages],
+    pages: [...(config.pages || []), ...mergedPages],
   });
 
   const result = await generateAEOFiles(resolvedConfig);

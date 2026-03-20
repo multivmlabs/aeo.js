@@ -48,8 +48,8 @@ export async function generateAEOFiles(
       const content = genRobots(config);
       writeFileSync(join(outDir, 'robots.txt'), content, 'utf-8');
       files.push('robots.txt');
-    } catch (e: any) {
-      errors.push(`robots.txt: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`robots.txt: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -58,8 +58,8 @@ export async function generateAEOFiles(
       const content = genLlms(config);
       writeFileSync(join(outDir, 'llms.txt'), content, 'utf-8');
       files.push('llms.txt');
-    } catch (e: any) {
-      errors.push(`llms.txt: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`llms.txt: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -68,8 +68,8 @@ export async function generateAEOFiles(
       const content = genLlmsFull(config);
       writeFileSync(join(outDir, 'llms-full.txt'), content, 'utf-8');
       files.push('llms-full.txt');
-    } catch (e: any) {
-      errors.push(`llms-full.txt: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`llms-full.txt: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -80,8 +80,8 @@ export async function generateAEOFiles(
       for (const f of generated) {
         files.push(f.destination);
       }
-    } catch (e: any) {
-      errors.push(`page-markdown: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`page-markdown: ${e instanceof Error ? e.message : String(e)}`);
     }
 
     // Then copy handwritten .md from contentDir (these take priority, overwriting generated ones)
@@ -90,8 +90,8 @@ export async function generateAEOFiles(
       for (const f of copied) {
         files.push(f.destination);
       }
-    } catch (e: any) {
-      errors.push(`raw-markdown: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`raw-markdown: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -100,8 +100,8 @@ export async function generateAEOFiles(
       const content = genManifest(config);
       writeFileSync(join(outDir, 'docs.json'), content, 'utf-8');
       files.push('docs.json');
-    } catch (e: any) {
-      errors.push(`docs.json: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`docs.json: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -110,8 +110,8 @@ export async function generateAEOFiles(
       const content = genSitemap(config);
       writeFileSync(join(outDir, 'sitemap.xml'), content, 'utf-8');
       files.push('sitemap.xml');
-    } catch (e: any) {
-      errors.push(`sitemap.xml: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`sitemap.xml: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -120,8 +120,8 @@ export async function generateAEOFiles(
       const content = genAIIndex(config);
       writeFileSync(join(outDir, 'ai-index.json'), content, 'utf-8');
       files.push('ai-index.json');
-    } catch (e: any) {
-      errors.push(`ai-index.json: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`ai-index.json: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -130,8 +130,8 @@ export async function generateAEOFiles(
       const content = genSchema(config);
       writeFileSync(join(outDir, 'schema.json'), content, 'utf-8');
       files.push('schema.json');
-    } catch (e: any) {
-      errors.push(`schema.json: ${e.message}`);
+    } catch (e: unknown) {
+      errors.push(`schema.json: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
