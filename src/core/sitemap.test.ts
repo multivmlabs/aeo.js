@@ -16,6 +16,7 @@ describe('generateSitemap', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-01-15T10:30:00Z'));
     
+    mockFs.existsSync.mockReturnValue(true);
     mockPath.join.mockImplementation((...args: string[]) => args.join('/'));
     mockPath.relative.mockImplementation((from: string, to: string) => 
       to.replace(from + '/', '')

@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from 'fs';
+import { readdirSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig } from '../types';
 
@@ -48,7 +48,7 @@ export function generateSitemap(config: ResolvedAeoConfig): string {
   }
 
   // Add markdown/html files from content dir
-  if (config.contentDir) {
+  if (config.contentDir && existsSync(config.contentDir)) {
     urls.push(...collectUrls(config.contentDir, config));
   }
 

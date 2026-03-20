@@ -145,10 +145,11 @@ function injectHeadTags(pages: ScannedPage[], config: ResolvedAeoConfig): number
 
     // Link alternate tags for AEO files — only if not already present
     if (!/rel=["']alternate["'][^>]*llms\.txt/i.test(html)) {
-      tags.push(`<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Summary" />`);
-      tags.push(`<link rel="alternate" type="text/plain" href="/llms-full.txt" title="Full Content for LLMs" />`);
-      tags.push(`<link rel="alternate" type="application/json" href="/docs.json" title="Documentation Manifest" />`);
-      tags.push(`<link rel="alternate" type="application/json" href="/ai-index.json" title="AI-Optimized Index" />`);
+      const base = config.url ? new URL(config.url).pathname.replace(/\/$/, '') : '';
+      tags.push(`<link rel="alternate" type="text/plain" href="${base}/llms.txt" title="LLM Summary" />`);
+      tags.push(`<link rel="alternate" type="text/plain" href="${base}/llms-full.txt" title="Full Content for LLMs" />`);
+      tags.push(`<link rel="alternate" type="application/json" href="${base}/docs.json" title="Documentation Manifest" />`);
+      tags.push(`<link rel="alternate" type="application/json" href="${base}/ai-index.json" title="AI-Optimized Index" />`);
     }
 
     if (tags.length === 0) continue;

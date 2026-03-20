@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'fs';
+import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig, MarkdownFile } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
@@ -71,7 +71,7 @@ export function generateLlmsTxt(config: ResolvedAeoConfig): string {
   }
 
   // List markdown content files
-  const markdownFiles = collectMarkdownFiles(config.contentDir);
+  const markdownFiles = existsSync(config.contentDir) ? collectMarkdownFiles(config.contentDir) : [];
 
   if (markdownFiles.length > 0) {
     lines.push('## Documentation');

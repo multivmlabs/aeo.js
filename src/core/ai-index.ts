@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'fs';
+import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import { createHash } from 'crypto';
 import type { ResolvedAeoConfig, AIIndexEntry } from '../types';
@@ -154,8 +154,18 @@ export function generateAIIndex(config: ResolvedAeoConfig): string {
   }
 
   // Add markdown content files
-  entries.push(...collectAIIndexEntries(config.contentDir, config));
+  if (existsSync(config.contentDir)) {
+    entries.push(...collectAIIndexEntries(config.contentDir, config));
+  }
   
+  // Deduplicate entries by ID
+  const seenIds = new Set<string>();
+  const uniqueEntries = entries.filter(e => {
+    if (seenIds.has(e.id)) return false;
+    seenIds.add(e.id);
+    return true;
+  });
+
   const index = {
     version: '1.0',
     generated: new Date().toISOString(),
@@ -164,9 +174,9 @@ export function generateAIIndex(config: ResolvedAeoConfig): string {
       description: config.description,
       url: config.url,
     },
-    entries: entries.sort((a, b) => a.id.localeCompare(b.id)),
+    entries: uniqueEntries.sort((a, b) => a.id.localeCompare(b.id)),
     metadata: {
-      totalEntries: entries.length,
+      totalEntries: uniqueEntries.length,
       generator: 'aeo.js',
       generatorUrl: 'https://aeojs.org',
       embedding: {

@@ -14,7 +14,7 @@ describe('detectFramework', () => {
     expect(result).toEqual({
       framework: 'next',
       contentDir: 'app',
-      outDir: 'out',
+      outDir: 'public',
     });
   });
 
@@ -133,7 +133,7 @@ describe('detectFramework', () => {
     expect(result).toEqual({
       framework: 'next',
       contentDir: 'app',
-      outDir: 'out',
+      outDir: 'public',
     });
   });
 });

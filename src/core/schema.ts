@@ -175,10 +175,11 @@ function detectFaqPatterns(content: string): { question: string; answer: string 
   const items: { question: string; answer: string }[] = [];
 
   // Pattern: ## Question? \n\n Answer text
+  // Only match headings that look like genuine questions (start with question words or end cleanly with ?)
   const lines = content.split('\n');
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    const headingMatch = line.match(/^#{1,6}\s+(.+\?)\s*$/);
+    const headingMatch = line.match(/^#{1,6}\s+((?:What|How|Why|When|Where|Who|Which|Is|Are|Can|Do|Does|Should|Will|Was|Were|Did|Has|Have|Could|Would)\b.+\?)\s*$/i);
     if (headingMatch) {
       // Collect answer: all non-empty, non-heading lines following
       const answerLines: string[] = [];

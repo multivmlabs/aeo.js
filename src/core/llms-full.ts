@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'fs';
+import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig } from '../types';
 import { parseFrontmatter, bumpHeadings } from './utils';
@@ -103,7 +103,7 @@ export function generateLlmsFullTxt(config: ResolvedAeoConfig): string {
   }
 
   // Include markdown content files
-  const sections = collectAndConcatenateMarkdown(config.contentDir);
+  const sections = existsSync(config.contentDir) ? collectAndConcatenateMarkdown(config.contentDir) : [];
 
   if (sections.length > 0) {
     lines.push(...sections);
