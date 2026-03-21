@@ -495,7 +495,8 @@ export class AeoWidget {
       this.overlayElement.remove();
       this.overlayElement = undefined;
     }
-    this.switchToHuman();
+    this.isAIMode = false;
+    this.updateToggleState();
   }
 
   private async copyToClipboard(text: string): Promise<void> {
