@@ -16,6 +16,10 @@ function ensureDir(path: string): void {
   mkdirSync(path, { recursive: true });
 }
 
+function escapeYamlString(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 export function copyRawMarkdown(config: ResolvedAeoConfig): CopiedFile[] {
   return copyMarkdownFiles(config);
 }
@@ -89,8 +93,8 @@ export function generatePageMarkdownFiles(config: ResolvedAeoConfig): GeneratedM
 
     // YAML frontmatter
     lines.push('---');
-    if (pageTitle) lines.push(`title: "${pageTitle}"`);
-    if (page.description) lines.push(`description: "${page.description}"`);
+    if (pageTitle) lines.push(`title: "${escapeYamlString(pageTitle)}"`);
+    if (page.description) lines.push(`description: "${escapeYamlString(page.description)}"`);
     lines.push(`url: ${pageUrl}`);
     lines.push(`source: ${pageUrl}`);
     lines.push(`generated_by: aeo.js`);

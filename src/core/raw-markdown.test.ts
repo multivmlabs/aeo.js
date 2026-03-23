@@ -195,4 +195,43 @@ describe('generatePageMarkdownFiles', () => {
     expect(writtenContent).toContain('# About');
     expect(writtenContent).toContain('Content here');
   });
+
+  it('should escape double quotes in title frontmatter', () => {
+    const config = createConfig({
+      pages: [
+        { pathname: '/test', title: 'He said "hello"', content: 'Body text' },
+      ],
+    });
+
+    generatePageMarkdownFiles(config);
+
+    const writtenContent = vi.mocked(writeFileSync).mock.calls[0][1] as string;
+    expect(writtenContent).toContain('title: "He said \\"hello\\""');
+  });
+
+  it('should escape double quotes in description frontmatter', () => {
+    const config = createConfig({
+      pages: [
+        { pathname: '/test', title: 'Test', description: 'A "great" page', content: 'Body' },
+      ],
+    });
+
+    generatePageMarkdownFiles(config);
+
+    const writtenContent = vi.mocked(writeFileSync).mock.calls[0][1] as string;
+    expect(writtenContent).toContain('description: "A \\"great\\" page"');
+  });
+
+  it('should escape backslashes in title frontmatter', () => {
+    const config = createConfig({
+      pages: [
+        { pathname: '/test', title: 'Path\\to\\file', content: 'Body' },
+      ],
+    });
+
+    generatePageMarkdownFiles(config);
+
+    const writtenContent = vi.mocked(writeFileSync).mock.calls[0][1] as string;
+    expect(writtenContent).toContain('title: "Path\\\\to\\\\file"');
+  });
 });

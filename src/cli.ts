@@ -7,8 +7,7 @@ import { auditSite, formatAuditReport } from './core/audit';
 import { generateReport, formatReportMarkdown, formatReportJson } from './core/report';
 import { writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
-
-const VERSION = '0.0.2';
+import { VERSION } from './index';
 
 const HELP = `
 aeo.js v${VERSION} — Answer Engine Optimization for the modern web
