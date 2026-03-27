@@ -37,12 +37,17 @@ function escapeXml(str: string): string {
     .replace(/'/g, '&apos;');
 }
 
+function isSitemapPathname(pathname: string): boolean {
+  return /^\/sitemap/i.test(pathname);
+}
+
 export function generateSitemap(config: ResolvedAeoConfig): string {
   const urls: string[] = [];
 
   // Add discovered pages from framework plugin
   if (config.pages && config.pages.length > 0) {
     for (const page of config.pages) {
+      if (isSitemapPathname(page.pathname)) continue;
       urls.push(`${config.url}${page.pathname === '/' ? '' : page.pathname}`);
     }
   }
