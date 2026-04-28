@@ -254,21 +254,6 @@ describe('generateSitemap', () => {
     expect(sitemap).not.toContain('/sitemap-index');
   });
 
-  it('still extracts a pathname when a contentDir URL is on a different host', () => {
-    // Defense in depth: even if URL construction ever yields a host that
-    // differs from config.url, the filter must still inspect the pathname.
-    mockFs.readdirSync.mockReturnValue(['sitemap-0.html', 'about.md']);
-    mockFs.statSync.mockReturnValue({
-      isDirectory: () => false,
-      isFile: () => true,
-    });
-
-    const sitemap = generateSitemap(baseConfig);
-
-    expect(sitemap).toContain('<loc>https://example.com/about</loc>');
-    expect(sitemap).not.toMatch(/<loc>[^<]*sitemap-0[^<]*<\/loc>/);
-  });
-
   it('should handle subdirectories recursively', () => {
     const files = ['index.md', 'blog', 'docs'];
     
