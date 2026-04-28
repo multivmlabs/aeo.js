@@ -111,5 +111,39 @@ describe('HTML extraction utilities', () => {
       const md = htmlToMarkdown(html, '/', { url: 'https://example.com' });
       expect(md).toContain('url: https://example.com');
     });
+
+    it('escapes double quotes in title to keep YAML valid', () => {
+      const html = '<html><head><title>He said "hello"</title></head><body><main><p>x</p></main></body></html>';
+      const md = htmlToMarkdown(html, '/p', { url: 'https://example.com' });
+      expect(md).toContain('title: "He said \\"hello\\""');
+    });
+
+    it('escapes backslashes in title to keep YAML valid', () => {
+      const html = '<html><head><title>path C:\\foo</title></head><body><main><p>x</p></main></body></html>';
+      const md = htmlToMarkdown(html, '/p', { url: 'https://example.com' });
+      expect(md).toContain('title: "path C:\\\\foo"');
+    });
+  });
+
+  describe('extractTextFromHtml truncation', () => {
+    it('truncates long content at a whitespace boundary, not mid-word', () => {
+      const para = ('word '.repeat(2000)).trim();
+      const html = `<html><body><main><p>${para}</p></main></body></html>`;
+      const out = extractTextFromHtml(html);
+      expect(out.length).toBeLessThanOrEqual(8000);
+      expect(out).not.toMatch(/wor$/);
+      expect(out.endsWith('word') || out.endsWith('word\n') || out.endsWith('word ')).toBe(true);
+    });
+
+    it('does not split a multi-character HTML entity', () => {
+      // Build content where the slice boundary lands inside &nbsp; (6 chars).
+      // After entity decoding "&nbsp;" -> " ", we still must not see "&nb" as a tail.
+      const filler = 'x'.repeat(7995);
+      const html = `<html><body><main><p>${filler}&nbsp;done</p></main></body></html>`;
+      const out = extractTextFromHtml(html);
+      expect(out).not.toMatch(/&nb$/);
+      expect(out).not.toMatch(/&nbs$/);
+      expect(out).not.toMatch(/&$/);
+    });
   });
 });

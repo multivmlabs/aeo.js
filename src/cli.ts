@@ -8,7 +8,7 @@ import { generateReport, formatReportMarkdown, formatReportJson } from './core/r
 import { writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const VERSION = '0.0.2';
+import { VERSION } from './index';
 
 const HELP = `
 aeo.js v${VERSION} — Answer Engine Optimization for the modern web
@@ -41,12 +41,20 @@ Examples:
   npx aeo.js report --json
 `;
 
-function parseArgs(args: string[]): { command: string; flags: Record<string, string | boolean> } {
+export function parseArgs(args: string[]): { command: string; flags: Record<string, string | boolean> } {
   let command = 'help';
   const flags: Record<string, string | boolean> = {};
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
+    // Support both "--flag value" and "--flag=value" forms
+    if (arg.startsWith('--') && arg.includes('=')) {
+      const eq = arg.indexOf('=');
+      const key = arg.slice(2, eq);
+      const value = arg.slice(eq + 1);
+      flags[key] = value;
+      continue;
+    }
     if (arg === '--help' || arg === '-h') {
       flags.help = true;
     } else if (arg === '--version' || arg === '-v') {

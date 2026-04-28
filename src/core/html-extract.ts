@@ -70,7 +70,20 @@ export function extractTextFromHtml(html: string): string {
   // Remove empty headings
   text = text.replace(/^#{2,6}\s*$/gm, '');
   text = text.replace(/\n{3,}/g, '\n\n');
-  return text.trim().slice(0, 8000);
+  return safeTruncate(text.trim(), 8000);
+}
+
+/**
+ * Truncate text to at most maxLen chars, cutting at the nearest whitespace
+ * boundary so we never split mid-word, mid-entity, or mid-UTF-8 sequence.
+ * Falls back to a hard cut only when no whitespace is found.
+ */
+function safeTruncate(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  const slice = text.slice(0, maxLen);
+  const lastBreak = Math.max(slice.lastIndexOf('\n'), slice.lastIndexOf(' '));
+  if (lastBreak > maxLen * 0.8) return slice.slice(0, lastBreak).trimEnd();
+  return slice.trimEnd();
 }
 
 /**
@@ -106,6 +119,10 @@ export function extractJsonLd(html: string): object[] {
   return schemas;
 }
 
+function escapeYamlString(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 /**
  * Convert HTML page to a complete markdown document with YAML frontmatter.
  */
@@ -122,8 +139,8 @@ export function htmlToMarkdown(html: string, pagePath: string, config: { url: st
 
   // YAML frontmatter
   lines.push('---');
-  if (rawTitle) lines.push(`title: "${rawTitle}"`);
-  if (description) lines.push(`description: "${description}"`);
+  if (rawTitle) lines.push(`title: "${escapeYamlString(rawTitle)}"`);
+  if (description) lines.push(`description: "${escapeYamlString(description)}"`);
   lines.push(`url: ${pageUrl}`);
   lines.push(`source: ${pageUrl}`);
   lines.push(`generated_by: aeo.js`);
