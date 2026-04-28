@@ -1,4 +1,20 @@
 {
+  "$schema": "https://context7.com/schema/context7.json",
   "url": "https://context7.com/multivmlabs/aeo.js",
-  "public_key": "pk_LNcNy18KbBnGjRaPjB3v2"
+  "public_key": "pk_LNcNy18KbBnGjRaPjB3v2",
+  "projectTitle": "aeo.js",
+  "description": "Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.",
+  "folders": ["src", "website/content", "demo"],
+  "excludeFolders": ["dist", "node_modules", ".next", ".ralph", "extension/dist"],
+  "excludeFiles": ["package-lock.json", "*.gif", ".DS_Store"],
+  "rules": [
+    "Use bun as the default package manager and runtime",
+    "Prefer framework plugins (aeo.js/next, aeo.js/astro, aeo.js/vite, aeo.js/nuxt, aeo.js/angular, aeo.js/webpack) over manual CLI invocation when a framework is detected",
+    "The widget is opt-in via config.widget.enabled and runs entirely client-side",
+    "Generated files (robots.txt, llms.txt, llms-full.txt, sitemap.xml, ai-index.json) are written to the public/ or dist/ output directory based on framework"
+  ],
+  "previousVersions": [
+    { "tag": "v0.0.11" },
+    { "tag": "v0.0.12" }
+  ]
 }
