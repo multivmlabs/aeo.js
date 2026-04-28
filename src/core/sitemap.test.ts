@@ -187,6 +187,73 @@ describe('generateSitemap', () => {
     expect(sitemap).toContain('<loc>https://example.com/products/</loc>');
   });
   
+  it('filters /sitemap, /sitemap-N, and /sitemap-index from config.pages', () => {
+    mockFs.readdirSync.mockReturnValue([]);
+    const configWithSitemapPages = {
+      ...baseConfig,
+      pages: [
+        { pathname: '/', title: 'Home', description: '', content: '' },
+        { pathname: '/about', title: 'About', description: '', content: '' },
+        { pathname: '/sitemap', title: '', description: '', content: '' },
+        { pathname: '/sitemap-0', title: '', description: '', content: '' },
+        { pathname: '/sitemap-1', title: '', description: '', content: '' },
+        { pathname: '/sitemap-index', title: '', description: '', content: '' },
+        { pathname: '/sitemap.xml', title: '', description: '', content: '' },
+        { pathname: '/sitemap-0.xml', title: '', description: '', content: '' },
+      ],
+    };
+
+    const sitemap = generateSitemap(configWithSitemapPages);
+
+    expect(sitemap).toContain('<loc>https://example.com/about</loc>');
+    expect(sitemap).not.toContain('/sitemap-0');
+    expect(sitemap).not.toContain('/sitemap-1');
+    expect(sitemap).not.toContain('/sitemap-index');
+    expect(sitemap).not.toContain('/sitemap.xml');
+    expect(sitemap).not.toMatch(/<loc>https:\/\/example\.com\/sitemap<\/loc>/);
+  });
+
+  it('preserves legitimate paths that start with sitemap- but are not sitemap files', () => {
+    mockFs.readdirSync.mockReturnValue([]);
+    const configWithSitemapNamedPages = {
+      ...baseConfig,
+      pages: [
+        { pathname: '/sitemap-guide', title: 'Sitemap Guide', description: '', content: '' },
+        { pathname: '/sitemap-tutorial', title: 'Tutorial', description: '', content: '' },
+        { pathname: '/sitemaps-explained', title: 'Explained', description: '', content: '' },
+        { pathname: '/sitemap-0', title: '', description: '', content: '' },
+      ],
+    };
+
+    const sitemap = generateSitemap(configWithSitemapNamedPages);
+
+    expect(sitemap).toContain('<loc>https://example.com/sitemap-guide</loc>');
+    expect(sitemap).toContain('<loc>https://example.com/sitemap-tutorial</loc>');
+    expect(sitemap).toContain('<loc>https://example.com/sitemaps-explained</loc>');
+    expect(sitemap).not.toContain('<loc>https://example.com/sitemap-0</loc>');
+  });
+
+  it('filters sitemap-named files discovered in contentDir', () => {
+    mockFs.readdirSync.mockReturnValue([
+      'index.md',
+      'about.md',
+      'sitemap-0.html',
+      'sitemap-index.html',
+      'sitemap-guide.md',
+    ]);
+    mockFs.statSync.mockReturnValue({
+      isDirectory: () => false,
+      isFile: () => true,
+    });
+
+    const sitemap = generateSitemap(baseConfig);
+
+    expect(sitemap).toContain('<loc>https://example.com/about</loc>');
+    expect(sitemap).toContain('<loc>https://example.com/sitemap-guide</loc>');
+    expect(sitemap).not.toContain('/sitemap-0');
+    expect(sitemap).not.toContain('/sitemap-index');
+  });
+
   it('should handle subdirectories recursively', () => {
     const files = ['index.md', 'blog', 'docs'];
     

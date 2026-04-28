@@ -38,7 +38,18 @@ function escapeXml(str: string): string {
 }
 
 function isSitemapPathname(pathname: string): boolean {
-  return /^\/sitemap/i.test(pathname);
+  // Matches sitemap output produced by plugins like @astrojs/sitemap:
+  // /sitemap, /sitemap-0, /sitemap-1, /sitemap-index, /sitemap.xml, /sitemap-0.xml
+  // Does NOT match legitimate user pages like /sitemap-guide or /sitemaps-explained.
+  return /^\/sitemap(-\d+|-index)?(\.xml)?$/i.test(pathname);
+}
+
+function pathnameFromUrl(url: string, baseUrl: string): string {
+  if (url.startsWith(baseUrl)) {
+    const rest = url.slice(baseUrl.length);
+    return rest.startsWith('/') ? rest : `/${rest}`;
+  }
+  return url;
 }
 
 export function generateSitemap(config: ResolvedAeoConfig): string {
@@ -54,7 +65,10 @@ export function generateSitemap(config: ResolvedAeoConfig): string {
 
   // Add markdown/html files from content dir
   if (config.contentDir && existsSync(config.contentDir)) {
-    urls.push(...collectUrls(config.contentDir, config));
+    const contentUrls = collectUrls(config.contentDir, config).filter(
+      (url) => !isSitemapPathname(pathnameFromUrl(url, config.url))
+    );
+    urls.push(...contentUrls);
   }
 
   const lines: string[] = [
