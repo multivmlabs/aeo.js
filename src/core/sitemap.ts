@@ -37,19 +37,42 @@ function escapeXml(str: string): string {
     .replace(/'/g, '&apos;');
 }
 
+function isSitemapPathname(pathname: string): boolean {
+  // Matches sitemap output produced by plugins like @astrojs/sitemap:
+  // /sitemap, /sitemap-0, /sitemap-1, /sitemap-index, /sitemap.xml, /sitemap-0.xml
+  // Does NOT match legitimate user pages like /sitemap-guide or /sitemaps-explained.
+  return /^\/sitemap(-\d+|-index)?(\.xml)?$/i.test(pathname);
+}
+
+function pathnameFromUrl(url: string, baseUrl: string): string {
+  // Always extract the pathname portion so the sitemap-name filter still applies
+  // even when the URL doesn't share the configured base (e.g. a different host
+  // sneaks in via collectUrls). Falls back to the raw input only if URL parsing
+  // fails entirely, which the regex below will then ignore.
+  try {
+    return new URL(url, baseUrl).pathname;
+  } catch {
+    return url;
+  }
+}
+
 export function generateSitemap(config: ResolvedAeoConfig): string {
   const urls: string[] = [];
 
   // Add discovered pages from framework plugin
   if (config.pages && config.pages.length > 0) {
     for (const page of config.pages) {
+      if (isSitemapPathname(page.pathname)) continue;
       urls.push(`${config.url}${page.pathname === '/' ? '' : page.pathname}`);
     }
   }
 
   // Add markdown/html files from content dir
   if (config.contentDir && existsSync(config.contentDir)) {
-    urls.push(...collectUrls(config.contentDir, config));
+    const contentUrls = collectUrls(config.contentDir, config).filter(
+      (url) => !isSitemapPathname(pathnameFromUrl(url, config.url))
+    );
+    urls.push(...contentUrls);
   }
 
   const lines: string[] = [
