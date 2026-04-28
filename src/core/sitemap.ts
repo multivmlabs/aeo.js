@@ -45,11 +45,15 @@ function isSitemapPathname(pathname: string): boolean {
 }
 
 function pathnameFromUrl(url: string, baseUrl: string): string {
-  if (url.startsWith(baseUrl)) {
-    const rest = url.slice(baseUrl.length);
-    return rest.startsWith('/') ? rest : `/${rest}`;
+  // Always extract the pathname portion so the sitemap-name filter still applies
+  // even when the URL doesn't share the configured base (e.g. a different host
+  // sneaks in via collectUrls). Falls back to the raw input only if URL parsing
+  // fails entirely, which the regex below will then ignore.
+  try {
+    return new URL(url, baseUrl).pathname;
+  } catch {
+    return url;
   }
-  return url;
 }
 
 export function generateSitemap(config: ResolvedAeoConfig): string {
