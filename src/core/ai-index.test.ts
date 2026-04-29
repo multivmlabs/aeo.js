@@ -104,6 +104,37 @@ describe('generateAIIndex', () => {
     expect(Array.isArray(homeEntry?.keywords)).toBe(true);
   });
 
+  it('should preserve Unicode keywords from international content', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      pages: [
+        {
+          pathname: '/international',
+          title: 'International',
+          content: [
+            'caf\u00e9 r\u00e9sum\u00e9 na\u00efve fa\u00e7ade',
+            '\ud55c\uad6d\uc5b4 \uac80\uc0c9 \ucd5c\uc801\ud654 \ucf58\ud150\uce20 \ud55c\uad6d\uc5b4 \uac80\uc0c9',
+            'AI SEO UX',
+          ].join(' '),
+        },
+      ],
+    };
+
+    const result = generateAIIndex(config);
+    const index = JSON.parse(result);
+    const entry = index.entries.find((e: any) => e.url === 'https://example.com/international');
+
+    expect(entry?.keywords).toEqual(expect.arrayContaining([
+      'caf\u00e9',
+      'r\u00e9sum\u00e9',
+      '\ud55c\uad6d\uc5b4',
+      '\uac80\uc0c9',
+      '\ucd5c\uc801\ud654',
+      '\ucf58\ud150\uce20',
+    ]));
+    expect(entry?.keywords).not.toEqual(expect.arrayContaining(['ai', 'seo', 'ux']));
+  });
+
   it('should handle pages without content', () => {
     const result = generateAIIndex(baseConfig);
     const index = JSON.parse(result);
