@@ -1,7 +1,7 @@
 import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig, PageEntry, ResolvedAeoConfig } from '../types';
-import { join } from 'path';
+import { join, resolve, sep } from 'path';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { extractTextFromHtml, extractTitle, extractDescription, htmlToMarkdown } from '../core/html-extract';
 import { generateSiteSchemas, generatePageSchemas, generateJsonLdScript } from '../core/schema';
@@ -304,6 +304,9 @@ if (!document.querySelector('meta[name="astro-view-transitions-enabled"]')) {
           if (req.headers['x-aeo-internal']) return next();
 
           const filename = req.url.startsWith('/') ? req.url.slice(1) : req.url;
+
+          // Prevent path traversal attacks
+          if (filename.includes('..') || filename.includes('\0')) return next();
 
           // Handwritten .md files in contentDir take priority
           if (resolvedConfig.contentDir) {

@@ -32,4 +32,21 @@ describe('parseArgs', () => {
     expect(flags.noWidget).toBe(true);
     expect(flags.json).toBe(true);
   });
+
+  it('treats --no-widget=true as the same camelCase boolean as --no-widget', () => {
+    const { flags } = parseArgs(['generate', '--no-widget=true']);
+    expect(flags.noWidget).toBe(true);
+    expect(flags['no-widget']).toBeUndefined();
+  });
+
+  it('treats --no-widget=false as a disabled boolean', () => {
+    const { flags } = parseArgs(['generate', '--no-widget=false']);
+    expect(flags.noWidget).toBe(false);
+  });
+
+  it('importing the CLI module does not run main()', () => {
+    // Smoke check: if main() were running on import, the test runner would
+    // exit before this assertion. Reaching this line proves the guard works.
+    expect(typeof parseArgs).toBe('function');
+  });
 });

@@ -3,6 +3,8 @@
  * Used by all framework plugins for content extraction from build output.
  */
 
+import { escapeYamlString } from './utils';
+
 /**
  * Extract text content from HTML and convert to markdown.
  * Removes scripts, styles, SVGs, and boilerplate (nav, header, footer).
@@ -74,9 +76,14 @@ export function extractTextFromHtml(html: string): string {
 }
 
 /**
- * Truncate text to at most maxLen chars, cutting at the nearest whitespace
- * boundary so we never split mid-word, mid-entity, or mid-UTF-8 sequence.
- * Falls back to a hard cut only when no whitespace is found.
+ * Truncate text to at most maxLen chars, preferring a cut at the last
+ * whitespace within the final 20% of the budget so we don't split mid-word,
+ * mid-HTML-entity, or mid-multi-byte sequence in typical prose.
+ *
+ * If the last whitespace is earlier than 80% of maxLen — for example a long
+ * URL or unbroken token spans the tail — we fall back to a hard slice rather
+ * than discard a large chunk of the page. The trailing trim removes any
+ * partial whitespace artifact from that hard cut.
  */
 function safeTruncate(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text;
@@ -117,10 +124,6 @@ export function extractJsonLd(html: string): object[] {
     } catch { /* skip invalid JSON-LD */ }
   }
   return schemas;
-}
-
-function escapeYamlString(s: string): string {
-  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 /**
