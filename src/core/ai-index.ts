@@ -13,7 +13,7 @@ function extractKeywords(content: string): string[] {
   const wordCount: Record<string, number> = {};
   
   for (const word of words) {
-    const isAscii = /^[a-z0-9'-]+$/i.test(word);
+    const isAscii = /^[a-z0-9'-]+$/.test(word);
     const minLength = isAscii ? 4 : 2;
     if (Array.from(word).length < minLength) continue;
 

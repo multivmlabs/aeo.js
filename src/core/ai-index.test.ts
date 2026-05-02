@@ -132,7 +132,9 @@ describe('generateAIIndex', () => {
       '\ucd5c\uc801\ud654',
       '\ucf58\ud150\uce20',
     ]));
-    expect(entry?.keywords).not.toEqual(expect.arrayContaining(['ai', 'seo', 'ux']));
+    expect(entry?.keywords).not.toContain('ai');
+    expect(entry?.keywords).not.toContain('seo');
+    expect(entry?.keywords).not.toContain('ux');
   });
 
   it('should handle pages without content', () => {
