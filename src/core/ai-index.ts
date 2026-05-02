@@ -6,14 +6,17 @@ import { parseFrontmatter, extractTitle } from './utils';
 
 function extractKeywords(content: string): string[] {
   const words = content
+    .normalize('NFC')
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter(word => word.length > 3);
+    .match(/[\p{L}\p{N}\p{M}]+(?:[-'][\p{L}\p{N}\p{M}]+)*/gu) || [];
   
   const wordCount: Record<string, number> = {};
   
   for (const word of words) {
+    const isAscii = /^[a-z0-9'-]+$/i.test(word);
+    const minLength = isAscii ? 4 : 2;
+    if (Array.from(word).length < minLength) continue;
+
     wordCount[word] = (wordCount[word] || 0) + 1;
   }
   
