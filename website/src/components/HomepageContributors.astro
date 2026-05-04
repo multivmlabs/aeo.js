@@ -1,0 +1,126 @@
+---
+type GhContributor = {
+  login: string;
+  avatar_url: string;
+  html_url: string;
+  contributions: number;
+  type: string;
+};
+
+let contributors: GhContributor[] = [];
+
+try {
+  const res = await fetch(
+    'https://api.github.com/repos/multivmlabs/aeo.js/contributors?per_page=100',
+    { headers: { 'User-Agent': 'aeojs-docs-build', Accept: 'application/vnd.github+json' } }
+  );
+  if (res.ok) {
+    const data = (await res.json()) as GhContributor[];
+    contributors = data
+      .filter((c) => c.type === 'User')
+      .sort((a, b) => b.contributions - a.contributions);
+  }
+} catch {
+  // Silently skip the strip on fetch failure — homepage stays clean.
+}
+
+const top = contributors.slice(0, 8);
+const remaining = Math.max(0, contributors.length - top.length);
+---
+
+{contributors.length > 0 && (
+  <section class="contrib-strip">
+    <h2 class="contrib-strip-title">Built by</h2>
+    <div class="contrib-strip-row">
+      {top.map((c) => (
+        <a
+          href={c.html_url}
+          target="_blank"
+          rel="noopener"
+          class="contrib-strip-avatar"
+          title={`${c.login} — ${c.contributions} commit${c.contributions === 1 ? '' : 's'}`}
+        >
+          <img
+            src={`${c.avatar_url}&s=80`}
+            alt={c.login}
+            width="40"
+            height="40"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+      ))}
+      {remaining > 0 && (
+        <a href="/contributors/" class="contrib-strip-more" aria-label={`${remaining} more contributors`}>
+          +{remaining}
+        </a>
+      )}
+    </div>
+    <a href="/contributors/" class="contrib-strip-link">
+      View all {contributors.length} contributor{contributors.length === 1 ? '' : 's'} →
+    </a>
+  </section>
+)}
+
+<style>
+  .contrib-strip {
+    margin: 4rem auto 2rem;
+    text-align: center;
+    max-width: 60rem;
+  }
+  .contrib-strip-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 1rem;
+  }
+  .contrib-strip-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .contrib-strip-avatar,
+  .contrib-strip-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+    text-decoration: none;
+  }
+  .contrib-strip-avatar:hover,
+  .contrib-strip-more:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+  .contrib-strip-avatar img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  .contrib-strip-more {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .contrib-strip-link {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .contrib-strip-link:hover {
+    color: #fff;
+  }
+</style>
