@@ -46,8 +46,11 @@ jobs:
           command: pages deploy website/dist --project-name=aeojs --branch=main
 
       # Preview deploy (pull requests)
+      # Skipped for Dependabot PRs: GitHub blocks repository secrets from
+      # Dependabot-authored runs, so CLOUDFLARE_API_TOKEN is empty and Wrangler
+      # cannot deploy. The build step above still runs as a sanity check.
       - name: Deploy Preview
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: cloudflare/wrangler-action@v3
         id: deploy-preview
         with:
@@ -57,7 +60,7 @@ jobs:
 
       # Comment preview URL on the PR
       - name: Comment Preview URL
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: actions/github-script@v8
         with:
           script: |
