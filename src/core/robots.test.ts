@@ -89,10 +89,19 @@ describe('generateRobotsTxt', () => {
 
   it('should include traditional search engines', () => {
     const result = generateRobotsTxt(baseConfig)
-    
+
     expect(result).toContain('User-agent: Googlebot')
     expect(result).toContain('Allow: /')
     expect(result).toContain('User-agent: Bingbot')
     expect(result).toContain('Allow: /')
+  })
+
+  it('does not duplicate Bingbot or SemrushBot user-agent entries', () => {
+    const result = generateRobotsTxt(baseConfig)
+    const bingbotMatches = result.match(/^User-agent: Bingbot$/gm) || []
+    const semrushMatches = result.match(/^User-agent: SemrushBot$/gim) || []
+
+    expect(bingbotMatches.length).toBe(1)
+    expect(semrushMatches.length).toBe(1)
   })
 })

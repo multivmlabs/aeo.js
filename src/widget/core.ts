@@ -12,9 +12,11 @@ export class AeoWidget {
   private config: AeoConfig;
   private container: HTMLElement;
   private isAIMode: boolean = false;
+  private isLoading: boolean = false;
   private toggleElement?: HTMLElement;
   private overlayElement?: HTMLElement;
   private styleElement?: HTMLStyleElement;
+  private keydownHandler?: (e: KeyboardEvent) => void;
 
   constructor(options: AeoWidgetOptions = {}) {
     this.config = this.resolveConfig(options.config);
@@ -113,17 +115,21 @@ export class AeoWidget {
       }
     });
 
-    document.addEventListener('keydown', (e) => {
+    this.keydownHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && this.overlayElement) {
         this.closeOverlay();
       }
-    });
+    };
+    document.addEventListener('keydown', this.keydownHandler);
   }
 
   private async switchToAI(): Promise<void> {
+    if (this.isLoading) return;
+    this.isLoading = true;
     this.isAIMode = true;
     this.updateToggleState();
     await this.showOverlay();
+    this.isLoading = false;
   }
 
   private switchToHuman(): void {
@@ -496,6 +502,7 @@ export class AeoWidget {
       this.overlayElement = undefined;
     }
     this.isAIMode = false;
+    this.isLoading = false;
     this.updateToggleState();
   }
 
@@ -541,6 +548,10 @@ export class AeoWidget {
   }
 
   public destroy(): void {
+    if (this.keydownHandler) {
+      document.removeEventListener('keydown', this.keydownHandler);
+      this.keydownHandler = undefined;
+    }
     this.toggleElement?.remove();
     this.overlayElement?.remove();
     this.styleElement?.remove();

@@ -7,8 +7,7 @@ import { auditSite, formatAuditReport } from './core/audit';
 import { generateReport, formatReportMarkdown, formatReportJson } from './core/report';
 import { writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
-
-const VERSION = '0.0.2';
+import { VERSION } from './index';
 
 const HELP = `
 aeo.js v${VERSION} — Answer Engine Optimization for the modern web
@@ -41,12 +40,38 @@ Examples:
   npx aeo.js report --json
 `;
 
-function parseArgs(args: string[]): { command: string; flags: Record<string, string | boolean> } {
+// Map kebab-case flag names to the camelCase keys the rest of the CLI reads.
+const FLAG_ALIASES: Record<string, string> = {
+  'no-widget': 'noWidget',
+};
+
+// Flags that always represent a boolean value, regardless of how they were passed.
+const BOOLEAN_FLAGS = new Set(['help', 'version', 'noWidget', 'json']);
+
+function normalizeKey(key: string): string {
+  return FLAG_ALIASES[key] ?? key;
+}
+
+function coerceValue(key: string, raw: string): string | boolean {
+  if (BOOLEAN_FLAGS.has(key)) {
+    return raw !== 'false' && raw !== '0';
+  }
+  return raw;
+}
+
+export function parseArgs(args: string[]): { command: string; flags: Record<string, string | boolean> } {
   let command = 'help';
   const flags: Record<string, string | boolean> = {};
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
+    // Support both "--flag value" and "--flag=value" forms
+    if (arg.startsWith('--') && arg.includes('=')) {
+      const eq = arg.indexOf('=');
+      const key = normalizeKey(arg.slice(2, eq));
+      flags[key] = coerceValue(key, arg.slice(eq + 1));
+      continue;
+    }
     if (arg === '--help' || arg === '-h') {
       flags.help = true;
     } else if (arg === '--version' || arg === '-v') {
@@ -56,8 +81,8 @@ function parseArgs(args: string[]): { command: string; flags: Record<string, str
     } else if (arg === '--json') {
       flags.json = true;
     } else if (arg.startsWith('--') && i + 1 < args.length) {
-      const key = arg.slice(2);
-      flags[key] = args[++i];
+      const key = normalizeKey(arg.slice(2));
+      flags[key] = coerceValue(key, args[++i]);
     } else if (!arg.startsWith('-') && command === 'help') {
       command = arg;
     }
@@ -268,7 +293,18 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error) => {
-  console.error('[aeo.js] Fatal error:', error.message);
-  process.exit(1);
-});
+// Only run the CLI when invoked directly. Importing this module (e.g. tests
+// importing parseArgs) must not trigger main() and process.exit().
+function isDirectInvocation(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  // Match the bun/node-bundled distribution names and the ts source.
+  return /(\/|\\)(cli|aeo\.js|aeojs)(\.[mc]?[tj]s)?$/.test(entry);
+}
+
+if (isDirectInvocation()) {
+  main().catch((error) => {
+    console.error('[aeo.js] Fatal error:', error.message);
+    process.exit(1);
+  });
+}

@@ -4,6 +4,14 @@ import type { AeoConfig, ResolvedAeoConfig, MarkdownFile } from '../types';
 import { detectFramework } from './detect';
 import { minimatch } from 'minimatch';
 
+/**
+ * Escape a string for safe inclusion inside a YAML double-quoted scalar.
+ * Backslash must be escaped first so the subsequent quote-escape isn't undone.
+ */
+export function escapeYamlString(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 export function validateConfig(config: AeoConfig): string[] {
   const warnings: string[] = [];
 

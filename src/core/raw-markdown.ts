@@ -1,6 +1,7 @@
 import { readdirSync, statSync, mkdirSync, writeFileSync, copyFileSync } from 'fs';
 import { join, relative, extname, dirname } from 'path';
 import type { ResolvedAeoConfig } from '../types';
+import { escapeYamlString } from './utils';
 
 export interface CopiedFile {
   source: string;
@@ -89,8 +90,8 @@ export function generatePageMarkdownFiles(config: ResolvedAeoConfig): GeneratedM
 
     // YAML frontmatter
     lines.push('---');
-    if (pageTitle) lines.push(`title: "${pageTitle}"`);
-    if (page.description) lines.push(`description: "${page.description}"`);
+    if (pageTitle) lines.push(`title: "${escapeYamlString(pageTitle)}"`);
+    if (page.description) lines.push(`description: "${escapeYamlString(page.description)}"`);
     lines.push(`url: ${pageUrl}`);
     lines.push(`source: ${pageUrl}`);
     lines.push(`generated_by: aeo.js`);

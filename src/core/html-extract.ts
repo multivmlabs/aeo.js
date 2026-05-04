@@ -3,6 +3,8 @@
  * Used by all framework plugins for content extraction from build output.
  */
 
+import { escapeYamlString } from './utils';
+
 /**
  * Extract text content from HTML and convert to markdown.
  * Removes scripts, styles, SVGs, and boilerplate (nav, header, footer).
@@ -70,7 +72,25 @@ export function extractTextFromHtml(html: string): string {
   // Remove empty headings
   text = text.replace(/^#{2,6}\s*$/gm, '');
   text = text.replace(/\n{3,}/g, '\n\n');
-  return text.trim().slice(0, 8000);
+  return safeTruncate(text.trim(), 8000);
+}
+
+/**
+ * Truncate text to at most maxLen chars, preferring a cut at the last
+ * whitespace within the final 20% of the budget so we don't split mid-word,
+ * mid-HTML-entity, or mid-multi-byte sequence in typical prose.
+ *
+ * If the last whitespace is earlier than 80% of maxLen — for example a long
+ * URL or unbroken token spans the tail — we fall back to a hard slice rather
+ * than discard a large chunk of the page. The trailing trim removes any
+ * partial whitespace artifact from that hard cut.
+ */
+function safeTruncate(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  const slice = text.slice(0, maxLen);
+  const lastBreak = Math.max(slice.lastIndexOf('\n'), slice.lastIndexOf(' '));
+  if (lastBreak > maxLen * 0.8) return slice.slice(0, lastBreak).trimEnd();
+  return slice.trimEnd();
 }
 
 /**
@@ -122,8 +142,8 @@ export function htmlToMarkdown(html: string, pagePath: string, config: { url: st
 
   // YAML frontmatter
   lines.push('---');
-  if (rawTitle) lines.push(`title: "${rawTitle}"`);
-  if (description) lines.push(`description: "${description}"`);
+  if (rawTitle) lines.push(`title: "${escapeYamlString(rawTitle)}"`);
+  if (description) lines.push(`description: "${escapeYamlString(description)}"`);
   lines.push(`url: ${pageUrl}`);
   lines.push(`source: ${pageUrl}`);
   lines.push(`generated_by: aeo.js`);

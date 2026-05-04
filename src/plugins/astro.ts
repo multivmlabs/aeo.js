@@ -1,7 +1,7 @@
 import { generateAEOFiles } from '../core/generate';
 import { resolveConfig } from '../core/utils';
 import type { AeoConfig, PageEntry, ResolvedAeoConfig } from '../types';
-import { join } from 'path';
+import { join, resolve, sep } from 'path';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { extractTextFromHtml, extractTitle, extractDescription, htmlToMarkdown } from '../core/html-extract';
 import { generateSiteSchemas, generatePageSchemas, generateJsonLdScript } from '../core/schema';
@@ -305,9 +305,21 @@ if (!document.querySelector('meta[name="astro-view-transitions-enabled"]')) {
 
           const filename = req.url.startsWith('/') ? req.url.slice(1) : req.url;
 
+          // Reject null bytes outright; later we use resolve() to enforce that
+          // the requested file lives inside contentDir, which catches `..`,
+          // absolute paths, and symlinks pointing outside the dir.
+          if (filename.includes('\0')) return next();
+
           // Handwritten .md files in contentDir take priority
           if (resolvedConfig.contentDir) {
-            const contentFile = join(process.cwd(), resolvedConfig.contentDir, filename);
+            const contentDirAbs = resolve(process.cwd(), resolvedConfig.contentDir);
+            const contentFile = resolve(contentDirAbs, filename);
+            if (
+              contentFile !== contentDirAbs &&
+              !contentFile.startsWith(contentDirAbs + sep)
+            ) {
+              return next();
+            }
             if (existsSync(contentFile)) {
               res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
               res.end(readFileSync(contentFile, 'utf-8'));
