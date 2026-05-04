@@ -4,6 +4,13 @@ dist
 .env
 .DS_Store
 
+# Repo standardizes on npm (package-lock.json). Prevent stray bun.lock files
+# from polluting the repo when contributors run `bun install` locally.
+bun.lock
+bun.lockb
+**/bun.lock
+**/bun.lockb
+
 # Demo artifacts
 demo/*/node_modules
 demo/*/dist
