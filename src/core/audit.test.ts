@@ -11,6 +11,7 @@ function makeConfig(overrides: Partial<ResolvedAeoConfig> = {}): ResolvedAeoConf
     outDir: './out',
     contentDir: '',
     generators: { robotsTxt: true, llmsTxt: true, llmsFullTxt: true, rawMarkdown: true, manifest: true, sitemap: true, aiIndex: true, schema: true },
+    aiIndex: { maxChunkLength: 2000, maxKeywords: 10 },
     robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '/sitemap.xml' },
     schema: {
       enabled: true,

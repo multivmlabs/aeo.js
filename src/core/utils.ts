@@ -54,6 +54,10 @@ export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
       aiIndex: config.generators?.aiIndex !== false,
       schema: config.generators?.schema !== false,
     },
+    aiIndex: {
+      maxChunkLength: config.aiIndex?.maxChunkLength ?? 2000,
+      maxKeywords: config.aiIndex?.maxKeywords ?? 10,
+    },
     robots: {
       allow: config.robots?.allow || ['/'],
       disallow: config.robots?.disallow || [],
