@@ -22,6 +22,10 @@ export interface AeoConfig {
     aiIndex?: boolean;
     schema?: boolean;
   };
+  aiIndex?: {
+    maxChunkLength?: number;
+    maxKeywords?: number;
+  };
   robots?: {
     allow?: string[];
     disallow?: string[];
@@ -76,6 +80,10 @@ export interface ResolvedAeoConfig {
     sitemap: boolean;
     aiIndex: boolean;
     schema: boolean;
+  };
+  aiIndex: {
+    maxChunkLength: number;
+    maxKeywords: number;
   };
   robots: {
     allow: string[];

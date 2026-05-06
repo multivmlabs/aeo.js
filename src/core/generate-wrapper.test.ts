@@ -37,6 +37,10 @@ const baseConfig: ResolvedAeoConfig = {
     aiIndex: true,
     schema: true,
   },
+  aiIndex: {
+    maxChunkLength: 2000,
+    maxKeywords: 10,
+  },
   robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
   widget: {
     enabled: true,

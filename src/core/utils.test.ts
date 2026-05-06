@@ -24,6 +24,10 @@ describe('utils', () => {
       expect(result.url).toBe('https://example.com');
       expect(result.generators.robotsTxt).toBe(true);
       expect(result.generators.llmsTxt).toBe(true);
+      expect(result.aiIndex).toEqual({
+        maxChunkLength: 2000,
+        maxKeywords: 10,
+      });
       expect(result.widget.enabled).toBe(true);
       expect(result.widget.position).toBe('bottom-right');
     });
@@ -52,6 +56,17 @@ describe('utils', () => {
       expect(result.widget.position).toBe('top-left');
       expect(result.widget.theme.accent).toBe('#FF0000');
       expect(result.widget.theme.background).toBe('rgba(18, 18, 24, 0.9)');
+    });
+
+    it('should handle partial aiIndex config', () => {
+      const result = resolveConfig({
+        aiIndex: {
+          maxKeywords: 5,
+        },
+      });
+
+      expect(result.aiIndex.maxKeywords).toBe(5);
+      expect(result.aiIndex.maxChunkLength).toBe(2000);
     });
 
     it('should resolve robots config', () => {
