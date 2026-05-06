@@ -43,6 +43,8 @@ const resolved = resolveConfig({ title: 'My Site' });
 // All fields now have defaults
 ```
 
+The examples below use `resolvedConfig` for a config object returned by `resolveConfig`.
+
 ### `validateConfig(config)`
 
 Validate a config object and return any errors:
@@ -66,15 +68,19 @@ const info = detectFramework();
 
 ## HTML Extraction
 
-### `htmlToMarkdown(html)`
+### `htmlToMarkdown(html, pagePath, config)`
 
 Convert HTML to clean markdown:
 
 ```ts
 import { htmlToMarkdown } from 'aeo.js';
 
-const md = htmlToMarkdown('<h1>Hello</h1><p>World</p>');
-// '# Hello\n\nWorld'
+const md = htmlToMarkdown(
+  '<html><head><title>Hello</title></head><body><main><p>World</p></main></body></html>',
+  '/',
+  { url: 'https://mysite.com' }
+);
+// Returns a markdown document with YAML frontmatter
 ```
 
 ### `extractTextFromHtml(html)`
@@ -107,65 +113,79 @@ import { generateSchemaObjects } from 'aeo.js';
 const schemas = generateSchemaObjects(resolvedConfig);
 ```
 
-### `generateJsonLdScript(config)`
+### `generateJsonLdScript(schemas)`
 
 Generate a `<script type="application/ld+json">` tag:
 
 ```ts
-import { generateJsonLdScript } from 'aeo.js';
+import { generateJsonLdScript, generateSiteSchemas } from 'aeo.js';
 
-const script = generateJsonLdScript(resolvedConfig);
+const schemas = generateSiteSchemas(resolvedConfig);
+const script = generateJsonLdScript(schemas);
 ```
 
-### `generateSiteSchemas(config)` / `generatePageSchemas(config, page)`
+### `generateSiteSchemas(config)` / `generatePageSchemas(page, config)`
 
 Generate schemas for the site or individual pages.
 
 ## Open Graph
 
-### `generateOGTags(config, page)`
+### `generateOGTags(page, config)`
 
 Returns an array of `MetaTag` objects:
 
 ```ts
 import { generateOGTags } from 'aeo.js';
 
-const tags = generateOGTags(config, { pathname: '/', title: 'Home' });
+const tags = generateOGTags(
+  { pathname: '/', title: 'Home' },
+  resolvedConfig
+);
 // [{ property: 'og:title', content: 'Home' }, ...]
 ```
 
-### `generateOGTagsHtml(config, page)`
+### `generateOGTagsHtml(page, config)`
 
 Returns OG tags as an HTML string.
 
 ## Audit
 
-### `auditSite(url)`
+### `auditSite(config)`
 
 Audit a site for AEO best practices:
 
 ```ts
-import { auditSite, formatAuditReport, getGrade } from 'aeo.js';
+import { auditSite, formatAuditReport, getGrade, resolveConfig } from 'aeo.js';
 
-const result = await auditSite('https://mysite.com');
+const config = resolveConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  pages: [{ pathname: '/', title: 'Home', content: 'Welcome to my site.' }],
+});
+
+const result = auditSite(config);
 console.log(formatAuditReport(result));
-console.log(getGrade(result)); // 'A', 'B', 'C', etc.
+console.log(getGrade(result.score)); // 'Excellent', 'Good', 'Fair', etc.
 ```
 
 ## Citability
 
-### `scorePageCitability(url, html)`
+### `scorePageCitability(page)`
 
 Score how likely a page is to be cited by AI:
 
 ```ts
 import { scorePageCitability, formatPageCitability } from 'aeo.js';
 
-const score = await scorePageCitability(url, html);
+const score = scorePageCitability({
+  pathname: '/',
+  title: 'Home',
+  content: '# Home\n\nMy site publishes practical guides for AI-ready content.',
+});
 console.log(formatPageCitability(score));
 ```
 
-### `scoreSiteCitability(url, pages)`
+### `scoreSiteCitability(config)`
 
 Score citability across your entire site.
 
@@ -178,8 +198,22 @@ Generate a comprehensive AEO report:
 ```ts
 import { generateReport, formatReportMarkdown } from 'aeo.js';
 
-const report = await generateReport(config);
+const report = generateReport(resolvedConfig);
 console.log(formatReportMarkdown(report));
+```
+
+## Platform Hints
+
+### `generatePlatformHints(audit, citability)`
+
+Generate platform-specific optimization hints from audit and citability results:
+
+```ts
+import { auditSite, generatePlatformHints, scoreSiteCitability } from 'aeo.js';
+
+const audit = auditSite(resolvedConfig);
+const citability = scoreSiteCitability(resolvedConfig);
+const hints = generatePlatformHints(audit, citability);
 ```
 
 ## Types

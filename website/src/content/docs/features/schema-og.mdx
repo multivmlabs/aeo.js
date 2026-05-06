@@ -63,21 +63,26 @@ This generates meta tags like:
 
 ## Programmatic API
 
+The lower-level helpers expect a resolved config and a page entry.
+
 ```ts
-import { generateSchema, generateSchemaObjects, generateJsonLdScript } from 'aeo.js';
+import { generateSchemaObjects, generateJsonLdScript } from 'aeo.js';
 import { generateOGTags, generateOGTagsHtml } from 'aeo.js';
 
 // Get schema objects
-const schemas = generateSchemaObjects(config);
+const schemas = generateSchemaObjects(resolvedConfig);
 
 // Get a <script> tag string
-const script = generateJsonLdScript(config);
+const script = generateJsonLdScript([
+  ...schemas.site,
+  ...(schemas.pages[page.pathname] ?? []),
+]);
 
 // Get OG meta tag objects
-const tags = generateOGTags(config, page);
+const tags = generateOGTags(page, resolvedConfig);
 
 // Get OG meta tags as HTML string
-const html = generateOGTagsHtml(config, page);
+const html = generateOGTagsHtml(page, resolvedConfig);
 ```
 
 <Aside type="tip">

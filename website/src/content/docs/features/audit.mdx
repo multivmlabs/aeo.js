@@ -8,12 +8,18 @@ description: Audit your AEO setup and measure your site's citability score.
 The `auditSite` function checks your site for AEO best practices and returns a detailed report:
 
 ```ts
-import { auditSite, formatAuditReport, getGrade } from 'aeo.js';
+import { auditSite, formatAuditReport, getGrade, resolveConfig } from 'aeo.js';
 
-const result = await auditSite('https://mysite.com');
+const config = resolveConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  pages: [{ pathname: '/', title: 'Home', content: 'Welcome to my site.' }],
+});
+
+const result = auditSite(config);
 
 console.log(formatAuditReport(result));
-console.log('Grade:', getGrade(result));
+console.log('Grade:', getGrade(result.score));
 ```
 
 The audit checks for:
@@ -38,11 +44,15 @@ Measure how likely AI engines are to cite your content:
 import { scorePageCitability, scoreSiteCitability, formatPageCitability } from 'aeo.js';
 
 // Score a single page
-const pageScore = await scorePageCitability(url, html);
+const pageScore = scorePageCitability({
+  pathname: '/',
+  title: 'Home',
+  content: '# Home\n\nMy site publishes practical guides for AI-ready content.',
+});
 console.log(formatPageCitability(pageScore));
 
 // Score the whole site
-const siteScore = await scoreSiteCitability('https://mysite.com', pages);
+const siteScore = scoreSiteCitability(config);
 ```
 
 The citability score evaluates:
@@ -60,7 +70,7 @@ Generate a comprehensive AEO report:
 ```ts
 import { generateReport, formatReportMarkdown, formatReportJson } from 'aeo.js';
 
-const report = await generateReport(config);
+const report = generateReport(config);
 
 // Get as markdown
 console.log(formatReportMarkdown(report));
@@ -76,6 +86,6 @@ Get platform-specific optimization suggestions:
 ```ts
 import { generatePlatformHints } from 'aeo.js';
 
-const hints = generatePlatformHints('next');
-// Returns hints specific to Next.js optimization
+const hints = generatePlatformHints(result, siteScore);
+// Returns platform-specific optimization hints for ChatGPT, Perplexity, Google AI, and Bing Copilot
 ```
