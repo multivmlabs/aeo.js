@@ -85,11 +85,19 @@ export class AeoWidget {
     this.toggleElement.className = `aeo-toggle aeo-${position}${sizeClass}`;
     this.toggleElement.innerHTML = `
       <div class="aeo-toggle-inner">
-        <button class="aeo-toggle-btn aeo-human-btn aeo-active" data-mode="human">
+        <button
+          class="aeo-toggle-btn aeo-human-btn aeo-active"
+          data-mode="human"
+          aria-label="${this.config.widget?.humanLabel || 'Human'} mode"
+        >
           ${icons.human}
           <span>${this.config.widget?.humanLabel || 'Human'}</span>
         </button>
-        <button class="aeo-toggle-btn aeo-ai-btn" data-mode="ai">
+        <button
+          class="aeo-toggle-btn aeo-ai-btn"
+          data-mode="ai"
+          aria-label="${this.config.widget?.aiLabel || 'AI'} mode"
+        >
           ${icons.ai}
           <span>${this.config.widget?.aiLabel || 'AI'}</span>
         </button>
