@@ -41,7 +41,7 @@ npx aeo.js check
 Measure how likely AI engines are to cite your content:
 
 ```ts
-import { scorePageCitability, scoreSiteCitability, formatPageCitability } from 'aeo.js';
+import { formatPageCitability, resolveConfig, scorePageCitability, scoreSiteCitability } from 'aeo.js';
 
 // Score a single page
 const pageScore = scorePageCitability({
@@ -52,6 +52,12 @@ const pageScore = scorePageCitability({
 console.log(formatPageCitability(pageScore));
 
 // Score the whole site
+const config = resolveConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  pages: [{ pathname: '/', title: 'Home', content: 'Welcome to my site.' }],
+});
+
 const siteScore = scoreSiteCitability(config);
 ```
 
@@ -68,7 +74,13 @@ The citability score evaluates:
 Generate a comprehensive AEO report:
 
 ```ts
-import { generateReport, formatReportMarkdown, formatReportJson } from 'aeo.js';
+import { formatReportJson, formatReportMarkdown, generateReport, resolveConfig } from 'aeo.js';
+
+const config = resolveConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  pages: [{ pathname: '/', title: 'Home', content: 'Welcome to my site.' }],
+});
 
 const report = generateReport(config);
 
@@ -84,8 +96,16 @@ console.log(formatReportJson(report));
 Get platform-specific optimization suggestions:
 
 ```ts
-import { generatePlatformHints } from 'aeo.js';
+import { auditSite, generatePlatformHints, resolveConfig, scoreSiteCitability } from 'aeo.js';
 
-const hints = generatePlatformHints(result, siteScore);
+const config = resolveConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  pages: [{ pathname: '/', title: 'Home', content: 'Welcome to my site.' }],
+});
+
+const audit = auditSite(config);
+const citability = scoreSiteCitability(config);
+const hints = generatePlatformHints(audit, citability);
 // Returns platform-specific optimization hints for ChatGPT, Perplexity, Google AI, and Bing Copilot
 ```
