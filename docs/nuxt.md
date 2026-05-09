@@ -1,0 +1,448 @@
+# Nuxt Integration Guide
+
+Complete guide for integrating aeo.js with Nuxt to optimize your site for AI-powered search engines.
+
+## Prerequisites
+
+- **Nuxt**: 3.0 or higher
+- **Node.js**: 18.0 or higher  
+- **Package Manager**: npm, yarn, or pnpm
+
+## Installation
+
+### Step 1: Install aeo.js
+
+```bash
+npm install aeo.js
+# or
+yarn add aeo.js
+# or
+pnpm add aeo.js
+```
+
+### Step 2: Add Module to Nuxt Config
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['aeo.js/nuxt'],
+  
+  aeo: {
+    title: 'My Nuxt Site',
+    description: 'Built with Nuxt and optimized for AI discovery',
+    url: 'https://mysite.com',
+    keywords: ['nuxt', 'vue', 'ssr'],
+  },
+});
+```
+
+### Step 3: Build and Verify
+
+```bash
+npm run build
+```
+
+Check generated files in `.output/public`:
+- `.output/public/llms.txt`
+- `.output/public/robots.txt`
+- `.output/public/sitemap.xml`
+
+## Configuration
+
+### Basic Configuration
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['aeo.js/nuxt'],
+  
+  aeo: {
+    title: string;              // Required
+    url: string;                // Required
+    description?: string;
+    keywords?: string[];
+    language?: string;
+  },
+});
+```
+
+### Advanced Configuration
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['aeo.js/nuxt'],
+  
+  aeo: {
+    // Basic info
+    title: 'My Nuxt Site',
+    url: 'https://mysite.com',
+    description: 'Server-rendered Vue application',
+    
+    // SEO
+    keywords: ['nuxt', 'vue', 'ssr', 'seo'],
+    language: 'en',
+    author: 'Your Name',
+    
+    // Generation options
+    generateLLMsTxt: true,
+    generateRobotsTxt: true,
+    generateSitemap: true,
+    generateJsonLd: true,
+    
+    // Custom pages
+    customPages: [
+      {
+        path: '/',
+        title: 'Home',
+        description: 'Welcome page',
+        priority: 1.0,
+      },
+      {
+        path: '/blog',
+        title: 'Blog',
+        description: 'Latest articles',
+        priority: 0.9,
+      },
+    ],
+    
+    // Path filtering
+    excludePaths: [
+      '/admin/*',
+      '/api/*',
+      '/_nuxt/*',
+    ],
+  },
+});
+```
+
+## Page Meta & SEO
+
+### Using useHead Composable
+
+```vue
+<script setup lang="ts">
+useHead({
+  title: 'My Page Title',
+  meta: [
+    { name: 'description', content: 'Page description for AI' },
+    { name: 'keywords', content: 'nuxt, vue, seo' },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'My Page Title',
+        description: 'Page description',
+      }),
+    },
+  ],
+});
+</script>
+
+<template>
+  <div>
+    <h1>My Page</h1>
+  </div>
+</template>
+```
+
+### Dynamic Meta from API
+
+```vue
+<script setup lang="ts">
+const { data: post } = await useFetch(`/api/posts/${route.params.slug}`);
+
+useHead({
+  title: () => `${post.value?.title} | My Blog`,
+  meta: [
+    { name: 'description', content: () => post.value?.excerpt },
+    { property: 'og:title', content: () => post.value?.title },
+    { property: 'og:description', content: () => post.value?.excerpt },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: () => JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.value?.title,
+        description: post.value?.excerpt,
+        datePublished: post.value?.publishedAt,
+      }),
+    },
+  ],
+});
+</script>
+```
+
+## Content Module Integration
+
+### Setup Nuxt Content
+
+```bash
+npm install @nuxt/content
+```
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['@nuxt/content', 'aeo.js/nuxt'],
+  
+  content: {
+    highlight: {
+      theme: 'github-dark',
+    },
+  },
+  
+  aeo: {
+    title: 'My Blog',
+    url: 'https://myblog.com',
+  },
+});
+```
+
+### Content-Driven Pages
+
+```vue
+<script setup lang="ts">
+// pages/blog/[slug].vue
+const { path } = useRoute();
+const { data: article } = await useAsyncData(path, () =>
+  queryContent(path).findOne()
+);
+
+useHead({
+  title: article.value?.title,
+  meta: [
+    { name: 'description', content: article.value?.description },
+  ],
+});
+</script>
+
+<template>
+  <article>
+    <h1>{{ article.title }}</h1>
+    <ContentDoc />
+  </article>
+</template>
+```
+
+## Best Practices
+
+### 1. App-Level Configuration
+
+```vue
+<!-- app.vue -->
+<script setup lang="ts">
+useHead({
+  titleTemplate: (title) => title ? `${title} | My Site` : 'My Site',
+  meta: [
+    { charset: 'utf-8' },
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+  ],
+  link: [
+    { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+  ],
+});
+</script>
+
+<template>
+  <NuxtPage />
+</template>
+```
+
+### 2. Server Routes for Dynamic Sitemaps
+
+```typescript
+// server/routes/sitemap.xml.ts
+export default defineEventHandler(async (event) => {
+  const posts = await $fetch('/api/posts');
+  
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>https://mysite.com/</loc>
+        <priority>1.0</priority>
+      </url>
+      ${posts.map(post => `
+        <url>
+          <loc>https://mysite.com/blog/${post.slug}</loc>
+          <lastmod>${post.updatedAt}</lastmod>
+          <priority>0.8</priority>
+        </url>
+      `).join('')}
+    </urlset>
+  `;
+  
+  setHeader(event, 'Content-Type', 'application/xml');
+  return sitemap;
+});
+```
+
+### 3. Environment-Specific Config
+
+```typescript
+// nuxt.config.ts
+const isProd = process.env.NODE_ENV === 'production';
+
+export default defineNuxtConfig({
+  modules: ['aeo.js/nuxt'],
+  
+  aeo: {
+    title: 'My Site',
+    url: isProd ? 'https://mysite.com' : 'http://localhost:3000',
+    generateSitemap: isProd,
+  },
+});
+```
+
+### 4. Composables for Structured Data
+
+```typescript
+// composables/useStructuredData.ts
+export const useStructuredData = (type: string, data: any) => {
+  useHead({
+    script: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': type,
+          ...data,
+        }),
+      },
+    ],
+  });
+};
+```
+
+Usage:
+```vue
+<script setup>
+useStructuredData('BlogPosting', {
+  headline: 'My Post Title',
+  description: 'Post description',
+  datePublished: '2026-05-09',
+});
+</script>
+```
+
+## Deployment
+
+### Vercel
+
+```json
+// vercel.json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".output/public"
+}
+```
+
+### Netlify
+
+```toml
+# netlify.toml
+[build]
+  command = "npm run build"
+  publish = ".output/public"
+```
+
+### Node Server
+
+```bash
+npm run build
+node .output/server/index.mjs
+```
+
+## Troubleshooting
+
+### Module Not Found
+
+**Problem**: `Cannot find module 'aeo.js/nuxt'`
+
+**Solution**:
+```bash
+rm -rf node_modules .nuxt
+npm install
+```
+
+### Files in Wrong Directory
+
+**Problem**: AEO files in wrong output location.
+
+**Solution**: Check Nuxt version - v3 uses `.output/public`
+
+### SSR vs Static Generation
+
+**Problem**: Different behavior between `nuxt build` and `nuxt generate`.
+
+**Solution**: Use `nuxt generate` for static sites:
+```bash
+npx nuxi generate
+```
+
+## Examples
+
+### Blog with Categories
+
+```vue
+<!-- pages/blog/category/[category].vue -->
+<script setup lang="ts">
+const route = useRoute();
+const { data: posts } = await useFetch(
+  `/api/posts?category=${route.params.category}`
+);
+
+useHead({
+  title: `${route.params.category} Posts`,
+  meta: [
+    { name: 'description', content: `Browse ${route.params.category} articles` },
+  ],
+});
+</script>
+
+<template>
+  <div>
+    <h1>{{ route.params.category }} Posts</h1>
+    <article v-for="post in posts" :key="post.id">
+      <NuxtLink :to="`/blog/${post.slug}`">
+        {{ post.title }}
+      </NuxtLink>
+    </article>
+  </div>
+</template>
+```
+
+### E-commerce Product Pages
+
+```vue
+<script setup lang="ts">
+const route = useRoute();
+const { data: product } = await useFetch(`/api/products/${route.params.id}`);
+
+useStructuredData('Product', {
+  name: product.value?.name,
+  description: product.value?.description,
+  image: product.value?.image,
+  offers: {
+    '@type': 'Offer',
+    price: product.value?.price,
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+  },
+});
+</script>
+```
+
+## Further Reading
+
+- [Nuxt Documentation](https://nuxt.com/docs)
+- [Nuxt Content](https://content.nuxt.com)
+- [Nuxt SEO](https://nuxtseo.com)
+- [Back to Overview](./README.md)
+
+---
+
+**Need help?** [Open an issue](https://github.com/multivmlabs/aeo.js/issues)
