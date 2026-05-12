@@ -73,6 +73,29 @@ describe('scorePageCitability', () => {
     expect(longHint).toBeDefined();
   });
 
+  it('suggests leading with a direct answer when the first substantial paragraph is contextual', () => {
+    const content = `# About aeo.js
+
+This page explains the background, positioning, and implementation details that teams should understand before adopting the library.
+
+aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt, schema data, and AI index metadata.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeDefined();
+    expect(answerFirstHint?.line).toBe(3);
+  });
+
+  it('does not add an answer-first hint when the first substantial paragraph is direct', () => {
+    const content = `# About aeo.js
+
+Aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt files, schema data, and AI index metadata for crawler discovery.
+
+This page explains the background, positioning, and implementation details for teams adopting the library.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeUndefined();
+  });
+
   it('detects context-dependent paragraphs', () => {
     const content = `As mentioned above, our platform is great.
 
