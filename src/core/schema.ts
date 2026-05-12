@@ -1,4 +1,5 @@
 import type { ResolvedAeoConfig, PageEntry } from '../types';
+import { detectFaqPatterns, detectHowToSteps } from './schema-patterns';
 
 export interface SchemaOutput {
   site: object[];
@@ -168,43 +169,6 @@ function generateBreadcrumbs(pathname: string, config: ResolvedAeoConfig): { nam
 }
 
 /**
- * Detect FAQ-like patterns in markdown/text content.
- * Looks for: headings ending with "?" followed by paragraph text.
- */
-function detectFaqPatterns(content: string): { question: string; answer: string }[] {
-  const items: { question: string; answer: string }[] = [];
-
-  // Pattern: ## Question? \n\n Answer text
-  // Only match headings that look like genuine questions (start with question words or end cleanly with ?)
-  const lines = content.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const headingMatch = line.match(/^#{1,6}\s+((?:What|How|Why|When|Where|Who|Which|Is|Are|Can|Do|Does|Should|Will|Was|Were|Did|Has|Have|Could|Would)\b.+\?)\s*$/i);
-    if (headingMatch) {
-      // Collect answer: all non-empty, non-heading lines following
-      const answerLines: string[] = [];
-      for (let j = i + 1; j < lines.length; j++) {
-        const nextLine = lines[j].trim();
-        if (!nextLine) {
-          if (answerLines.length > 0) break; // empty line after content = end
-          continue; // skip leading empty lines
-        }
-        if (/^#{1,6}\s/.test(nextLine)) break; // next heading = end
-        answerLines.push(nextLine);
-      }
-      if (answerLines.length > 0) {
-        items.push({
-          question: headingMatch[1],
-          answer: answerLines.join(' ').slice(0, 500),
-        });
-      }
-    }
-  }
-
-  return items;
-}
-
-/**
  * Serialize a value to JSON safe for embedding inside HTML <script> tags.
  * Escapes characters that could break out of the script context.
  */
@@ -215,44 +179,6 @@ function serializeJsonForHtml(value: unknown): string {
     .replace(/&/g, '\\u0026')
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029');
-}
-
-/**
- * Detect HowTo step patterns in markdown/text content.
- * Looks for: numbered step headings (Step 1, Step 2, etc.) or ordered list patterns.
- */
-function detectHowToSteps(content: string): { name: string; text: string }[] {
-  const steps: { name: string; text: string }[] = [];
-  const lines = content.split('\n');
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    // Match: ## Step 1: Title, ## 1. Title, ### Step 2 - Title
-    const stepMatch = line.match(/^#{1,6}\s+(?:Step\s+\d+[\s:.-]*|(\d+)[.)]\s*)(.+)$/i);
-    if (stepMatch) {
-      const name = (stepMatch[2] || stepMatch[1] || '').trim();
-      // Collect body text
-      const bodyLines: string[] = [];
-      for (let j = i + 1; j < lines.length; j++) {
-        const nextLine = lines[j].trim();
-        if (!nextLine) {
-          if (bodyLines.length > 0) break;
-          continue;
-        }
-        if (/^#{1,6}\s/.test(nextLine)) break;
-        bodyLines.push(nextLine);
-      }
-      if (name) {
-        steps.push({
-          name,
-          text: bodyLines.join(' ').slice(0, 500),
-        });
-      }
-    }
-  }
-
-  // Only return if we found 2+ steps to avoid false positives
-  return steps.length >= 2 ? steps : [];
 }
 
 /**

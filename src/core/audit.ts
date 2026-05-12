@@ -1,6 +1,7 @@
 import type { ResolvedAeoConfig, PageEntry } from '../types';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { detectFaqPatterns, detectHowToSteps } from './schema-patterns';
 
 export interface AuditIssue {
   category: string;
@@ -185,11 +186,11 @@ function auditSchemaPresence(config: ResolvedAeoConfig, issues: AuditIssue[], su
   // FAQPage or HowTo schema (4 pts) — matches aeochecker scoring
   const hasFaqOrHowTo = config.pages.some(p => {
     const content = p.content || '';
-    return /^#{1,6}\s+.+\?\s*$/m.test(content) || /^#{1,6}\s+(?:Step\s+\d+[\s:.-]|How\s+to)/im.test(content);
+    return detectFaqPatterns(content).length > 0 || detectHowToSteps(content).length > 0;
   });
   checks.push({ label: 'FAQPage or HowTo schema', passed: hasFaqOrHowTo, points: hasFaqOrHowTo ? 4 : 0 });
   if (!hasFaqOrHowTo) {
-    suggestions.push('Add FAQ sections (question headings) or step-by-step content to auto-generate FAQPage/HowTo schema');
+    suggestions.push('Add FAQ sections with answer text or at least two step headings to auto-generate FAQPage/HowTo schema');
   }
 
   // Article/WebPage schema (4 pts) — always passes when schema is enabled since defaultType is set
@@ -290,11 +291,10 @@ function auditCitability(config: ResolvedAeoConfig, issues: AuditIssue[], sugges
   }
 
   // Has FAQ-like patterns (4 pts)
-  const faqPattern = /^#{1,6}\s+.+\?\s*$/m;
-  const hasFaq = faqPattern.test(allContent);
+  const hasFaq = config.pages.some(p => detectFaqPatterns(p.content || '').length > 0);
   checks.push({ label: 'Content has FAQ patterns (question headings)', passed: hasFaq, points: hasFaq ? 4 : 0 });
   if (!hasFaq) {
-    suggestions.push('Add FAQ sections with question headings — these generate FAQPage schema automatically');
+    suggestions.push('Add FAQ sections with answer text under question headings to generate FAQPage schema automatically');
   }
 
   // Has structured lists (4 pts)
