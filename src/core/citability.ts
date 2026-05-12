@@ -197,9 +197,21 @@ function scoreStatisticalDensity(content: string, hints: ContentHint[]): Citabil
 
   if (totalMatches === 0) {
     hints.push({ type: 'suggestion', message: 'No statistics or factual claims found — AI favors content with concrete numbers, percentages, and dates' });
+  } else if (!hasEvidenceSignals(content)) {
+    hints.push({ type: 'suggestion', message: 'Add source links or attribution for statistical claims so AI systems can verify them' });
   }
 
   return { name: 'Statistical Density', score, maxScore: 25, details: `${totalMatches} statistical claims (${density.toFixed(1)} per 100 words)` };
+}
+
+function hasEvidenceSignals(content: string): boolean {
+  const evidencePatterns = [
+    /https?:\/\/\S+/i,
+    /\[\^?\d+\]/,
+    /\b(according to|source:|sources:|reported by|published by|based on|study|survey|report|research|data from)\b/i,
+  ];
+
+  return evidencePatterns.some(pattern => pattern.test(content));
 }
 
 /**

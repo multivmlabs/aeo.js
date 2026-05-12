@@ -90,6 +90,20 @@ Furthermore, we plan to add more features.`;
     const stats = result.dimensions.find(d => d.name === 'Statistical Density')!;
     expect(stats.score).toBeGreaterThanOrEqual(12);
   });
+
+  it('suggests attribution when statistical claims lack evidence signals', () => {
+    const statsContent = `Our platform serves 50,000 users across 120 countries. Revenue grew 250% in 2024. We process $2.5 million in transactions daily with 99.99% uptime.`;
+    const result = scorePageCitability(makePage(statsContent));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('does not suggest attribution when statistical claims include evidence signals', () => {
+    const statsContent = `According to the 2024 Benchmark Report, our platform serves 50,000 users across 120 countries. Revenue grew 250% in 2024. Source: https://example.com/report`;
+    const result = scorePageCitability(makePage(statsContent));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
 });
 
 describe('scoreSiteCitability', () => {
