@@ -3,6 +3,8 @@ title: Introduction
 description: What is aeo.js and why you need Answer Engine Optimization.
 ---
 
+import { Aside } from '@astrojs/starlight/components';
+
 ![aeo.js in action](/example.webp)
 
 ## What is Answer Engine Optimization?
@@ -29,6 +31,30 @@ AI crawlers and LLMs look for specific files and formats that most websites don'
 2. **Build** your site as usual
 3. **aeo.js** scans your output, extracts content, and generates all AEO files
 4. The optional **widget** lets visitors toggle between human and AI views of your pages
+
+## Scope: what aeo.js does and doesn't influence
+
+AEO is the **on-site** half of being discoverable by AI engines — there's an off-site half that aeo.js cannot reach. Setting expectations upfront so you can plan a full strategy:
+
+<Aside type="note" title="What aeo.js does well">
+Improves machine-readable access to **your own site**:
+
+- generates `llms.txt`, `llms-full.txt`, `ai-index.json`, raw markdown copies, JSON-LD schema, and a sitemap
+- structures content so AI crawlers can fetch, parse, and quote it
+- audits and scores your page-level citability so you know where to improve
+</Aside>
+
+<Aside type="caution" title="What aeo.js cannot influence">
+Off-site signals that AI engines also weigh:
+
+- **third-party mentions and reviews** of your product across the web
+- **inbound links** and how reputable the linking domains are
+- **community discussions** (Reddit, Hacker News, X, niche forums) and how often you're cited there
+- **model training data** — what an LLM "already knows" about you from its pre-training cutoff
+- **freshness signals** outside your control (independent news, blog roundups, podcasts)
+</Aside>
+
+Think of aeo.js as a strong foundation — necessary but not sufficient. For full AEO coverage, pair it with the off-site work above: PR, community engagement, and being mentioned where your customers research.
 
 ## Supported Frameworks
 
