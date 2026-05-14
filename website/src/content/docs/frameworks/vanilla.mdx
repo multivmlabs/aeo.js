@@ -12,30 +12,46 @@ aeo.js works on any project that produces static HTML. Use the CLI directly — 
 <Tabs>
   <TabItem label="Zero-install (npx)">
     ```bash
-    npx aeo.js init
-    npx aeo.js generate --url https://mysite.com --title "My Site"
+    npx aeo.js generate --url https://mysite.com --title "My Site" --out public
     ```
   </TabItem>
   <TabItem label="Installed">
     ```bash
     npm install --save-dev aeo.js
-    npx aeo.js init
-    npx aeo.js generate
+    npx aeo.js generate --url https://mysite.com --title "My Site" --out public
     ```
   </TabItem>
 </Tabs>
 
-`init` scaffolds `aeo.config.ts`. `generate` walks your output directory, extracts page content, and emits `robots.txt`, `llms.txt`, `sitemap.xml`, `ai-index.json`, and `schema.json` next to your HTML.
+`generate` walks your output directory, extracts page content, and emits `robots.txt`, `llms.txt`, `sitemap.xml`, `ai-index.json`, and `schema.json` next to your HTML.
+
+<Aside type="caution">
+The standalone CLI configures itself from **flags only** — it does not load `aeo.config.{ts,js}`. Pass `--url` / `--title` / `--out` on the command line, or call the package's API programmatically (see "Calling the API directly" below) to access richer options like `contentDir` and `pages`.
+</Aside>
 
 ## How aeo.js Discovers Your Pages
 
-| Source | Config | Use when |
+| Source | How to set | Use when |
 |---|---|---|
-| **`contentDir`** | `contentDir: 'docs'` | You have handwritten `.md` / `.mdx` files |
-| **Built HTML in `outDir`** | `outDir: 'public'` | You have a built static site with `*.html` files |
-| **`pages` array** | `pages: [{ pathname: '/about', title: '…' }]` | Explicit control for runtime-only routes |
+| **Built HTML in `outDir`** | `--out public` (CLI) | You have a built static site with `*.html` files |
+| **`contentDir`** | programmatic only — see below | You have handwritten `.md` / `.mdx` files |
+| **`pages` array** | programmatic only — see below | Explicit control for runtime-only routes |
 
-Mix all three — `pages` is additive.
+The CLI exposes `--out` for `outDir`. For the richer options (`contentDir`, `pages`), call the package's API directly:
+
+```js
+// scripts/aeo.mjs
+import { generateAEOFiles } from 'aeo.js/core/generate-wrapper';
+import { resolveConfig } from 'aeo.js/core/utils';
+
+await generateAEOFiles(resolveConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  contentDir: 'content',
+  outDir: 'public',
+  pages: [{ pathname: '/', title: 'Home' }],
+}));
+```
 
 ## Common Setups
 

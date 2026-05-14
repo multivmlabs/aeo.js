@@ -79,13 +79,13 @@ npx aeo.js generate [options]
 | Flag | Type | Default | Description |
 |---|---|---|---|
 | `--out <dir>` | string | auto-detected from framework | Where to write the AEO files |
-| `--url <url>` | string | from config or `https://example.com` | Production URL — drives `sitemap.xml`, absolute URLs in `llms.txt`, JSON-LD |
-| `--title <title>` | string | from config or `My Site` | Site title for `llms.txt` and JSON-LD |
-| `--no-widget` | boolean | (widget enabled if config says so) | Disable widget injection / generation |
+| `--url <url>` | string | `https://example.com` | Production URL — drives `sitemap.xml`, absolute URLs in `llms.txt`, JSON-LD |
+| `--title <title>` | string | `My Site` | Site title for `llms.txt` and JSON-LD |
+| `--no-widget` | boolean | widget enabled | Disable widget injection / generation |
 
 **What it does**
 1. Detects your framework (Next.js, Astro, Nuxt, Vite, Angular, Webpack, or static).
-2. Reads `aeo.config.{ts,js}` if present; otherwise uses CLI flags + defaults.
+2. Resolves config from CLI flags + defaults. See [Configuration files](#configuration-files) below — the standalone CLI does **not** currently read `aeo.config.{ts,js}`.
 3. Walks `outDir` for HTML and/or `contentDir` for markdown.
 4. Writes the enabled generators:
    - `robots.txt` — AI crawler directives + sitemap reference
@@ -251,14 +251,38 @@ npx aeo.js report --json > aeo-report.json
 
 ## Configuration files
 
-The CLI auto-discovers (in order):
+> **Heads up:** the standalone CLI (`generate`, `check`, `report`) currently configures itself from **CLI flags only** — it does not load `aeo.config.ts` or `aeo.config.js`. Tracked as a follow-up. For now: pass `--url` / `--title` / `--out` on the command line, or use a framework integration which **does** read the config (see below).
 
-1. `aeo.config.ts`
-2. `aeo.config.js`
+`npx aeo.js init` scaffolds an `aeo.config.ts` template — it's the canonical place to keep your settings, but today the file is consumed by framework integrations rather than the CLI itself:
 
-Both export a default `AeoConfig` object (see [README.md](./README.md#configuration-options) for the full type). Flags passed on the command line override config values.
+```ts
+// vite.config.ts (or next.config.mjs / astro.config.mjs / etc.)
+import aeoConfig from './aeo.config';
+import { aeoVitePlugin } from 'aeo.js/vite';
 
-**No config file?** Everything uses defaults plus CLI flags. Fine for one-off invocations; recommend committing a config for repeatable builds.
+export default {
+  plugins: [aeoVitePlugin(aeoConfig)],
+};
+```
+
+For raw CLI invocations on a static site, pass the values directly:
+
+```bash
+npx aeo.js generate \
+  --url https://mysite.com \
+  --title "My Site" \
+  --out public
+```
+
+A `package.json` script keeps this repeatable without a config file:
+
+```jsonc
+{
+  "scripts": {
+    "aeo": "aeo.js generate --url https://mysite.com --title \"My Site\" --out public"
+  }
+}
+```
 
 ## Framework auto-detection
 

@@ -23,13 +23,13 @@ npm install --save-dev aeo.js
 
 ## Quick Start
 
-### Step 1: Initialize a config file (optional but recommended)
+### Step 1: Initialize a config file (optional)
 
 ```bash
 npx aeo.js init
 ```
 
-This drops an `aeo.config.ts` into your project root with sensible defaults you can edit. The generated file matches the template in [src/cli.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/cli.ts):
+This drops an `aeo.config.ts` into your project root with sensible defaults. The generated file matches the template in [src/cli.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/cli.ts):
 
 ```ts
 import { defineConfig } from 'aeo.js';
@@ -88,15 +88,29 @@ export default defineConfig({
 > },
 > ```
 
-Don't want a TS config? Skip `init` and pass everything via flags or use `aeo.config.js` / `aeo.config.json` (CLI auto-detects).
+> **Important:** the standalone CLI does **not** currently load `aeo.config.{ts,js}` — it reads CLI flags + defaults only. The config file scaffolded here is intended to be imported into a framework config (e.g. `import aeoConfig from './aeo.config'` inside `vite.config.ts`) and passed to the framework plugin. For raw CLI usage on a static site, **always pass `--url` and `--title` on the command line**.
 
 ### Step 2: Generate the AEO files
 
+Pass your URL and title as flags. The CLI scans your output directory and emits all enabled files alongside your HTML.
+
 ```bash
-npx aeo.js generate
+npx aeo.js generate \
+  --url https://mysite.com \
+  --title "My Site" \
+  --out public
 ```
 
-The CLI scans your output directory and emits all enabled files alongside your HTML.
+For a one-line invocation that's easy to commit, drop it into a script:
+
+```jsonc
+// package.json
+{
+  "scripts": {
+    "build:aeo": "aeo.js generate --url https://mysite.com --title \"My Site\" --out public"
+  }
+}
+```
 
 ### Step 3: Verify
 
@@ -116,15 +130,29 @@ Visit `https://yoursite.com/llms.txt` after deploying to confirm.
 
 ## How aeo.js Discovers Your Pages
 
-The CLI looks for content in two places — set whichever fits your project:
+The CLI itself only sees what you pass via flags. The richer `contentDir` / `pages` options are honored when you call the generators programmatically or via a framework integration — they're documented here so you know what's available:
 
-| Source | Config | Use when |
+| Source | Option | Use when |
 |---|---|---|
-| **`contentDir`** | `contentDir: 'docs'` | You have handwritten markdown files (e.g. blog posts in `content/blog/*.md`). aeo.js parses front-matter, scans recursively, and pulls each into the index. |
-| **Built HTML in `outDir`** | `outDir: 'public'` | You have a built static site. aeo.js walks the directory for `.html` files, extracts `<title>`, meta description, and rendered text from `<main>` (or the body if no `<main>` exists). |
-| **`pages` array** | `pages: [{ pathname: '/about', title: '…' }]` | You want explicit control or have routes that aren't in `contentDir` / `outDir`. Manual entries are merged with auto-discovered ones. |
+| **Built HTML in `outDir`** | `--out public` (CLI) or `outDir: 'public'` (programmatic) | You have a built static site. aeo.js walks the directory for `.html` files, extracts `<title>`, meta description, and rendered text from `<main>` (or the body if no `<main>` exists). |
+| **`contentDir`** | `contentDir: 'docs'` (programmatic) | You have handwritten markdown files (e.g. blog posts in `content/blog/*.md`). aeo.js parses front-matter, scans recursively, and pulls each into the index. |
+| **`pages` array** | `pages: [{ pathname: '/about', title: '…' }]` (programmatic) | Explicit control for runtime-only routes. Manual entries are merged with auto-discovered ones. |
 
-You can mix all three — `pages` is additive, not exclusive.
+The CLI exposes `--out` for `outDir`; the richer options (`contentDir`, `pages`) require either a framework integration or calling the package's API directly:
+
+```js
+// scripts/aeo.mjs
+import { generateAEOFiles } from 'aeo.js/core/generate-wrapper';
+import { resolveConfig } from 'aeo.js/core/utils';
+
+await generateAEOFiles(resolveConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  contentDir: 'content',
+  outDir: 'public',
+  pages: [{ pathname: '/', title: 'Home', description: 'Welcome' }],
+}));
+```
 
 ## Common Setups
 

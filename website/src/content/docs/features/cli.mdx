@@ -71,7 +71,13 @@ Both `--flag value` and `--flag=value` forms are supported.
 
 ## Configuration file
 
-The CLI looks for `aeo.config.ts` (or `aeo.config.js`) in your project root. Create one with `npx aeo.js init`:
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution">
+The standalone CLI does **not** currently load `aeo.config.{ts,js}` — it configures itself from CLI flags + defaults only. `npx aeo.js init` still scaffolds the file as the canonical place for your settings, but today it's consumed by framework integrations rather than the CLI itself.
+</Aside>
+
+Create one with `npx aeo.js init`:
 
 ```ts
 import { defineConfig } from 'aeo.js';
@@ -82,6 +88,22 @@ export default defineConfig({
   description: 'A site optimized for AI discovery',
   outDir: 'public',
 });
+```
+
+Import it into your framework config so the integration picks it up:
+
+```ts
+// vite.config.ts
+import aeoConfig from './aeo.config';
+import { aeoVitePlugin } from 'aeo.js/vite';
+
+export default { plugins: [aeoVitePlugin(aeoConfig)] };
+```
+
+For raw CLI usage on a static site, pass values directly:
+
+```bash
+npx aeo.js generate --url https://mysite.com --title "My Site" --out public
 ```
 
 See the full [Configuration reference](/reference/configuration/) for all options.
