@@ -31,7 +31,7 @@ export default defineNuxtConfig({
     title: 'My Nuxt Site',
     description: 'Built with Nuxt and optimized for AI discovery',
     url: 'https://mysite.com',
-    keywords: ['nuxt', 'vue', 'ssr'],
+
   },
 });
 ```
@@ -51,65 +51,48 @@ Check generated files in `.output/public`:
 
 ### Basic Configuration
 
-```typescript
-export default defineNuxtConfig({
-  modules: ['aeo.js/nuxt'],
-  
-  aeo: {
-    title: string;              // Required
-    url: string;                // Required
-    description?: string;
-    keywords?: string[];
-    language?: string;
-  },
-});
-```
+The `aeo` block accepts the standard `AeoConfig`. See [README.md](./README.md#configuration-options) for the full reference.
 
 ### Advanced Configuration
 
 ```typescript
 export default defineNuxtConfig({
   modules: ['aeo.js/nuxt'],
-  
+
   aeo: {
-    // Basic info
     title: 'My Nuxt Site',
     url: 'https://mysite.com',
     description: 'Server-rendered Vue application',
-    
-    // SEO
-    keywords: ['nuxt', 'vue', 'ssr', 'seo'],
-    language: 'en',
-    author: 'Your Name',
-    
-    // Generation options
-    generateLLMsTxt: true,
-    generateRobotsTxt: true,
-    generateSitemap: true,
-    generateJsonLd: true,
-    
-    // Custom pages
-    customPages: [
-      {
-        path: '/',
-        title: 'Home',
-        description: 'Welcome page',
-        priority: 1.0,
-      },
-      {
-        path: '/blog',
-        title: 'Blog',
-        description: 'Latest articles',
-        priority: 0.9,
-      },
+
+    // Toggle individual generators (all default true)
+    generators: {
+      llmsTxt: true,
+      llmsFullTxt: true,
+      robotsTxt: true,
+      sitemap: true,
+      aiIndex: true,
+      schema: true,
+    },
+
+    // Optional explicit page metadata (the module auto-discovers from pages/)
+    pages: [
+      { pathname: '/',     title: 'Home', description: 'Welcome page' },
+      { pathname: '/blog', title: 'Blog', description: 'Latest articles' },
     ],
-    
-    // Path filtering
-    excludePaths: [
-      '/admin/*',
-      '/api/*',
-      '/_nuxt/*',
-    ],
+
+    // robots.txt — block crawlers from private routes
+    robots: {
+      allow: ['/'],
+      disallow: ['/admin', '/api', '/_nuxt'],
+    },
+
+    schema: {
+      enabled: true,
+      organization: {
+        name: 'My Nuxt Site',
+        url: 'https://mysite.com',
+      },
+    },
   },
 });
 ```
@@ -292,7 +275,7 @@ export default defineNuxtConfig({
   aeo: {
     title: 'My Site',
     url: isProd ? 'https://mysite.com' : 'http://localhost:3000',
-    generateSitemap: isProd,
+    generators: { sitemap: isProd },
   },
 });
 ```

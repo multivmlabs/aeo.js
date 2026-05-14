@@ -33,7 +33,7 @@ export default defineConfig({
       title: 'My Vite Site',
       description: 'Built with Vite and optimized for AI discovery',
       url: 'https://mysite.com',
-      keywords: ['vite', 'fast', 'modern'],
+
     }),
   ],
 });
@@ -115,57 +115,45 @@ export default defineConfig({
 
 ### Basic Configuration
 
-```typescript
-aeoVitePlugin({
-  title: string;              // Required
-  url: string;                // Required  
-  description?: string;
-  keywords?: string[];
-  language?: string;
-})
-```
+`aeoVitePlugin` accepts the standard `AeoConfig`. See [README.md](./README.md#configuration-options) for the full reference.
 
 ### Advanced Configuration
 
 ```typescript
 aeoVitePlugin({
-  // Basic info
   title: 'My Vite Site',
   url: 'https://mysite.com',
   description: 'Lightning-fast web application',
-  
-  // SEO
-  keywords: ['vite', 'performance', 'modern-web'],
-  language: 'en',
-  author: 'Your Name',
-  
-  // Generation options
-  generateLLMsTxt: true,
-  generateRobotsTxt: true,
-  generateSitemap: true,
-  generateJsonLd: true,
-  
-  // Custom pages
-  customPages: [
-    {
-      path: '/',
-      title: 'Home',
-      description: 'Welcome to our app',
-      priority: 1.0,
-    },
-    {
-      path: '/features',
-      title: 'Features',
-      description: 'App features',
-      priority: 0.9,
-    },
+
+  // Toggle individual generators (all default true)
+  generators: {
+    llmsTxt: true,
+    llmsFullTxt: true,
+    robotsTxt: true,
+    sitemap: true,
+    aiIndex: true,
+    schema: true,
+  },
+
+  // Optional explicit page metadata (the plugin auto-discovers from your routes)
+  pages: [
+    { pathname: '/',         title: 'Home',     description: 'Welcome to our app' },
+    { pathname: '/features', title: 'Features', description: 'App features' },
   ],
-  
-  // Path filtering
-  excludePaths: [
-    '/admin/*',
-    '/_dist/*',
-  ],
+
+  // robots.txt — block crawlers from private routes
+  robots: {
+    allow: ['/'],
+    disallow: ['/admin'],
+  },
+
+  schema: {
+    enabled: true,
+    organization: {
+      name: 'My Vite Site',
+      url: 'https://mysite.com',
+    },
+  },
 })
 ```
 
@@ -272,7 +260,7 @@ export default defineConfig(({ mode }) => ({
       url: mode === 'production'
         ? 'https://mysite.com'
         : 'http://localhost:5173',
-      generateSitemap: mode === 'production',
+      generators: { sitemap: mode === 'production' },
     }),
   ],
 }));
@@ -296,10 +284,10 @@ export default defineConfig({
     aeoVitePlugin({
       title: 'My Site',
       url: 'https://mysite.com',
-      customPages: [
-        { path: '/', title: 'Home', priority: 1.0 },
-        { path: '/about', title: 'About', priority: 0.8 },
-        { path: '/blog', title: 'Blog', priority: 0.9 },
+      pages: [
+        { pathname: '/', title: 'Home' },
+        { pathname: '/about', title: 'About' },
+        { pathname: '/blog', title: 'Blog' },
       ],
     }),
   ],
@@ -446,10 +434,10 @@ export default defineConfig({
 **Solution**: List routes explicitly:
 ```typescript
 aeoVitePlugin({
-  customPages: [
-    { path: '/', title: 'Home' },
-    { path: '/about', title: 'About' },
-    { path: '/contact', title: 'Contact' },
+  pages: [
+    { pathname: '/', title: 'Home' },
+    { pathname: '/about', title: 'About' },
+    { pathname: '/contact', title: 'Contact' },
   ],
 })
 ```
@@ -466,10 +454,10 @@ export default defineConfig({
     aeoVitePlugin({
       title: 'My React SPA',
       url: 'https://myapp.com',
-      customPages: [
-        { path: '/', title: 'Home' },
-        { path: '/products', title: 'Products' },
-        { path: '/about', title: 'About' },
+      pages: [
+        { pathname: '/', title: 'Home' },
+        { pathname: '/products', title: 'Products' },
+        { pathname: '/about', title: 'About' },
       ],
     }),
   ],
@@ -486,10 +474,10 @@ export default defineConfig({
       title: 'Vue Docs',
       description: 'Complete Vue.js documentation',
       url: 'https://docs.vue-app.com',
-      customPages: [
-        { path: '/', title: 'Home', priority: 1.0 },
-        { path: '/guide', title: 'Guide', priority: 0.9 },
-        { path: '/api', title: 'API Reference', priority: 0.9 },
+      pages: [
+        { pathname: '/', title: 'Home' },
+        { pathname: '/guide', title: 'Guide' },
+        { pathname: '/api', title: 'API Reference' },
       ],
     }),
   ],
@@ -506,12 +494,12 @@ export default defineConfig({
       title: 'John Doe - Portfolio',
       description: 'Web developer portfolio',
       url: 'https://johndoe.com',
-      keywords: ['developer', 'portfolio', 'web-dev'],
-      customPages: [
-        { path: '/', title: 'Home' },
-        { path: '/projects', title: 'Projects' },
-        { path: '/blog', title: 'Blog' },
-        { path: '/contact', title: 'Contact' },
+
+      pages: [
+        { pathname: '/', title: 'Home' },
+        { pathname: '/projects', title: 'Projects' },
+        { pathname: '/blog', title: 'Blog' },
+        { pathname: '/contact', title: 'Contact' },
       ],
     }),
   ],

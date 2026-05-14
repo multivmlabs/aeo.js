@@ -28,16 +28,13 @@ pnpm add aeo.js
 // next.config.mjs
 import { withAeo } from 'aeo.js/next';
 
-const nextConfig = {
-  // Your existing Next.js config
-};
-
-export default withAeo(nextConfig, {
+export default withAeo({
+  // Your existing Next.js config keys live here
   aeo: {
     title: 'My Next.js Site',
     description: 'Built with Next.js and optimized for AI discovery',
     url: 'https://mysite.com',
-    keywords: ['nextjs', 'react', 'typescript'],
+
   },
 });
 ```
@@ -88,74 +85,63 @@ Check that these files were generated in your `public` directory:
 
 ### Basic Configuration
 
+The shape passed under `aeo:` is the standard `AeoConfig`. The wrapping `NextAeoConfig` is just Next's own config plus an `aeo?: AeoConfig` key:
+
 ```typescript
-interface NextAeoConfig {
-  title: string;              // Required: Your site title
-  url: string;                // Required: Your production URL
-  description?: string;        // Recommended: Site description
-  keywords?: string[];         // SEO keywords
-  language?: string;           // Default: 'en'
-  author?: string;             // Site author
-}
+type NextAeoConfig = {
+  aeo?: AeoConfig;
+  // ...all of your normal Next.js config keys (webpack, redirects, etc.)
+};
 ```
+
+See [README.md](./README.md#configuration-options) for the full `AeoConfig` reference.
 
 ### Advanced Configuration
 
 ```js
-export default withAeo(nextConfig, {
+export default withAeo({
+  // Your existing Next.js config keys live here
   aeo: {
-    // Basic info
     title: 'My Next.js Site',
     url: 'https://mysite.com',
     description: 'Comprehensive resource for...',
-    
-    // SEO
-    keywords: ['nextjs', 'react', 'web development'],
-    language: 'en',
-    author: 'Your Name',
-    
-    // Generation options
-    generateLLMsTxt: true,
-    generateRobotsTxt: true,
-    generateSitemap: true,
-    generateJsonLd: true,
-    
-    // Custom pages
-    customPages: [
-      {
-        path: '/',
-        title: 'Home',
-        description: 'Welcome to our site',
-        priority: 1.0,
-      },
-      {
-        path: '/blog',
-        title: 'Blog',
-        description: 'Latest articles and tutorials',
-        priority: 0.9,
-      },
-      {
-        path: '/docs',
-        title: 'Documentation',
-        description: 'Complete API reference',
-        priority: 0.8,
-      },
+
+    // Toggle individual generators (all default true)
+    generators: {
+      llmsTxt: true,
+      llmsFullTxt: true,
+      robotsTxt: true,
+      sitemap: true,
+      aiIndex: true,
+      schema: true,
+    },
+
+    // Explicit page metadata. The plugin auto-discovers pages from the
+    // App Router / Pages Router, but you can override or supplement here.
+    pages: [
+      { pathname: '/',     title: 'Home',           description: 'Welcome to our site' },
+      { pathname: '/blog', title: 'Blog',           description: 'Latest articles and tutorials' },
+      { pathname: '/docs', title: 'Documentation',  description: 'Complete API reference' },
     ],
-    
-    // Path filtering
-    excludePaths: [
-      '/api/*',           // Exclude API routes
-      '/admin/*',         // Exclude admin pages
-      '/_next/*',         // Exclude Next.js internals
-      '/private/*',       // Exclude private pages
-    ],
-    
-    // Sitemap priorities
-    sitemapPriority: {
-      '/': 1.0,
-      '/blog': 0.9,
-      '/docs': 0.8,
-      '/about': 0.7,
+
+    // robots.txt directives — use these to keep crawlers out of private routes
+    robots: {
+      allow: ['/'],
+      disallow: [
+        '/api',
+        '/admin',
+        '/_next',
+        '/private',
+      ],
+    },
+
+    // JSON-LD structured data
+    schema: {
+      enabled: true,
+      organization: {
+        name: 'My Company',
+        url: 'https://mysite.com',
+      },
     },
   },
 });
@@ -362,11 +348,12 @@ export default withAeo({
 // next.config.mjs
 const isProd = process.env.NODE_ENV === 'production';
 
-export default withAeo(nextConfig, {
+export default withAeo({
+  // Your existing Next.js config keys live here
   aeo: {
     title: 'My Site',
     url: isProd ? 'https://mysite.com' : 'http://localhost:3000',
-    generateSitemap: isProd,  // Only in production
+    generators: { sitemap: isProd },  // Only in production
   },
 });
 ```
@@ -445,11 +432,11 @@ url: 'https://mysite.com',  // Not localhost
 
 **Problem**: Dynamic routes not appearing in sitemap.
 
-**Solution**: Use `customPages` to explicitly list dynamic routes:
+**Solution**: Use `pages` to explicitly list dynamic routes:
 ```js
-customPages: [
-  { path: '/blog/post-1', title: 'Post 1' },
-  { path: '/blog/post-2', title: 'Post 2' },
+pages: [
+  { pathname: '/blog/post-1', title: 'Post 1' },
+  { pathname: '/blog/post-2', title: 'Post 2' },
 ],
 ```
 
@@ -477,20 +464,20 @@ export default withAeo(withMDX({
 ### E-commerce Site
 
 ```typescript
-export default withAeo(nextConfig, {
+export default withAeo({
+  // Your existing Next.js config keys live here
   aeo: {
     title: 'My Store',
     description: 'Quality products, fast shipping',
     url: 'https://mystore.com',
-    excludePaths: [
-      '/checkout/*',
-      '/account/*',
-      '/api/*',
-    ],
-    customPages: [
-      { path: '/', title: 'Home', priority: 1.0 },
-      { path: '/products', title: 'Products', priority: 0.9 },
-      { path: '/about', title: 'About', priority: 0.7 },
+    robots: {
+      allow: ['/'],
+      disallow: ['/checkout', '/account', '/api'],
+    },
+    pages: [
+      { pathname: '/', title: 'Home' },
+      { pathname: '/products', title: 'Products' },
+      { pathname: '/about', title: 'About' },
     ],
   },
 });
@@ -499,16 +486,17 @@ export default withAeo(nextConfig, {
 ### Documentation Site
 
 ```typescript
-export default withAeo(nextConfig, {
+export default withAeo({
+  // Your existing Next.js config keys live here
   aeo: {
     title: 'API Documentation',
     description: 'Complete API reference and guides',
     url: 'https://docs.myapi.com',
-    keywords: ['api', 'documentation', 'reference'],
-    customPages: [
-      { path: '/api-reference', title: 'API Reference', priority: 1.0 },
-      { path: '/guides', title: 'Guides', priority: 0.9 },
-      { path: '/examples', title: 'Examples', priority: 0.8 },
+
+    pages: [
+      { pathname: '/api-reference', title: 'API Reference' },
+      { pathname: '/guides', title: 'Guides' },
+      { pathname: '/examples', title: 'Examples' },
     ],
   },
 });

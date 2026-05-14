@@ -25,8 +25,8 @@ aeo.js provides native integrations for the following frameworks:
 | Astro | [astro.md](./astro.md) | Native Integration | ✅ Stable |
 | Nuxt | [nuxt.md](./nuxt.md) | Module | ✅ Stable |
 | Vite | [vite.md](./vite.md) | Plugin | ✅ Stable |
-| Angular | Coming soon | Post-build | 🚧 Beta |
-| Webpack | Coming soon | Plugin | 🚧 Beta |
+| Angular | [angular.md](./angular.md) | Post-build | ✅ Stable |
+| Webpack | [webpack.md](./webpack.md) | Plugin | ✅ Stable |
 
 ## Quick Start
 
@@ -112,6 +112,43 @@ export default defineConfig({
 
 [→ Full Vite Guide](./vite.md)
 
+### Angular
+```bash
+npm install aeo.js
+```
+
+```json
+{
+  "scripts": {
+    "build": "ng build",
+    "postbuild": "node -e \"import('aeo.js/angular').then(m => m.postBuild({ title: 'My App', url: 'https://myapp.com' }))\""
+  }
+}
+```
+
+[→ Full Angular Guide](./angular.md)
+
+### Webpack
+```bash
+npm install aeo.js
+```
+
+```js
+// webpack.config.js
+const { AeoWebpackPlugin } = require('aeo.js/webpack');
+
+module.exports = {
+  plugins: [
+    new AeoWebpackPlugin({
+      title: 'My Site',
+      url: 'https://mysite.com',
+    }),
+  ],
+};
+```
+
+[→ Full Webpack Guide](./webpack.md)
+
 ## What Gets Generated?
 
 When you integrate aeo.js, it automatically generates:
@@ -177,33 +214,87 @@ Automatically injects schema.org structured data into your pages:
 
 ## Configuration Options
 
-All frameworks support these common configuration options:
+All framework integrations accept the same `AeoConfig` shape:
 
 ```typescript
-interface AeoConfig {
+type AeoConfig = {
   // Required
-  title: string;           // Your site title
-  url: string;            // Your site URL
+  title?: string;            // Your site title (defaults to "My Site")
+  url?: string;              // Your production URL
 
   // Optional
-  description?: string;    // Site description
-  keywords?: string[];     // SEO keywords
-  author?: string;        // Site author
-  language?: string;      // Default: 'en'
-  
-  // Generation options
-  generateLLMsTxt?: boolean;      // Default: true
-  generateRobotsTxt?: boolean;    // Default: true
-  generateSitemap?: boolean;      // Default: true
-  generateJsonLd?: boolean;       // Default: true
-  
-  // Advanced
-  customPages?: PageConfig[];     // Custom page metadata
-  excludePaths?: string[];        // Paths to exclude
-  includePaths?: string[];        // Specific paths to include
-  sitemapPriority?: Record<string, number>;  // Per-page priorities
-}
+  description?: string;      // Site description
+  contentDir?: string;       // Directory of handwritten markdown
+  outDir?: string;           // Where to write AEO files
+  pages?: PageEntry[];       // Explicit pages (mostly auto-discovered by plugins)
+
+  // Toggle individual generators (all default true)
+  generators?: {
+    robotsTxt?: boolean;
+    llmsTxt?: boolean;
+    llmsFullTxt?: boolean;
+    rawMarkdown?: boolean;
+    manifest?: boolean;
+    sitemap?: boolean;
+    aiIndex?: boolean;
+    schema?: boolean;
+  };
+
+  // robots.txt directives
+  robots?: {
+    allow?: string[];        // Default: ['/']
+    disallow?: string[];
+    crawlDelay?: number;     // Seconds
+    sitemap?: string;
+  };
+
+  // JSON-LD structured data
+  schema?: {
+    enabled?: boolean;
+    organization?: {
+      name?: string;
+      url?: string;
+      logo?: string;
+      sameAs?: string[];
+    };
+    defaultType?: 'Article' | 'WebPage';
+  };
+
+  // Open Graph tags
+  og?: {
+    enabled?: boolean;
+    image?: string;
+    twitterHandle?: string;
+    type?: 'website' | 'article';
+  };
+
+  // The Human/AI widget injected into pages
+  widget?: {
+    enabled?: boolean;
+    position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+    size?: 'default' | 'small' | 'icon-only';
+    theme?: { background?: string; text?: string; accent?: string; badge?: string };
+    humanLabel?: string;
+    aiLabel?: string;
+    showBadge?: boolean;
+  };
+
+  // ai-index.json chunking & keyword extraction
+  aiIndex?: {
+    maxChunkLength?: number; // Default: 2000 (soft limit; splits on paragraph)
+    maxKeywords?: number;    // Default: 10
+  };
+};
+
+type PageEntry = {
+  pathname: string;          // e.g. '/about'
+  title?: string;
+  description?: string;
+  content?: string;
+};
 ```
+
+> See [aeojs.org/reference/configuration](https://aeojs.org/reference/configuration/) for the full reference.
 
 ## Common Use Cases
 
@@ -214,8 +305,10 @@ Perfect for making your articles discoverable by AI assistants:
 {
   title: 'Tech Blog',
   description: 'In-depth technical tutorials and guides',
-  keywords: ['javascript', 'typescript', 'web development'],
-  generateJsonLd: true,  // Enable article schema
+  schema: {
+    enabled: true,                 // Generates Article schema for FAQ/HowTo patterns
+    organization: { name: 'Tech Blog', url: 'https://techblog.com' },
+  },
 }
 ```
 
@@ -226,22 +319,27 @@ Optimize technical documentation for AI-powered search:
 {
   title: 'API Documentation',
   description: 'Complete API reference and guides',
-  customPages: [
-    { path: '/api', title: 'API Reference', priority: 1.0 },
-    { path: '/guides', title: 'Getting Started Guides', priority: 0.9 },
+  pages: [
+    { pathname: '/api', title: 'API Reference', description: 'Full endpoint reference' },
+    { pathname: '/guides', title: 'Getting Started Guides' },
   ],
 }
 ```
 
 ### E-commerce Site
-Help AI understand your product catalog:
+Help AI understand your product catalog. Use `robots.disallow` to block crawler access to private routes (it does not remove them from generated AEO files; for those, scope `contentDir` instead):
 
 ```js
 {
   title: 'Online Store',
   description: 'Quality products delivered fast',
-  generateJsonLd: true,  // Enable Product schema
-  excludePaths: ['/checkout', '/account'],  // Exclude private pages
+  robots: {
+    disallow: ['/checkout', '/account', '/api'],
+  },
+  schema: {
+    enabled: true,
+    organization: { name: 'My Store', url: 'https://mystore.com' },
+  },
 }
 ```
 
@@ -252,11 +350,11 @@ Optimize your marketing site and product pages:
 {
   title: 'My SaaS Product',
   description: 'The best tool for...',
-  customPages: [
-    { path: '/', title: 'Home', priority: 1.0 },
-    { path: '/features', title: 'Features', priority: 0.9 },
-    { path: '/pricing', title: 'Pricing', priority: 0.9 },
-    { path: '/docs', title: 'Documentation', priority: 0.8 },
+  pages: [
+    { pathname: '/',         title: 'Home' },
+    { pathname: '/features', title: 'Features' },
+    { pathname: '/pricing',  title: 'Pricing' },
+    { pathname: '/docs',     title: 'Documentation' },
   ],
 }
 ```

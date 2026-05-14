@@ -34,7 +34,6 @@ export default defineConfig({
       title: 'My Astro Site',
       description: 'Built with Astro and optimized for AI discovery',
       url: 'https://mysite.com',
-      keywords: ['astro', 'static-site', 'performance'],
     }),
   ],
 });
@@ -55,15 +54,7 @@ Check that these files were generated in your `dist` directory:
 
 ### Basic Configuration
 
-```typescript
-interface AstroAeoConfig {
-  title: string;              // Required
-  url: string;                // Required (matches site in astro.config)
-  description?: string;        // Recommended
-  keywords?: string[];
-  language?: string;           // Default: 'en'
-}
-```
+`aeoAstroIntegration` accepts the standard `AeoConfig`. See [README.md](./README.md#configuration-options) for the full reference.
 
 ### Advanced Configuration
 
@@ -72,43 +63,40 @@ export default defineConfig({
   site: 'https://mysite.com',
   integrations: [
     aeoAstroIntegration({
-      // Basic info
       title: 'My Astro Site',
       url: 'https://mysite.com',
       description: 'Lightning-fast static site built with Astro',
-      
-      // SEO
-      keywords: ['astro', 'jamstack', 'static-site-generator'],
-      language: 'en',
-      author: 'Your Name',
-      
-      // Generation options
-      generateLLMsTxt: true,
-      generateRobotsTxt: true,
-      generateSitemap: true,
-      generateJsonLd: true,
-      
-      // Custom pages
-      customPages: [
-        {
-          path: '/',
-          title: 'Home',
-          description: 'Welcome to our lightning-fast site',
-          priority: 1.0,
-        },
-        {
-          path: '/blog',
-          title: 'Blog',
-          description: 'Latest articles',
-          priority: 0.9,
-        },
+
+      // Toggle individual generators (all default true)
+      generators: {
+        llmsTxt: true,
+        llmsFullTxt: true,
+        robotsTxt: true,
+        sitemap: true,
+        aiIndex: true,
+        schema: true,
+      },
+
+      // Optional explicit page metadata (the plugin auto-discovers from src/pages/)
+      pages: [
+        { pathname: '/',     title: 'Home', description: 'Welcome to our lightning-fast site' },
+        { pathname: '/blog', title: 'Blog', description: 'Latest articles' },
       ],
-      
-      // Path filtering
-      excludePaths: [
-        '/admin/*',
-        '/api/*',
-      ],
+
+      // robots.txt — block crawlers from private routes
+      robots: {
+        allow: ['/'],
+        disallow: ['/admin', '/api'],
+      },
+
+      // JSON-LD structured data
+      schema: {
+        enabled: true,
+        organization: {
+          name: 'My Astro Site',
+          url: 'https://mysite.com',
+        },
+      },
     }),
   ],
 });
@@ -392,10 +380,10 @@ export default defineConfig({
       title: 'My Project Documentation',
       description: 'Complete reference and guides',
       url: 'https://docs.myproject.com',
-      customPages: [
-        { path: '/', title: 'Home', priority: 1.0 },
-        { path: '/getting-started', title: 'Getting Started', priority: 0.9 },
-        { path: '/api', title: 'API Reference', priority: 0.9 },
+      pages: [
+        { pathname: '/', title: 'Home' },
+        { pathname: '/getting-started', title: 'Getting Started' },
+        { pathname: '/api', title: 'API Reference' },
       ],
     }),
   ],
