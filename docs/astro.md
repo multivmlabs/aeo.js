@@ -148,6 +148,7 @@ import { getEntry } from 'astro:content';
 import { serializeJsonForHtml } from '../lib/serialize-json-ld';
 
 const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/404');
 const post = await getEntry('blog', slug);
 
 const schema = {

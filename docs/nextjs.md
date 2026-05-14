@@ -208,9 +208,13 @@ export default function RootLayout({
 // app/blog/[slug]/page.tsx
 import { Metadata } from 'next';
 
-export async function generateMetadata({ params }): Promise<Metadata> {
+// Next.js 14 and below: params is a plain object.
+// For Next.js 15+, params is a Promise — see note below.
+type Props = { params: { slug: string } };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPost(params.slug);
-  
+
   return {
     title: post.title,
     description: post.excerpt,
@@ -223,6 +227,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   };
 }
 ```
+
+> **Next.js 15+** introduced async params. Change the type to `{ params: Promise<{ slug: string }> }` and `await` it: `const { slug } = await params;`.
 
 ## Pages Router Integration
 
