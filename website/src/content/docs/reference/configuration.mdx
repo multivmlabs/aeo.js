@@ -113,8 +113,8 @@ export default defineConfig({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `maxChunkLength` | `number` | `2000` | Target maximum content length per `ai-index.json` chunk; chunks split on paragraph boundaries |
-| `maxKeywords` | `number` | `10` | Maximum keywords extracted for each `ai-index.json` entry |
+| `maxChunkLength` | `number` | `2000` | Target chunk length (soft limit). Chunks split on `\n\n` paragraph boundaries, so a single long paragraph can exceed this value. Set with embedding-model token limits in mind. |
+| `maxKeywords` | `number` | `10` | Maximum number of keywords extracted per `ai-index.json` entry. |
 
 ### `robots`
 

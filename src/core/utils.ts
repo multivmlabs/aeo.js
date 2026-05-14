@@ -31,6 +31,14 @@ export function validateConfig(config: AeoConfig): string[] {
     warnings.push('robots.crawlDelay should be a positive number');
   }
 
+  if (config.aiIndex?.maxChunkLength !== undefined && config.aiIndex.maxChunkLength <= 0) {
+    warnings.push('aiIndex.maxChunkLength should be a positive number — sub-1 values produce one chunk per paragraph');
+  }
+
+  if (config.aiIndex?.maxKeywords !== undefined && config.aiIndex.maxKeywords <= 0) {
+    warnings.push('aiIndex.maxKeywords should be a positive number — sub-1 values produce an empty keywords array');
+  }
+
   return warnings;
 }
 
