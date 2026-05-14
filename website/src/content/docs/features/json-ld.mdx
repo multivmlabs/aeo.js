@@ -173,7 +173,7 @@ const breadcrumbSchema = {
     </script>
 
     <svelte:head>
-      {@html `<script type="application/ld+json">${schema}</script>`}
+      <script type="application/ld+json">{@html schema}</script>
     </svelte:head>
     ```
   </TabItem>

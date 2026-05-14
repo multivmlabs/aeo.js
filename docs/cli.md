@@ -262,19 +262,23 @@ Both export a default `AeoConfig` object (see [README.md](./README.md#configurat
 
 ## Framework auto-detection
 
-`generate` and `check` detect your framework by looking for telltale files in the cwd:
+`generate` and `check` detect your framework by inspecting your `package.json` `dependencies` and `devDependencies` (see [src/core/detect.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/core/detect.ts) for the exact logic). The first match wins, in this order:
 
-| Framework | Detected via |
-|---|---|
-| Next.js | `next.config.{js,mjs,ts}` |
-| Astro | `astro.config.{mjs,ts}` |
-| Nuxt | `nuxt.config.{js,mjs,ts}` |
-| Vite | `vite.config.{js,mjs,ts}` |
-| Angular | `angular.json` |
-| Webpack | `webpack.config.{js,mjs,ts}` |
-| Static / vanilla | None of the above |
+| Order | Framework | Detected via (package) | Default `outDir` |
+|---|---|---|---|
+| 1 | Next.js | `next` | `public` |
+| 2 | Nuxt | `nuxt` or `@nuxt/kit` | `.output/public` |
+| 3 | Astro | `astro` or `@astrojs/astro` | `dist` |
+| 4 | Remix | `@remix-run/dev` | `build/client` |
+| 5 | SvelteKit | `@sveltejs/kit` | `build` |
+| 6 | Angular | `@angular/core` | `dist` |
+| 7 | Docusaurus | `@docusaurus/core` | `build` |
+| 8 | Vite | `vite` | `dist` |
+| — | Unknown / vanilla | none of the above | `dist` |
 
-Detection only affects the default `outDir` and `contentDir`. You can always override with `--out`.
+A project that has both `next` and `vite` in its `package.json` resolves as Next.js because of the order. Config files (`next.config.mjs`, `angular.json`, etc.) are **not** consulted — only the dependency list.
+
+Detection only affects the default `outDir` and `contentDir`. You can always override with `--out` or set `outDir` in the config.
 
 ## Common patterns
 

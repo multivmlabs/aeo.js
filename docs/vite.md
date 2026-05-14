@@ -257,7 +257,7 @@ useHead({
 <svelte:head>
   <title>My Svelte App</title>
   <meta name="description" content="App description" />
-  {@html `<script type="application/ld+json">${schema}</script>`}
+  <script type="application/ld+json">{@html schema}</script>
 </svelte:head>
 
 <main>

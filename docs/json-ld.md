@@ -347,6 +347,8 @@ useHead({
 
 ### Svelte / SvelteKit
 
+Use a real `<script>` element inside `<svelte:head>` and limit `{@html}` to the **text content** so the Svelte compiler stays aware of the element boundary:
+
 ```svelte
 <script lang="ts">
   import { serializeJsonForHtml } from './lib/serialize-json-ld';
@@ -354,7 +356,7 @@ useHead({
 </script>
 
 <svelte:head>
-  {@html `<script type="application/ld+json">${schema}</script>`}
+  <script type="application/ld+json">{@html schema}</script>
 </svelte:head>
 ```
 

@@ -29,33 +29,64 @@ npm install --save-dev aeo.js
 npx aeo.js init
 ```
 
-This drops an `aeo.config.ts` into your project root with sensible defaults you can edit:
+This drops an `aeo.config.ts` into your project root with sensible defaults you can edit. The generated file matches the template in [src/cli.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/cli.ts):
 
 ```ts
 import { defineConfig } from 'aeo.js';
 
 export default defineConfig({
+  // Required
   title: 'My Site',
-  url: 'https://mysite.com',
+  url: 'https://example.com',
+
+  // Optional
   description: 'A site optimized for AI discovery',
 
+  // Toggle individual generators
   generators: {
     robotsTxt: true,
     llmsTxt: true,
     llmsFullTxt: true,
     rawMarkdown: true,
+    manifest: true,
     sitemap: true,
     aiIndex: true,
-    schema: true,
   },
 
-  schema: {
+  // Customize robots.txt
+  robots: {
+    allow: ['/'],
+    disallow: ['/admin'],
+    crawlDelay: 0,
+  },
+
+  // Widget configuration
+  widget: {
     enabled: true,
-    organization: { name: 'My Company', url: 'https://mysite.com' },
-    defaultType: 'WebPage',
+    position: 'bottom-right',
+    humanLabel: 'Human',
+    aiLabel: 'AI',
+    showBadge: true,
+    theme: {
+      background: 'rgba(18, 18, 24, 0.9)',
+      text: '#C0C0C5',
+      accent: '#E8E8EA',
+      badge: '#4ADE80',
+    },
   },
 });
 ```
+
+> **Need JSON-LD?** The template intentionally omits `generators.schema` and the top-level `schema` block — add them when you want structured-data generation:
+>
+> ```ts
+> generators: { /* …, */ schema: true },
+> schema: {
+>   enabled: true,
+>   organization: { name: 'My Company', url: 'https://mysite.com' },
+>   defaultType: 'WebPage',
+> },
+> ```
 
 Don't want a TS config? Skip `init` and pass everything via flags or use `aeo.config.js` / `aeo.config.json` (CLI auto-detects).
 
@@ -279,7 +310,7 @@ The generated files are plain static assets — deploy them with whatever you'd 
 ```jsonc
 // vercel.json
 {
-  "buildCommand": "npm run build && aeo.js generate",
+  "buildCommand": "npm run build && npx aeo.js generate",
   "outputDirectory": "public"
 }
 ```
