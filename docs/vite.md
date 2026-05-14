@@ -159,6 +159,20 @@ aeoVitePlugin({
 
 ## Adding Metadata
 
+> All three patterns below render JSON-LD as the body of a `<script>` tag. **`JSON.stringify` does not escape `</` sequences**, so a schema value containing `</script>` (or U+2028 / U+2029, anywhere in the payload including user-controlled titles) breaks out of the script block and executes as arbitrary JavaScript. Run the payload through a serializer that escapes those characters first — this is the same `serializeJsonForHtml` aeo.js uses internally ([src/core/schema.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/core/schema.ts)). aeo.js's own injected JSON-LD is already safe; only your custom additions need this.
+
+```typescript
+// src/lib/serialize-json-ld.ts
+export function serializeJsonForHtml(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+```
+
 ### React with Helmet
 
 ```bash
@@ -168,21 +182,22 @@ npm install react-helmet-async
 ```typescript
 // App.tsx
 import { Helmet } from 'react-helmet-async';
+import { serializeJsonForHtml } from './lib/serialize-json-ld';
 
 export default function App() {
+  const schema = serializeJsonForHtml({
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'My App',
+    url: 'https://myapp.com',
+  });
+
   return (
     <>
       <Helmet>
         <title>My App</title>
         <meta name="description" content="App description" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebApplication',
-            name: 'My App',
-            url: 'https://myapp.com',
-          })}
-        </script>
+        <script type="application/ld+json">{schema}</script>
       </Helmet>
       <main>{/* App content */}</main>
     </>
@@ -199,6 +214,7 @@ npm install @unhead/vue
 ```vue
 <script setup lang="ts">
 import { useHead } from '@unhead/vue';
+import { serializeJsonForHtml } from './lib/serialize-json-ld';
 
 useHead({
   title: 'My Vue App',
@@ -208,7 +224,7 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      children: JSON.stringify({
+      children: serializeJsonForHtml({
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
         name: 'My Vue App',
@@ -228,18 +244,20 @@ useHead({
 ### Svelte with svelte:head
 
 ```svelte
+<script lang="ts">
+  import { serializeJsonForHtml } from './lib/serialize-json-ld';
+
+  const schema = serializeJsonForHtml({
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'My Svelte App',
+  });
+</script>
+
 <svelte:head>
   <title>My Svelte App</title>
   <meta name="description" content="App description" />
-  {@html `
-    <script type="application/ld+json">
-      ${JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        name: 'My Svelte App',
-      })}
-    <\/script>
-  `}
+  {@html `<script type="application/ld+json">${schema}</script>`}
 </svelte:head>
 
 <main>

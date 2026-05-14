@@ -125,12 +125,27 @@ export const collections = { blog };
 
 ## Adding Structured Data
 
+> Astro's `set:html` directive injects the value verbatim — it does **not** escape characters that can terminate the surrounding `<script>` tag. A schema value containing `</script>` (or U+2028/U+2029) would break out and execute as JavaScript. Run the payload through a serializer that escapes those characters first — the helper below is the same `serializeJsonForHtml` aeo.js uses internally ([src/core/schema.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/core/schema.ts)). aeo.js's own injected JSON-LD is already safe; only your custom additions need this.
+
+```ts
+// src/lib/serialize-json-ld.ts
+export function serializeJsonForHtml(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+```
+
 ### Page-Level JSON-LD
 
 ```astro
 ---
 // src/pages/blog/[slug].astro
 import { getEntry } from 'astro:content';
+import { serializeJsonForHtml } from '../lib/serialize-json-ld';
 
 const { slug } = Astro.params;
 const post = await getEntry('blog', slug);
@@ -152,7 +167,7 @@ const schema = {
   <head>
     <title>{post.data.title}</title>
     <meta name="description" content={post.data.description} />
-    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <script type="application/ld+json" set:html={serializeJsonForHtml(schema)} />
   </head>
   <body>
     <article>
@@ -168,6 +183,8 @@ const schema = {
 ```astro
 ---
 // src/layouts/BaseLayout.astro
+import { serializeJsonForHtml } from '../lib/serialize-json-ld';
+
 const siteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -181,7 +198,7 @@ const siteSchema = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <script type="application/ld+json" set:html={JSON.stringify(siteSchema)} />
+    <script type="application/ld+json" set:html={serializeJsonForHtml(siteSchema)} />
     <slot name="head" />
   </head>
   <body>

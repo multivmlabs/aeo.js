@@ -99,10 +99,26 @@ export default defineNuxtConfig({
 
 ## Page Meta & SEO
 
+> `useHead` writes `children` as the script body verbatim — it does **not** escape characters that can terminate the surrounding `<script>` tag. A schema value containing `</script>` (or U+2028/U+2029) would break out and execute as JavaScript. Run the payload through a serializer that escapes those characters first — the helper below is the same `serializeJsonForHtml` aeo.js uses internally ([src/core/schema.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/core/schema.ts)). aeo.js's own injected JSON-LD is already safe; only your custom additions need this.
+
+```ts
+// utils/serialize-json-ld.ts
+export function serializeJsonForHtml(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+```
+
 ### Using useHead Composable
 
 ```vue
 <script setup lang="ts">
+import { serializeJsonForHtml } from '~/utils/serialize-json-ld';
+
 useHead({
   title: 'My Page Title',
   meta: [
@@ -112,7 +128,7 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      children: JSON.stringify({
+      children: serializeJsonForHtml({
         '@context': 'https://schema.org',
         '@type': 'WebPage',
         name: 'My Page Title',
@@ -134,6 +150,8 @@ useHead({
 
 ```vue
 <script setup lang="ts">
+import { serializeJsonForHtml } from '~/utils/serialize-json-ld';
+
 const route = useRoute();
 const { data: post } = await useFetch(`/api/posts/${route.params.slug}`);
 
@@ -147,7 +165,7 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      children: () => JSON.stringify({
+      children: () => serializeJsonForHtml({
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
         headline: post.value?.title,
@@ -285,12 +303,14 @@ export default defineNuxtConfig({
 
 ```typescript
 // composables/useStructuredData.ts
-export const useStructuredData = (type: string, data: any) => {
+import { serializeJsonForHtml } from '~/utils/serialize-json-ld';
+
+export const useStructuredData = (type: string, data: Record<string, unknown>) => {
   useHead({
     script: [
       {
         type: 'application/ld+json',
-        children: JSON.stringify({
+        children: serializeJsonForHtml({
           '@context': 'https://schema.org',
           '@type': type,
           ...data,

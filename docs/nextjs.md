@@ -151,9 +151,24 @@ export default withAeo({
 
 ### Adding JSON-LD to Root Layout
 
+> When you inject JSON-LD via `dangerouslySetInnerHTML`, React does **not** escape characters that can terminate the surrounding `<script>` tag. A schema value containing `</script>` (or U+2028/U+2029) would break out and execute as JavaScript. Run the payload through a serializer that escapes those characters first — this is the same `serializeJsonForHtml` aeo.js uses internally ([src/core/schema.ts](https://github.com/multivmlabs/aeo.js/blob/main/src/core/schema.ts)). aeo.js's own injected JSON-LD is already safe; only your custom additions need this.
+
+```typescript
+// app/lib/serialize-json-ld.ts
+export function serializeJsonForHtml(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+```
+
 ```typescript
 // app/layout.tsx
 import { Metadata } from 'next';
+import { serializeJsonForHtml } from './lib/serialize-json-ld';
 
 export const metadata: Metadata = {
   title: 'My Next.js Site',
@@ -171,7 +186,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonForHtml({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: 'My Next.js Site',
@@ -236,6 +251,7 @@ export default function App({ Component, pageProps }: AppProps) {
 ```typescript
 // pages/blog/[slug].tsx
 import Head from 'next/head';
+import { serializeJsonForHtml } from '@/lib/serialize-json-ld';
 
 export default function BlogPost({ post }) {
   return (
@@ -246,7 +262,7 @@ export default function BlogPost({ post }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonForHtml({
               '@context': 'https://schema.org',
               '@type': 'BlogPosting',
               headline: post.title,
