@@ -142,8 +142,7 @@ The CLI exposes `--out` for `outDir`; the richer options (`contentDir`, `pages`)
 
 ```js
 // scripts/aeo.mjs
-import { generateAEOFiles } from 'aeo.js/core/generate-wrapper';
-import { resolveConfig } from 'aeo.js/core/utils';
+import { generateAEOFiles, resolveConfig } from 'aeo.js';
 
 await generateAEOFiles(resolveConfig({
   title: 'My Site',
@@ -162,28 +161,43 @@ await generateAEOFiles(resolveConfig({
 my-site/
 ├── index.html
 ├── about/index.html
-├── pricing/index.html
-└── aeo.config.ts
+└── pricing/index.html
 ```
 
-```ts
-// aeo.config.ts
-import { defineConfig } from 'aeo.js';
-
-export default defineConfig({
-  title: 'My Site',
-  url: 'https://mysite.com',
-  outDir: '.',                  // The HTML files live at the project root
-});
+```jsonc
+// package.json
+{
+  "scripts": {
+    "build:aeo": "aeo.js generate --url https://mysite.com --title \"My Site\" --out ."
+  }
+}
 ```
 
 ```bash
-npx aeo.js generate
+npm run build:aeo
 ```
 
 The output files land next to your `index.html`. Ready to deploy.
 
+### Eleventy / Hugo / Jekyll
+
+These SSGs already emit a finished `_site/` or `public/` of HTML — point `--out` at that folder.
+
+```jsonc
+// package.json
+{
+  "scripts": {
+    "build": "eleventy",
+    "postbuild": "aeo.js generate --url https://mysite.com --title \"My Site\" --out _site"
+  }
+}
+```
+
+For Hugo, use `--out public`; for Jekyll, `--out _site`. `npm` runs `postbuild` automatically after `build`, so `npm run build` produces the full site **and** the AEO files in one step.
+
 ### Markdown blog (no framework)
+
+The CLI's `--out` flag covers the built-HTML case, but to pull `.md` front-matter and bodies from a `contentDir`, drop a small Node script next to your build:
 
 ```text
 my-blog/
@@ -193,50 +207,32 @@ my-blog/
 ├── public/                      # Your existing HTML build
 │   ├── index.html
 │   └── intro-post/index.html
-└── aeo.config.ts
+└── scripts/aeo.mjs
 ```
 
-```ts
-// aeo.config.ts
-import { defineConfig } from 'aeo.js';
+```js
+// scripts/aeo.mjs
+import { generateAEOFiles, resolveConfig } from 'aeo.js';
 
-export default defineConfig({
+await generateAEOFiles(resolveConfig({
   title: 'My Blog',
   url: 'https://myblog.dev',
   description: 'Technical articles on the web platform',
-  contentDir: 'content',        // Pull post bodies from here
-  outDir: 'public',             // Drop generated files here
-});
-```
-
-aeo.js will read each `.md` file's front-matter (title, description, date), pull its body content, and emit a unified `llms.txt` / `ai-index.json` / `sitemap.xml`.
-
-### Eleventy / Hugo / Jekyll
-
-These SSGs already emit a finished `_site/` or `public/` of HTML. Treat that folder as your `outDir`:
-
-```ts
-// aeo.config.ts
-export default defineConfig({
-  title: 'My Site',
-  url: 'https://mysite.com',
-  outDir: '_site',              // Eleventy default
-  // outDir: 'public',          // Hugo default
-  // outDir: '_site',           // Jekyll default
-});
+  contentDir: 'content',        // pull post bodies from here
+  outDir: 'public',             // drop generated files here
+}));
 ```
 
 ```jsonc
 // package.json
 {
   "scripts": {
-    "build": "eleventy",        // or hugo / bundle exec jekyll build
-    "postbuild": "aeo.js generate"
+    "build:aeo": "node scripts/aeo.mjs"
   }
 }
 ```
 
-`npm` runs `postbuild` automatically after `build`, so `npm run build` produces the full site **and** the AEO files in one step.
+`generateAEOFiles` reads each `.md` file's front-matter, pulls its body content, and emits a unified `llms.txt` / `ai-index.json` / `sitemap.xml`.
 
 ### Single-file landing page
 
@@ -447,7 +443,7 @@ npx aeo.js generate --no-widget
 
 - **Always set `url`.** Without it, `sitemap.xml`, `llms.txt`, and JSON-LD fall back to `https://example.com` and the audit will flag it.
 - **Run `aeo.js generate` after your HTML build, not before.** Otherwise the discovery scan finds nothing to index.
-- **Commit `aeo.config.ts`** so contributors run the same configuration. Don't commit the generated files — regenerate them in CI/CD.
+- **Commit your `build:aeo` script in `package.json`** so contributors run the same flags. Don't commit the generated files — regenerate them in CI/CD.
 - **Use `aeo.js check` in PRs.** Fail the build if the score drops.
 
 ## Troubleshooting

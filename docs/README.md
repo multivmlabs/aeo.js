@@ -159,13 +159,6 @@ module.exports = {
 No framework? Use the CLI directly on any static site or hand-rolled HTML.
 
 ```bash
-npx aeo.js init                    # scaffold aeo.config.ts
-npx aeo.js generate                # generate all AEO files
-```
-
-Or one-shot, no config file:
-
-```bash
 npx aeo.js generate \
   --url https://mysite.com \
   --title "My Site" \

@@ -41,8 +41,7 @@ The CLI exposes `--out` for `outDir`. For the richer options (`contentDir`, `pag
 
 ```js
 // scripts/aeo.mjs
-import { generateAEOFiles } from 'aeo.js/core/generate-wrapper';
-import { resolveConfig } from 'aeo.js/core/utils';
+import { generateAEOFiles, resolveConfig } from 'aeo.js';
 
 await generateAEOFiles(resolveConfig({
   title: 'My Site',
