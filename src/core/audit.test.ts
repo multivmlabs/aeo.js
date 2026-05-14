@@ -133,6 +133,19 @@ describe('auditSite', () => {
     const faqOrHowToCheck = schemaPresence.checks.find(c => c.label === 'FAQPage or HowTo schema');
     expect(faqOrHowToCheck?.passed).toBe(true);
   });
+
+  it('passes schema presence for HowTo content with two or more step headings', () => {
+    const config = makeConfig({
+      pages: [{
+        pathname: '/install',
+        content: '## Step 1: Install\n\nRun npm install aeo.js.\n\n## Step 2: Configure\n\nCreate aeo.config.ts.',
+      }],
+    });
+    const result = auditSite(config);
+    const schemaPresence = result.categories.find(c => c.name === 'Schema Presence')!;
+    const faqOrHowToCheck = schemaPresence.checks.find(c => c.label === 'FAQPage or HowTo schema');
+    expect(faqOrHowToCheck?.passed).toBe(true);
+  });
 });
 
 describe('formatAuditReport', () => {
