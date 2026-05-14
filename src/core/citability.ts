@@ -223,7 +223,8 @@ function hasEvidenceSignals(content: string): boolean {
     new RegExp(String.raw`\b(reported|published) (by|in)\b${NOT_SELF_REF}`, 'i'),
     new RegExp(String.raw`\b(study|survey|report|research|paper|analysis) (by|from)\b${NOT_SELF_REF}`, 'i'),
     new RegExp(String.raw`\bdata (from|by)\b${NOT_SELF_REF}`, 'i'),
-    /\b(cited (by|in)|as cited)\b/i,
+    new RegExp(String.raw`\bcited (by|in)\b${NOT_SELF_REF}`, 'i'),
+    /\bas cited\b/i,
   ];
 
   return evidencePatterns.some(pattern => pattern.test(content));

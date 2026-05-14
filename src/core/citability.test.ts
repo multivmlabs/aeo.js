@@ -170,6 +170,20 @@ Furthermore, we plan to add more features.`;
     expect(evidenceHint).toBeDefined();
   });
 
+  it('still suggests attribution for "cited by our internal research team"', () => {
+    const selfCited = `Revenue data cited by our internal research team shows we grew 300% in 2024 across 120 countries. Daily transactions reached $50 million.`;
+    const result = scorePageCitability(makePage(selfCited));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "cited by" an external source as evidence', () => {
+    const externalCited = `Findings cited by Stanford show the market grew 40% in 2024. Revenue figures reached $50 million daily.`;
+    const result = scorePageCitability(makePage(externalCited));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
   it('still suggests attribution for "Sources: our internal team"', () => {
     // The sources?: label is a strong signal but only when followed by an external source.
     const selfSources = `We grew 300% in 2024. Revenue reached $50 million daily across 120 countries. Sources: our internal team and our research department.`;
