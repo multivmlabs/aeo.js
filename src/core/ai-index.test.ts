@@ -30,6 +30,10 @@ const baseConfig: ResolvedAeoConfig = {
     aiIndex: true,
     schema: true,
   },
+  aiIndex: {
+    maxChunkLength: 2000,
+    maxKeywords: 10,
+  },
   robots: { allow: ['/'], disallow: [], crawlDelay: 0, sitemap: '' },
   widget: {
     enabled: true,
@@ -135,6 +139,59 @@ describe('generateAIIndex', () => {
     expect(entry?.keywords).not.toContain('ai');
     expect(entry?.keywords).not.toContain('seo');
     expect(entry?.keywords).not.toContain('ux');
+  });
+
+  it('should use configured max chunk length', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      aiIndex: {
+        ...baseConfig.aiIndex,
+        maxChunkLength: 20,
+      },
+      pages: [
+        {
+          pathname: '/chunked',
+          title: 'Chunked',
+          content: [
+            'First paragraph content.',
+            'Second paragraph content.',
+            'Third paragraph content.',
+          ].join('\n\n'),
+        },
+      ],
+    };
+
+    const result = generateAIIndex(config);
+    const index = JSON.parse(result);
+    const entries = index.entries
+      .filter((e: any) => e.url === 'https://example.com/chunked')
+      .sort((a: any, b: any) => a.metadata.chunkIndex - b.metadata.chunkIndex);
+
+    expect(entries).toHaveLength(3);
+    expect(entries.map((entry: any) => entry.metadata.chunkIndex)).toEqual([0, 1, 2]);
+  });
+
+  it('should use configured max keywords', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      aiIndex: {
+        ...baseConfig.aiIndex,
+        maxKeywords: 2,
+      },
+      pages: [
+        {
+          pathname: '/keywords',
+          title: 'Keywords',
+          content: 'alpha alpha alpha beta beta gamma delta epsilon',
+        },
+      ],
+    };
+
+    const result = generateAIIndex(config);
+    const index = JSON.parse(result);
+    const entry = index.entries.find((e: any) => e.url === 'https://example.com/keywords');
+
+    expect(entry?.keywords).toEqual(['alpha', 'beta']);
   });
 
   it('should handle pages without content', () => {

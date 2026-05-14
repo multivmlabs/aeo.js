@@ -4,7 +4,9 @@ import { createHash } from 'crypto';
 import type { ResolvedAeoConfig, AIIndexEntry } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
 
-function extractKeywords(content: string): string[] {
+function extractKeywords(content: string, maxKeywords: number): string[] {
+  if (maxKeywords < 1) return [];
+
   const words = content
     .normalize('NFC')
     .toLowerCase()
@@ -22,11 +24,11 @@ function extractKeywords(content: string): string[] {
   
   return Object.entries(wordCount)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
+    .slice(0, maxKeywords)
     .map(([word]) => word);
 }
 
-function chunkContent(content: string, maxLength: number = 2000): string[] {
+function chunkContent(content: string, maxLength: number): string[] {
   const chunks: string[] = [];
   const paragraphs = content.split('\n\n');
   
@@ -66,9 +68,9 @@ function collectAIIndexEntries(dir: string, config: ResolvedAeoConfig, base: str
         const urlPath = relativePath.replace(/\.mdx?$/, '');
         const url = `${config.url}/${urlPath}`;
         
-        const chunks = chunkContent(mainContent);
+        const chunks = chunkContent(mainContent, config.aiIndex.maxChunkLength);
         const title = frontmatter.title || extractTitle(mainContent);
-        const keywords = extractKeywords(mainContent);
+        const keywords = extractKeywords(mainContent, config.aiIndex.maxKeywords);
         
         chunks.forEach((chunk, index) => {
           const id = createHash('sha256')
@@ -115,8 +117,8 @@ export function generateAIIndex(config: ResolvedAeoConfig): string {
       const content = page.content || '';
 
       if (content) {
-        const chunks = chunkContent(content);
-        const keywords = extractKeywords(content);
+        const chunks = chunkContent(content, config.aiIndex.maxChunkLength);
+        const keywords = extractKeywords(content, config.aiIndex.maxKeywords);
 
         chunks.forEach((chunk, index) => {
           const id = createHash('sha256')

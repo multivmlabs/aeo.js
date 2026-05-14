@@ -32,6 +32,12 @@ export default defineConfig({
     schema: true,
   },
 
+  // Configure ai-index.json generation
+  aiIndex: {
+    maxChunkLength: 2000,
+    maxKeywords: 10,
+  },
+
   // Customize robots.txt
   robots: {
     allow: ['/'],
@@ -102,6 +108,13 @@ export default defineConfig({
 | `sitemap` | `boolean` | `true` | Generate `sitemap.xml` |
 | `aiIndex` | `boolean` | `true` | Generate `ai-index.json` |
 | `schema` | `boolean` | `false` | Generate JSON-LD structured data |
+
+### `aiIndex`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `maxChunkLength` | `number` | `2000` | Target chunk length (soft limit). Chunks split on `\n\n` paragraph boundaries, so a single long paragraph can exceed this value. Set with embedding-model token limits in mind. |
+| `maxKeywords` | `number` | `10` | Maximum number of keywords extracted per `ai-index.json` entry. |
 
 ### `robots`
 

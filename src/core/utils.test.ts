@@ -4,6 +4,7 @@ import {
   parseFrontmatter,
   bumpHeadings,
   extractTitle,
+  validateConfig,
 } from './utils';
 
 vi.mock('./detect', () => ({
@@ -24,6 +25,10 @@ describe('utils', () => {
       expect(result.url).toBe('https://example.com');
       expect(result.generators.robotsTxt).toBe(true);
       expect(result.generators.llmsTxt).toBe(true);
+      expect(result.aiIndex).toEqual({
+        maxChunkLength: 2000,
+        maxKeywords: 10,
+      });
       expect(result.widget.enabled).toBe(true);
       expect(result.widget.position).toBe('bottom-right');
     });
@@ -54,6 +59,17 @@ describe('utils', () => {
       expect(result.widget.theme.background).toBe('rgba(18, 18, 24, 0.9)');
     });
 
+    it('should handle partial aiIndex config', () => {
+      const result = resolveConfig({
+        aiIndex: {
+          maxKeywords: 5,
+        },
+      });
+
+      expect(result.aiIndex.maxKeywords).toBe(5);
+      expect(result.aiIndex.maxChunkLength).toBe(2000);
+    });
+
     it('should resolve robots config', () => {
       const result = resolveConfig({
         robots: { disallow: ['/admin'], crawlDelay: 5 },
@@ -62,6 +78,40 @@ describe('utils', () => {
       expect(result.robots.disallow).toEqual(['/admin']);
       expect(result.robots.crawlDelay).toBe(5);
       expect(result.robots.allow).toEqual(['/']);
+    });
+  });
+
+  describe('validateConfig', () => {
+    it('warns when aiIndex.maxChunkLength is zero or negative', () => {
+      expect(validateConfig({ aiIndex: { maxChunkLength: 0 } })).toEqual(
+        expect.arrayContaining([expect.stringContaining('aiIndex.maxChunkLength')])
+      );
+      expect(validateConfig({ aiIndex: { maxChunkLength: -1 } })).toEqual(
+        expect.arrayContaining([expect.stringContaining('aiIndex.maxChunkLength')])
+      );
+    });
+
+    it('warns when aiIndex.maxKeywords is zero or negative', () => {
+      expect(validateConfig({ aiIndex: { maxKeywords: 0 } })).toEqual(
+        expect.arrayContaining([expect.stringContaining('aiIndex.maxKeywords')])
+      );
+    });
+
+    it('does not warn for valid aiIndex values', () => {
+      const warnings = validateConfig({
+        title: 'My Site',
+        url: 'https://mysite.com',
+        aiIndex: { maxChunkLength: 1500, maxKeywords: 8 },
+      });
+      expect(warnings.some((w) => w.includes('aiIndex'))).toBe(false);
+    });
+
+    it('does not warn when aiIndex is omitted', () => {
+      const warnings = validateConfig({
+        title: 'My Site',
+        url: 'https://mysite.com',
+      });
+      expect(warnings.some((w) => w.includes('aiIndex'))).toBe(false);
     });
   });
 
