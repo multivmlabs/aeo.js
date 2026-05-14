@@ -397,21 +397,23 @@ npx nuxi generate
 <!-- pages/blog/category/[category].vue -->
 <script setup lang="ts">
 const route = useRoute();
-const { data: posts } = await useFetch(
-  `/api/posts?category=${route.params.category}`
-);
+// route.params values are `string | string[]` in Vue Router 4 — narrow before use
+const category = typeof route.params.category === 'string'
+  ? route.params.category
+  : route.params.category[0];
+const { data: posts } = await useFetch(`/api/posts?category=${category}`);
 
 useHead({
-  title: `${route.params.category} Posts`,
+  title: `${category} Posts`,
   meta: [
-    { name: 'description', content: `Browse ${route.params.category} articles` },
+    { name: 'description', content: `Browse ${category} articles` },
   ],
 });
 </script>
 
 <template>
   <div>
-    <h1>{{ route.params.category }} Posts</h1>
+    <h1>{{ category }} Posts</h1>
     <article v-for="post in posts" :key="post.id">
       <NuxtLink :to="`/blog/${post.slug}`">
         {{ post.title }}
@@ -426,7 +428,8 @@ useHead({
 ```vue
 <script setup lang="ts">
 const route = useRoute();
-const { data: product } = await useFetch(`/api/products/${route.params.id}`);
+const id = typeof route.params.id === 'string' ? route.params.id : route.params.id[0];
+const { data: product } = await useFetch(`/api/products/${id}`);
 
 useStructuredData('Product', {
   name: product.value?.name,
