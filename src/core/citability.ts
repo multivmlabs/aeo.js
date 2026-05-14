@@ -207,9 +207,13 @@ function scoreStatisticalDensity(content: string, hints: ContentHint[]): Citabil
 // Shared negative-lookahead fragment used by every attribution pattern. The lookahead
 // is anchored immediately after the keyword and consumes any whitespace internally so
 // the engine can't backtrack \s* to 0 chars and slip a self-referential token through.
-// Excludes "our/my/us" and "the {company,team,organization,internal}" so phrases like
+// Excludes "our/my" and "the {company,team,organization,internal}" so phrases like
 // "according to our CEO" or "study from our team" don't masquerade as evidence.
-const NOT_SELF_REF = String.raw`(?!\s*(?:our|my|us|the\s+(?:company|team|organization|internal))\b)`;
+// 'us' is intentionally omitted — the /i flag makes it also match "US" (United States),
+// which would mis-flag legitimate external sources like "According to US regulators".
+// The bare "data from us" / "according to us" cases are uncommon and not worth the
+// collision with US-government citations.
+const NOT_SELF_REF = String.raw`(?!\s*(?:our|my|the\s+(?:company|team|organization|internal))\b)`;
 
 function hasEvidenceSignals(content: string): boolean {
   const evidencePatterns = [

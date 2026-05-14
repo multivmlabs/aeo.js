@@ -170,6 +170,15 @@ Furthermore, we plan to add more features.`;
     expect(evidenceHint).toBeDefined();
   });
 
+  it('recognizes "According to US regulators" as external evidence (not self-referential)', () => {
+    // /i flag was making 'us' in NOT_SELF_REF match 'US' (United States), incorrectly
+    // flagging legitimate citations like "According to US regulators". 'us' was dropped.
+    const usCitation = `According to US regulators, the market grew 40% in 2024. Revenue figures reached $50 million daily across 120 countries.`;
+    const result = scorePageCitability(makePage(usCitation));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
   it('still suggests attribution for "As cited in our internal report"', () => {
     // 'as cited' alone is meaningless without 'in/by SOURCE' — covered by the
     // 'cited (by|in)' pattern with the self-referential guard.
