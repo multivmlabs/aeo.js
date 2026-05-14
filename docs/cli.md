@@ -105,17 +105,17 @@ npx aeo.js generate [options]
 **Examples**
 
 ```bash
-# Use everything from aeo.config.ts
-npx aeo.js generate
-
-# Override URL/title without editing the config
-npx aeo.js generate --url https://staging.mysite.com --title "Staging"
-
-# Static site, no config file
+# Static site
 npx aeo.js generate --url https://mysite.com --title "My Site" --out public
 
+# Staging build with different URL
+npx aeo.js generate --url https://staging.mysite.com --title "Staging" --out public
+
 # Production build without the widget
-npx aeo.js generate --no-widget
+npx aeo.js generate --url https://mysite.com --title "My Site" --out public --no-widget
+
+# Inside a framework project (Next.js, Astro, Nuxt, etc.) — outDir is auto-detected
+npx aeo.js generate --url https://mysite.com --title "My Site"
 ```
 
 ---
