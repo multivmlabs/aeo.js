@@ -106,16 +106,26 @@ function scoreAnswerBlocks(content: string, hints: ContentHint[]): CitabilityDim
   // exists on the page — otherwise the existing zero-answer warning above covers the
   // same action item. Match the 20-word threshold used by isAnswerQualityParagraph so a
   // 15–19-word direct opening doesn't false-positive against itself.
+  //
+  // We check only the "starts contextually" half of isAnswerQualityParagraph (capital
+  // noun, not a pronoun). The 200-word upper bound from that helper would mis-flag a
+  // well-formed 201+ word opener as needing rephrasing — the long-paragraph hint below
+  // is the right place to suggest splitting it.
   if (answerCount > 0) {
     const firstSubstantialParagraph = paragraphs.find(
       para => !para.text.startsWith('#') && para.text.split(/\s+/).length >= 20
     );
-    if (firstSubstantialParagraph && !isAnswerQualityParagraph(firstSubstantialParagraph.text)) {
-      hints.push({
-        type: 'suggestion',
-        message: 'Lead with a direct, self-contained answer paragraph before background context',
-        line: firstSubstantialParagraph.line,
-      });
+    if (firstSubstantialParagraph) {
+      const startsContextually =
+        !/^[A-Z][a-z]/.test(firstSubstantialParagraph.text) ||
+        /^(This|That|These|Those|It|They|We|He|She|I)\b/.test(firstSubstantialParagraph.text);
+      if (startsContextually) {
+        hints.push({
+          type: 'suggestion',
+          message: 'Lead with a direct, self-contained answer paragraph before background context',
+          line: firstSubstantialParagraph.line,
+        });
+      }
     }
   }
 

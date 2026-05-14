@@ -112,6 +112,22 @@ This page explains the background, positioning, and implementation details for t
     expect(answerFirstHint).toBeUndefined();
   });
 
+  it('does not add an answer-first hint when the opener exceeds 200 words but is a direct answer', () => {
+    // The "Lead with a direct answer" suggestion previously gated on isAnswerQualityParagraph,
+    // which caps at 200 words. A well-formed 200+ word opener that starts with a capital noun
+    // is still a direct answer — splitting it is a separate hint that the long-paragraph check
+    // handles. Regression test: this content must NOT trigger the answer-first suggestion.
+    const longOpener = 'Aeo.js generates machine-readable answer-engine assets for websites at build time. '.repeat(15);
+    const content = `# About aeo.js
+
+${longOpener}
+
+A second paragraph adds positioning context for teams adopting the library in production environments.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeUndefined();
+  });
+
   it('detects context-dependent paragraphs', () => {
     const content = `As mentioned above, our platform is great.
 
