@@ -104,6 +104,22 @@ Furthermore, we plan to add more features.`;
     const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
     expect(evidenceHint).toBeUndefined();
   });
+
+  it('still suggests attribution for self-referential phrasing that mentions reports/studies', () => {
+    // "our internal report" / "based on our data" / "user behavior study" are
+    // self-referential — they should NOT silence the attribution hint.
+    const selfReferential = `Based on our internal data, we grew 300% in 2024. See our quarterly report for more numbers — our user behavior study found 80% retention.`;
+    const result = scorePageCitability(makePage(selfReferential));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "study by" / "report from" attribution phrases as evidence', () => {
+    const externalAttribution = `A 2024 study by Stanford found 80% adoption. Revenue figures came from a report from McKinsey, showing 250% growth.`;
+    const result = scorePageCitability(makePage(externalAttribution));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
 });
 
 describe('scoreSiteCitability', () => {

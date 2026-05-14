@@ -206,9 +206,18 @@ function scoreStatisticalDensity(content: string, hints: ContentHint[]): Citabil
 
 function hasEvidenceSignals(content: string): boolean {
   const evidencePatterns = [
+    // External-source markers: URLs, footnote refs, or explicit attribution phrases.
+    // Patterns are scoped so self-referential prose ("our internal report", "based on our data")
+    // doesn't accidentally count as evidence — each keyword must pair with an attribution
+    // preposition (by/from/of) or be a phrase that only makes sense for external sources.
     /https?:\/\/\S+/i,
     /\[\^?\d+\]/,
-    /\b(according to|source:|sources:|reported by|published by|based on|study|survey|report|research|data from)\b/i,
+    /\baccording to\b/i,
+    /\bsources?:/i,
+    /\b(reported|published) (by|in)\b/i,
+    /\b(study|survey|report|research|paper|analysis) (by|from)\b/i,
+    /\bdata (from|by)\b/i,
+    /\b(citing|cited (by|in)|as cited)\b/i,
   ];
 
   return evidencePatterns.some(pattern => pattern.test(content));
