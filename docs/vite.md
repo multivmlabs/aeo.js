@@ -288,6 +288,14 @@ export default defineConfig(({ mode }) => ({
 
 ```typescript
 // vite.config.ts
+import { defineConfig } from 'vite';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { aeoVitePlugin } from 'aeo.js/vite';
+
+// ESM doesn't ship __dirname — derive it from import.meta.url
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
   build: {
     rollupOptions: {

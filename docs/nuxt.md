@@ -216,16 +216,21 @@ const { data: article } = await useAsyncData(path, () =>
   queryContent(path).findOne()
 );
 
+// useAsyncData returns Ref<T | null>. If content isn't found, redirect.
+if (!article.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Article not found' });
+}
+
 useHead({
-  title: article.value?.title,
+  title: article.value.title,
   meta: [
-    { name: 'description', content: article.value?.description },
+    { name: 'description', content: article.value.description },
   ],
 });
 </script>
 
 <template>
-  <article>
+  <article v-if="article">
     <h1>{{ article.title }}</h1>
     <ContentDoc />
   </article>
