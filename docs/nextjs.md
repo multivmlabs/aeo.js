@@ -259,7 +259,16 @@ export default function App({ Component, pageProps }: AppProps) {
 import Head from 'next/head';
 import { serializeJsonForHtml } from '@/lib/serialize-json-ld';
 
-export default function BlogPost({ post }) {
+type BlogPostProps = {
+  post: {
+    title: string;
+    excerpt: string;
+    publishedAt: string;
+    author: { name: string };
+  };
+};
+
+export default function BlogPost({ post }: BlogPostProps) {
   return (
     <>
       <Head>
@@ -309,7 +318,7 @@ export default async function handler(
       ${posts.map(post => `
         <url>
           <loc>https://mysite.com/blog/${post.slug}</loc>
-          <lastmod>${post.updatedAt}</lastmod>
+          <lastmod>${new Date(post.updatedAt).toISOString()}</lastmod>
           <priority>0.8</priority>
         </url>
       `).join('')}

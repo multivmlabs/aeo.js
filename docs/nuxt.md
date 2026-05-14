@@ -153,7 +153,9 @@ useHead({
 import { serializeJsonForHtml } from '~/utils/serialize-json-ld';
 
 const route = useRoute();
-const { data: post } = await useFetch(`/api/posts/${route.params.slug}`);
+// route.params values are `string | string[]` in Vue Router 4 — narrow before use
+const slug = typeof route.params.slug === 'string' ? route.params.slug : route.params.slug[0];
+const { data: post } = await useFetch(`/api/posts/${slug}`);
 
 useHead({
   title: () => `${post.value?.title} | My Blog`,
@@ -270,7 +272,7 @@ export default defineEventHandler(async (event) => {
       ${posts.map(post => `
         <url>
           <loc>https://mysite.com/blog/${post.slug}</loc>
-          <lastmod>${post.updatedAt}</lastmod>
+          <lastmod>${new Date(post.updatedAt).toISOString()}</lastmod>
           <priority>0.8</priority>
         </url>
       `).join('')}
