@@ -329,12 +329,14 @@ jobs:
 
 The generated files are plain static assets — deploy them with whatever you'd already use.
 
+> **Always pass `--out`** matching your build output directory. Without it the CLI defaults to `dist/` for non-framework projects, so AEO files would land outside the directory you actually deploy. Each snippet below uses `--out public`; change it to match your build (e.g. `_site` for Eleventy/Jekyll, `dist` for Vite, `public` for Hugo).
+
 ### Vercel
 
 ```jsonc
 // vercel.json
 {
-  "buildCommand": "npm run build && npx aeo.js generate",
+  "buildCommand": "npm run build && npx aeo.js generate --url https://mysite.com --title \"My Site\" --out public",
   "outputDirectory": "public"
 }
 ```
@@ -344,13 +346,13 @@ The generated files are plain static assets — deploy them with whatever you'd 
 ```toml
 # netlify.toml
 [build]
-  command = "npm run build && npx aeo.js generate"
+  command = "npm run build && npx aeo.js generate --url https://mysite.com --title \"My Site\" --out public"
   publish = "public"
 ```
 
 ### Cloudflare Pages
 
-In the dashboard, set the build command to `npm run build && npx aeo.js generate` and the output directory to your build folder. No `wrangler.toml` changes needed.
+In the dashboard, set the build command to `npm run build && npx aeo.js generate --url https://mysite.com --title "My Site" --out public` and the output directory to `public`. No `wrangler.toml` changes needed.
 
 ### GitHub Pages
 
@@ -373,7 +375,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci && npm run build
-      - run: npx aeo.js generate
+      - run: npx aeo.js generate --url https://mysite.com --title "My Site" --out public
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public
@@ -384,8 +386,8 @@ jobs:
 
 ```bash
 npm run build
-npx aeo.js generate
-# Upload the contents of public/ (or whatever your outDir is) to your host
+npx aeo.js generate --url https://mysite.com --title "My Site" --out public
+# Upload the contents of public/ to your host
 rsync -avz --delete public/ user@host:/var/www/mysite/
 ```
 

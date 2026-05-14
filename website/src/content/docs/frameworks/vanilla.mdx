@@ -56,15 +56,13 @@ await generateAEOFiles(resolveConfig({
 
 ### Hand-rolled HTML site
 
-```ts
-// aeo.config.ts
-import { defineConfig } from 'aeo.js';
-
-export default defineConfig({
-  title: 'My Site',
-  url: 'https://mysite.com',
-  outDir: '.',                  // HTML at project root
-});
+```jsonc
+// package.json
+{
+  "scripts": {
+    "build:aeo": "aeo.js generate --url https://mysite.com --title \"My Site\" --out ."
+  }
+}
 ```
 
 ### Eleventy / Hugo / Jekyll
@@ -73,30 +71,37 @@ export default defineConfig({
 // package.json
 {
   "scripts": {
-    "build": "eleventy",        // or hugo / jekyll build
-    "postbuild": "aeo.js generate"
+    "build": "eleventy",
+    "postbuild": "aeo.js generate --url https://mysite.com --title \"My Site\" --out _site"
   }
 }
 ```
 
-```ts
-// aeo.config.ts
-export default defineConfig({
-  title: 'My Site',
-  url: 'https://mysite.com',
-  outDir: '_site',              // Eleventy / Jekyll default; use 'public' for Hugo
-});
-```
+For Hugo use `--out public`; for Jekyll `--out _site`. The `postbuild` script runs automatically after `npm run build`.
 
 ### Markdown blog (no framework)
 
-```ts
-export default defineConfig({
+The CLI's `--out` flag covers built HTML; to also pull `.md` front-matter and bodies from a `contentDir`, use the programmatic API:
+
+```js
+// scripts/aeo.mjs
+import { generateAEOFiles, resolveConfig } from 'aeo.js';
+
+await generateAEOFiles(resolveConfig({
   title: 'My Blog',
   url: 'https://myblog.dev',
   contentDir: 'content',        // pull post bodies from here
   outDir: 'public',             // write generated files here
-});
+}));
+```
+
+```jsonc
+// package.json
+{
+  "scripts": {
+    "build:aeo": "node scripts/aeo.mjs"
+  }
+}
 ```
 
 ## Adding the Widget
