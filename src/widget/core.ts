@@ -82,16 +82,28 @@ export class AeoWidget {
 
     this.toggleElement = document.createElement('div');
     const sizeClass = size === 'small' ? ' aeo-small' : size === 'icon-only' ? ' aeo-icon-only' : '';
+    const humanLabel = this.config.widget?.humanLabel || 'Human';
+    const aiLabel = this.config.widget?.aiLabel || 'AI';
     this.toggleElement.className = `aeo-toggle aeo-${position}${sizeClass}`;
     this.toggleElement.innerHTML = `
-      <div class="aeo-toggle-inner">
-        <button class="aeo-toggle-btn aeo-human-btn aeo-active" data-mode="human">
+      <div class="aeo-toggle-inner" role="group" aria-label="View mode">
+        <button
+          class="aeo-toggle-btn aeo-human-btn aeo-active"
+          data-mode="human"
+          aria-label="${this.escHtml(humanLabel)} mode"
+          aria-pressed="true"
+        >
           ${icons.human}
-          <span>${this.config.widget?.humanLabel || 'Human'}</span>
+          <span>${this.escHtml(humanLabel)}</span>
         </button>
-        <button class="aeo-toggle-btn aeo-ai-btn" data-mode="ai">
+        <button
+          class="aeo-toggle-btn aeo-ai-btn"
+          data-mode="ai"
+          aria-label="${this.escHtml(aiLabel)} mode"
+          aria-pressed="false"
+        >
           ${icons.ai}
-          <span>${this.config.widget?.aiLabel || 'AI'}</span>
+          <span>${this.escHtml(aiLabel)}</span>
         </button>
       </div>
     `;
@@ -147,9 +159,13 @@ export class AeoWidget {
     if (this.isAIMode) {
       humanBtn?.classList.remove('aeo-active');
       aiBtn?.classList.add('aeo-active');
+      humanBtn?.setAttribute('aria-pressed', 'false');
+      aiBtn?.setAttribute('aria-pressed', 'true');
     } else {
       humanBtn?.classList.add('aeo-active');
       aiBtn?.classList.remove('aeo-active');
+      humanBtn?.setAttribute('aria-pressed', 'true');
+      aiBtn?.setAttribute('aria-pressed', 'false');
     }
   }
 
