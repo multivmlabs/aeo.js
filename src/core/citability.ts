@@ -212,7 +212,7 @@ function hasEvidenceSignals(content: string): boolean {
     // preposition (by/from/of) or be a phrase that only makes sense for external sources.
     /https?:\/\/\S+/i,
     /\[\^?\d+\]/,
-    /\baccording to\b/i,
+    /\baccording to\s+(?!our\b|my\b|us\b|the\s+(?:company|team|organization|internal)\b)/i,
     /\bsources?:/i,
     /\b(reported|published) (by|in)\b/i,
     /\b(study|survey|report|research|paper|analysis) (by|from)\b/i,

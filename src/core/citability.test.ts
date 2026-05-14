@@ -129,6 +129,22 @@ Furthermore, we plan to add more features.`;
     const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
     expect(evidenceHint).toBeDefined();
   });
+
+  it('still suggests attribution for "According to our internal data" — self-referential according', () => {
+    // "according to" used to be unscoped and silently passed for "according to our X". The
+    // negative lookahead excludes our/my/us and "the {company,team,organization,internal}".
+    const selfAccording = `According to our internal data, we grew 300% in 2024. Revenue grew 250% to $50 million daily.`;
+    const result = scorePageCitability(makePage(selfAccording));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "according to" an external source as evidence', () => {
+    const externalAccording = `According to Gartner, the market grew 40% in 2024. Revenue figures reached $50 million daily.`;
+    const result = scorePageCitability(makePage(externalAccording));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
 });
 
 describe('scoreSiteCitability', () => {
