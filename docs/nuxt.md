@@ -265,9 +265,13 @@ useHead({
 
 ```typescript
 // server/routes/sitemap.xml.ts
+type Post = { slug: string; updatedAt: string | Date };
+
 export default defineEventHandler(async (event) => {
-  const posts = await $fetch('/api/posts');
-  
+  // $fetch defaults to `T = unknown` — pass the response type explicitly
+  // so `.map()` is type-safe under "strict": true.
+  const posts = await $fetch<Post[]>('/api/posts');
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
       <url>
