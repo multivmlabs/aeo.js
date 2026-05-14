@@ -74,15 +74,31 @@ describe('scorePageCitability', () => {
   });
 
   it('suggests leading with a direct answer when the first substantial paragraph is contextual', () => {
+    // First substantial paragraph starts with "This" (not an answer-quality opener).
+    // Second paragraph starts with a capital noun and is long enough — counts as an
+    // answer paragraph, so the suggestion (which requires answerCount > 0) fires.
     const content = `# About aeo.js
 
-This page explains the background, positioning, and implementation details that teams should understand before adopting the library.
+This page explains the background, positioning, scope, and implementation details that teams should understand before adopting the library in their projects.
 
-aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt, schema data, and AI index metadata.`;
+Aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt, schema data, ai-index metadata, sitemap, and JSON-LD structured data.`;
     const result = scorePageCitability(makePage(content));
     const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
     expect(answerFirstHint).toBeDefined();
     expect(answerFirstHint?.line).toBe(3);
+  });
+
+  it('does not add an answer-first hint when zero answer paragraphs exist (warning covers it)', () => {
+    // When there are no answer-quality paragraphs at all, the standalone warning already
+    // tells the user to add some — the "lead with one" hint would be redundant noise.
+    const content = `# About aeo.js
+
+This page explains the background, positioning, scope, and history that teams should understand before adopting the library in their projects.`;
+    const result = scorePageCitability(makePage(content));
+    const warning = result.hints.find(h => h.message.includes('No direct answer paragraphs'));
+    const suggestion = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(warning).toBeDefined();
+    expect(suggestion).toBeUndefined();
   });
 
   it('does not add an answer-first hint when the first substantial paragraph is direct', () => {
