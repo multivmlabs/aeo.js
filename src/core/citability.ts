@@ -204,10 +204,12 @@ function scoreStatisticalDensity(content: string, hints: ContentHint[]): Citabil
   return { name: 'Statistical Density', score, maxScore: 25, details: `${totalMatches} statistical claims (${density.toFixed(1)} per 100 words)` };
 }
 
-// Shared negative-lookahead fragment used by every attribution pattern. Excludes
-// "our/my/us" and "the {company,team,organization,internal}" so phrases like
+// Shared negative-lookahead fragment used by every attribution pattern. The lookahead
+// is anchored immediately after the keyword and consumes any whitespace internally so
+// the engine can't backtrack \s* to 0 chars and slip a self-referential token through.
+// Excludes "our/my/us" and "the {company,team,organization,internal}" so phrases like
 // "according to our CEO" or "study from our team" don't masquerade as evidence.
-const NOT_SELF_REF = String.raw`(?!our\b|my\b|us\b|the\s+(?:company|team|organization|internal)\b)`;
+const NOT_SELF_REF = String.raw`(?!\s*(?:our|my|us|the\s+(?:company|team|organization|internal))\b)`;
 
 function hasEvidenceSignals(content: string): boolean {
   const evidencePatterns = [
@@ -216,11 +218,11 @@ function hasEvidenceSignals(content: string): boolean {
     // "our internal report", "data from us", "study by our team" should NOT count.
     /https?:\/\/\S+/i,
     /\[\^?\d+\]/,
-    new RegExp(String.raw`\baccording to\s+${NOT_SELF_REF}`, 'i'),
-    /\bsources?:/i,
-    new RegExp(String.raw`\b(reported|published) (by|in)\s+${NOT_SELF_REF}`, 'i'),
-    new RegExp(String.raw`\b(study|survey|report|research|paper|analysis) (by|from)\s+${NOT_SELF_REF}`, 'i'),
-    new RegExp(String.raw`\bdata (from|by)\s+${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\baccording to\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bsources?:${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\b(reported|published) (by|in)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\b(study|survey|report|research|paper|analysis) (by|from)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bdata (from|by)\b${NOT_SELF_REF}`, 'i'),
     /\b(cited (by|in)|as cited)\b/i,
   ];
 

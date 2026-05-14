@@ -169,6 +169,14 @@ Furthermore, we plan to add more features.`;
     const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
     expect(evidenceHint).toBeDefined();
   });
+
+  it('still suggests attribution for "Sources: our internal team"', () => {
+    // The sources?: label is a strong signal but only when followed by an external source.
+    const selfSources = `We grew 300% in 2024. Revenue reached $50 million daily across 120 countries. Sources: our internal team and our research department.`;
+    const result = scorePageCitability(makePage(selfSources));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
 });
 
 describe('scoreSiteCitability', () => {
