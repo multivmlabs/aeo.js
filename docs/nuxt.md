@@ -152,10 +152,16 @@ useHead({
 <script setup lang="ts">
 import { serializeJsonForHtml } from '~/utils/serialize-json-ld';
 
+type BlogPost = {
+  title: string;
+  excerpt: string;
+  publishedAt: string;
+};
+
 const route = useRoute();
 // route.params values are `string | string[]` in Vue Router 4 — narrow before use
 const slug = typeof route.params.slug === 'string' ? route.params.slug : route.params.slug[0];
-const { data: post } = await useFetch(`/api/posts/${slug}`);
+const { data: post } = await useFetch<BlogPost>(`/api/posts/${slug}`);
 
 useHead({
   title: () => `${post.value?.title} | My Blog`,
@@ -211,12 +217,18 @@ export default defineNuxtConfig({
 ```vue
 <script setup lang="ts">
 // pages/blog/[slug].vue
+type Article = {
+  title: string;
+  description: string;
+  body: unknown;
+};
+
 const { path } = useRoute();
-const { data: article } = await useAsyncData(path, () =>
-  queryContent(path).findOne()
+const { data: article } = await useAsyncData<Article>(path, () =>
+  queryContent<Article>(path).findOne()
 );
 
-// useAsyncData returns Ref<T | null>. If content isn't found, redirect.
+// useAsyncData returns Ref<T | null>. If content isn't found, throw 404.
 if (!article.value) {
   throw createError({ statusCode: 404, statusMessage: 'Article not found' });
 }
@@ -334,7 +346,7 @@ export const useStructuredData = (type: string, data: Record<string, unknown>) =
 
 Usage:
 ```vue
-<script setup>
+<script setup lang="ts">
 useStructuredData('BlogPosting', {
   headline: 'My Post Title',
   description: 'Post description',
@@ -405,12 +417,18 @@ npx nuxi generate
 ```vue
 <!-- pages/blog/category/[category].vue -->
 <script setup lang="ts">
+type Post = {
+  id: string;
+  slug: string;
+  title: string;
+};
+
 const route = useRoute();
 // route.params values are `string | string[]` in Vue Router 4 — narrow before use
 const category = typeof route.params.category === 'string'
   ? route.params.category
   : route.params.category[0];
-const { data: posts } = await useFetch(`/api/posts?category=${category}`);
+const { data: posts } = await useFetch<Post[]>(`/api/posts?category=${category}`);
 
 useHead({
   title: `${category} Posts`,
@@ -423,7 +441,7 @@ useHead({
 <template>
   <div>
     <h1>{{ category }} Posts</h1>
-    <article v-for="post in posts" :key="post.id">
+    <article v-for="post in posts ?? []" :key="post.id">
       <NuxtLink :to="`/blog/${post.slug}`">
         {{ post.title }}
       </NuxtLink>
@@ -436,9 +454,16 @@ useHead({
 
 ```vue
 <script setup lang="ts">
+type Product = {
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+};
+
 const route = useRoute();
 const id = typeof route.params.id === 'string' ? route.params.id : route.params.id[0];
-const { data: product } = await useFetch(`/api/products/${id}`);
+const { data: product } = await useFetch<Product>(`/api/products/${id}`);
 
 useStructuredData('Product', {
   name: product.value?.name,
