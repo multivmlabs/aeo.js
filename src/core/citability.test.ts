@@ -170,6 +170,15 @@ Furthermore, we plan to add more features.`;
     expect(evidenceHint).toBeDefined();
   });
 
+  it('still suggests attribution for "As cited in our internal report"', () => {
+    // 'as cited' alone is meaningless without 'in/by SOURCE' — covered by the
+    // 'cited (by|in)' pattern with the self-referential guard.
+    const selfAsCited = `As cited in our internal report, we grew 300% in 2024 across 120 countries. Daily transactions reached $50 million.`;
+    const result = scorePageCitability(makePage(selfAsCited));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
   it('still suggests attribution for "cited by our internal research team"', () => {
     const selfCited = `Revenue data cited by our internal research team shows we grew 300% in 2024 across 120 countries. Daily transactions reached $50 million.`;
     const result = scorePageCitability(makePage(selfCited));
