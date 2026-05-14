@@ -32,10 +32,27 @@ This generates a starter config with all options documented.
 
 ### `check`
 
-Validate your AEO setup and show what would be generated:
+Validate your AEO setup and get a GEO readiness score (0–100). Does not write any files — safe to run in CI:
 
 ```bash
-npx aeo.js check
+npx aeo.js check              # formatted output
+npx aeo.js check --json       # machine-readable JSON for scripting
+```
+
+Fail a CI build if the score drops below a threshold:
+
+```bash
+SCORE=$(npx aeo.js check --json | jq '.audit.score')
+[ "$SCORE" -ge 70 ] || { echo "GEO score $SCORE below 70"; exit 1; }
+```
+
+### `report`
+
+Deeper analysis than `check`: per-page citability scores, platform-specific hints (ChatGPT, Claude, Perplexity, Google AI Overviews, Bing Copilot), and a prioritized fix list.
+
+```bash
+npx aeo.js report > aeo-report.md
+npx aeo.js report --json > aeo-report.json
 ```
 
 ## Options
@@ -46,8 +63,11 @@ npx aeo.js check
 | `--url <url>` | Site URL |
 | `--title <title>` | Site title |
 | `--no-widget` | Disable widget generation |
+| `--json` | JSON output (for `check` and `report`) |
 | `--help`, `-h` | Show help |
 | `--version`, `-v` | Show version |
+
+Both `--flag value` and `--flag=value` forms are supported.
 
 ## Configuration file
 
@@ -65,3 +85,5 @@ export default defineConfig({
 ```
 
 See the full [Configuration reference](/reference/configuration/) for all options.
+
+A complete CLI reference with every flag, exit codes, JSON output shapes, framework auto-detection table, and CI scripting patterns is in [docs/cli.md on GitHub](https://github.com/multivmlabs/aeo.js/blob/main/docs/cli.md).

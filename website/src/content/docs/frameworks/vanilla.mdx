@@ -1,0 +1,121 @@
+---
+title: Vanilla JS / Static HTML
+description: Use aeo.js with a plain HTML site, hand-rolled JS, or any static-site generator — no framework required.
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+aeo.js works on any project that produces static HTML. Use the CLI directly — no plugin, no module, no framework.
+
+## Quick Start
+
+<Tabs>
+  <TabItem label="Zero-install (npx)">
+    ```bash
+    npx aeo.js init
+    npx aeo.js generate --url https://mysite.com --title "My Site"
+    ```
+  </TabItem>
+  <TabItem label="Installed">
+    ```bash
+    npm install --save-dev aeo.js
+    npx aeo.js init
+    npx aeo.js generate
+    ```
+  </TabItem>
+</Tabs>
+
+`init` scaffolds `aeo.config.ts`. `generate` walks your output directory, extracts page content, and emits `robots.txt`, `llms.txt`, `sitemap.xml`, `ai-index.json`, and `schema.json` next to your HTML.
+
+## How aeo.js Discovers Your Pages
+
+| Source | Config | Use when |
+|---|---|---|
+| **`contentDir`** | `contentDir: 'docs'` | You have handwritten `.md` / `.mdx` files |
+| **Built HTML in `outDir`** | `outDir: 'public'` | You have a built static site with `*.html` files |
+| **`pages` array** | `pages: [{ pathname: '/about', title: '…' }]` | Explicit control for runtime-only routes |
+
+Mix all three — `pages` is additive.
+
+## Common Setups
+
+### Hand-rolled HTML site
+
+```ts
+// aeo.config.ts
+import { defineConfig } from 'aeo.js';
+
+export default defineConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  outDir: '.',                  // HTML at project root
+});
+```
+
+### Eleventy / Hugo / Jekyll
+
+```jsonc
+// package.json
+{
+  "scripts": {
+    "build": "eleventy",        // or hugo / jekyll build
+    "postbuild": "aeo.js generate"
+  }
+}
+```
+
+```ts
+// aeo.config.ts
+export default defineConfig({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  outDir: '_site',              // Eleventy / Jekyll default; use 'public' for Hugo
+});
+```
+
+### Markdown blog (no framework)
+
+```ts
+export default defineConfig({
+  title: 'My Blog',
+  url: 'https://myblog.dev',
+  contentDir: 'content',        // pull post bodies from here
+  outDir: 'public',             // write generated files here
+});
+```
+
+## Adding the Widget
+
+```html
+<script type="module">
+  import { AeoWidget } from 'https://esm.sh/aeo.js/widget';
+  new AeoWidget({
+    config: {
+      title: 'My Site',
+      url: 'https://mysite.com',
+      widget: { enabled: true, position: 'bottom-right', size: 'small' },
+    },
+  });
+</script>
+```
+
+Or install and bundle locally with `import { AeoWidget } from 'aeo.js/widget'`.
+
+## CI Integration
+
+```yaml
+- run: npx aeo.js check --json | tee audit.json
+- run: |
+    SCORE=$(jq '.audit.score' audit.json)
+    [ "$SCORE" -ge 70 ] || { echo "GEO score $SCORE below 70"; exit 1; }
+```
+
+<Aside>
+Full walkthrough with deployment recipes (Vercel, Netlify, Cloudflare, GitHub Pages) is in the [Vanilla Guide on GitHub](https://github.com/multivmlabs/aeo.js/blob/main/docs/vanilla.md).
+</Aside>
+
+## Further Reading
+
+- [CLI Reference](/features/cli/) — every command, every flag
+- [JSON-LD Recipes](/features/json-ld/) — FAQ, HowTo, Product, Article, Recipe, Event
+- [Configuration Reference](/reference/configuration/)

@@ -69,6 +69,7 @@ export default defineConfig({
 						{ label: 'Nuxt', slug: 'frameworks/nuxt' },
 						{ label: 'Angular', slug: 'frameworks/angular' },
 						{ label: 'Webpack', slug: 'frameworks/webpack' },
+						{ label: 'Vanilla JS / Static HTML', slug: 'frameworks/vanilla' },
 					],
 				},
 				{
@@ -78,6 +79,7 @@ export default defineConfig({
 						{ label: 'Widget', slug: 'features/widget' },
 						{ label: 'CLI', slug: 'features/cli' },
 						{ label: 'Schema & Open Graph', slug: 'features/schema-og' },
+						{ label: 'JSON-LD Recipes', slug: 'features/json-ld' },
 						{ label: 'Audit & Citability', slug: 'features/audit' },
 					],
 				},
