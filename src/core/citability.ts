@@ -204,19 +204,23 @@ function scoreStatisticalDensity(content: string, hints: ContentHint[]): Citabil
   return { name: 'Statistical Density', score, maxScore: 25, details: `${totalMatches} statistical claims (${density.toFixed(1)} per 100 words)` };
 }
 
+// Shared negative-lookahead fragment used by every attribution pattern. Excludes
+// "our/my/us" and "the {company,team,organization,internal}" so phrases like
+// "according to our CEO" or "study from our team" don't masquerade as evidence.
+const NOT_SELF_REF = String.raw`(?!our\b|my\b|us\b|the\s+(?:company|team|organization|internal)\b)`;
+
 function hasEvidenceSignals(content: string): boolean {
   const evidencePatterns = [
     // External-source markers: URLs, footnote refs, or explicit attribution phrases.
-    // Patterns are scoped so self-referential prose ("our internal report", "based on our data")
-    // doesn't accidentally count as evidence — each keyword must pair with an attribution
-    // preposition (by/from/of) or be a phrase that only makes sense for external sources.
+    // Every keyword pair must be followed by something that isn't self-referential —
+    // "our internal report", "data from us", "study by our team" should NOT count.
     /https?:\/\/\S+/i,
     /\[\^?\d+\]/,
-    /\baccording to\s+(?!our\b|my\b|us\b|the\s+(?:company|team|organization|internal)\b)/i,
+    new RegExp(String.raw`\baccording to\s+${NOT_SELF_REF}`, 'i'),
     /\bsources?:/i,
-    /\b(reported|published) (by|in)\b/i,
-    /\b(study|survey|report|research|paper|analysis) (by|from)\b/i,
-    /\bdata (from|by)\s+(?!our\b|my\b|us\b|the\s+(?:company|team|organization|internal)\b)/i,
+    new RegExp(String.raw`\b(reported|published) (by|in)\s+${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\b(study|survey|report|research|paper|analysis) (by|from)\s+${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bdata (from|by)\s+${NOT_SELF_REF}`, 'i'),
     /\b(cited (by|in)|as cited)\b/i,
   ];
 

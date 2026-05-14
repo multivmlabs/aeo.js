@@ -161,6 +161,14 @@ Furthermore, we plan to add more features.`;
     const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
     expect(evidenceHint).toBeUndefined();
   });
+
+  it('still suggests attribution for "study by our team" and "reported by our CEO"', () => {
+    // Same self-referential guard for study/report/research-by-from and reported/published-by-in.
+    const selfStudy = `In a study by our team, we grew 300% in 2024. Reported by our CEO, revenue reached $50 million daily.`;
+    const result = scorePageCitability(makePage(selfStudy));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
 });
 
 describe('scoreSiteCitability', () => {
