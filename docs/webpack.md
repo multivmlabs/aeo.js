@@ -61,15 +61,19 @@ You should now have these files in your webpack `output.path` directory:
 
 ### Basic Configuration
 
+The plugin accepts the standard `AeoConfig`. The minimum useful shape:
+
 ```typescript
 type AeoConfig = {
-  title: string;              // Required
-  url: string;                // Required (production URL)
+  title?: string;              // Strongly recommended (defaults to "My Site")
+  url?: string;                // Strongly recommended (your production URL)
   description?: string;        // Recommended
   outDir?: string;             // Where to write AEO files (defaults to webpack output.path)
   contentDir?: string;         // Optional handwritten-markdown source
 };
 ```
+
+> Although `title` and `url` are optional in the type, omitting `url` causes `sitemap.xml`, `llms.txt`, and JSON-LD to fall back to `https://example.com`. Always set it for production builds. See [README.md](./README.md#configuration-options) for the full reference.
 
 ### Advanced Configuration
 

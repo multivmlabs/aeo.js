@@ -216,11 +216,13 @@ Automatically injects schema.org structured data into your pages:
 
 All framework integrations accept the same `AeoConfig` shape:
 
+> All fields are optional in TypeScript, but **`url` should always be set** for production. Omitting it causes `sitemap.xml`, `llms.txt`, and JSON-LD to fall back to `https://example.com` (`validateConfig` will also warn).
+
 ```typescript
 type AeoConfig = {
-  // Required
+  // Strongly recommended
   title?: string;            // Your site title (defaults to "My Site")
-  url?: string;              // Your production URL
+  url?: string;              // Your production URL (defaults to "https://example.com")
 
   // Optional
   description?: string;      // Site description

@@ -56,14 +56,18 @@ You should now have these files inside your Angular `outputPath` (typically `dis
 
 ### Basic Configuration
 
+`postBuild` and `generate` accept the standard `AeoConfig`. The minimum useful shape:
+
 ```typescript
 type AeoConfig = {
-  title: string;              // Required
-  url: string;                // Required (production URL)
+  title?: string;              // Strongly recommended (defaults to "My Site")
+  url?: string;                // Strongly recommended (your production URL)
   description?: string;        // Recommended
   outDir?: string;             // Output directory (defaults to detected Angular dist)
 };
 ```
+
+> Although `title` and `url` are optional in the type, omitting `url` causes `sitemap.xml`, `llms.txt`, and JSON-LD to fall back to `https://example.com`. Always set it for production builds. See [README.md](./README.md#configuration-options) for the full reference.
 
 ### Advanced Configuration
 
