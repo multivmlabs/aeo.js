@@ -217,7 +217,7 @@ function hasEvidenceSignals(content: string): boolean {
     /\b(reported|published) (by|in)\b/i,
     /\b(study|survey|report|research|paper|analysis) (by|from)\b/i,
     /\bdata (from|by)\b/i,
-    /\b(citing|cited (by|in)|as cited)\b/i,
+    /\b(cited (by|in)|as cited)\b/i,
   ];
 
   return evidencePatterns.some(pattern => pattern.test(content));

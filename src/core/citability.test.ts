@@ -120,6 +120,15 @@ Furthermore, we plan to add more features.`;
     const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
     expect(evidenceHint).toBeUndefined();
   });
+
+  it('still suggests attribution for "Citing our own data" — bare citing is self-referential', () => {
+    // The bare "citing" alternative used to swallow the hint here. Real attribution uses
+    // "cited by/in" or "as cited" — those are kept. "Citing our X" is self-referential.
+    const selfCiting = `Citing our own data, we grew 300% in 2024. Revenue grew 250% to $50 million daily.`;
+    const result = scorePageCitability(makePage(selfCiting));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
 });
 
 describe('scoreSiteCitability', () => {
