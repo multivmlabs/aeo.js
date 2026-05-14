@@ -145,6 +145,22 @@ Furthermore, we plan to add more features.`;
     const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
     expect(evidenceHint).toBeUndefined();
   });
+
+  it('still suggests attribution for "data from our research team" — self-referential data-from', () => {
+    // "data from" used to be unguarded — "Data from our research team" would silently
+    // suppress the hint. Same negative-lookahead scoping as "according to".
+    const selfData = `Data from our research team shows we grew 300% in 2024. Revenue grew 250% to $50 million daily.`;
+    const result = scorePageCitability(makePage(selfData));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "data from" an external source as evidence', () => {
+    const externalData = `Data from Bloomberg shows the market grew 40% in 2024. Revenue figures reached $50 million daily.`;
+    const result = scorePageCitability(makePage(externalData));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
 });
 
 describe('scoreSiteCitability', () => {

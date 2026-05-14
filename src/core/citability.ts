@@ -216,7 +216,7 @@ function hasEvidenceSignals(content: string): boolean {
     /\bsources?:/i,
     /\b(reported|published) (by|in)\b/i,
     /\b(study|survey|report|research|paper|analysis) (by|from)\b/i,
-    /\bdata (from|by)\b/i,
+    /\bdata (from|by)\s+(?!our\b|my\b|us\b|the\s+(?:company|team|organization|internal)\b)/i,
     /\b(cited (by|in)|as cited)\b/i,
   ];
 
