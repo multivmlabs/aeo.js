@@ -210,8 +210,182 @@ The plugin scans `compilation.assets` after `afterEmit`. If you use a custom emi
 ### Sitemap is missing pages
 Multi-page SPAs that render at runtime are invisible at build time. Add the routes via the `pages` option (shown above) so the sitemap picks them up.
 
+## Deployment
+
+The generated AEO files land in webpack's `output.path` next to your bundles — deploy them as static assets.
+
+### Vercel
+
+```jsonc
+// vercel.json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
+}
+```
+
+### Netlify
+
+```toml
+# netlify.toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+```
+
+### Cloudflare Pages
+
+In the dashboard:
+- **Build command:** `npm run build`
+- **Build output directory:** `dist` (or whatever your `output.path` is)
+
+### GitHub Pages
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci && npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - uses: actions/deploy-pages@v4
+```
+
+Because `AeoWebpackPlugin` runs inside the webpack build, no extra CI step is needed — the AEO files are part of the artifact.
+
+## Examples
+
+### Multi-page marketing site
+
+```js
+// webpack.config.js
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { AeoWebpackPlugin } = require('aeo.js/webpack');
+
+module.exports = {
+  entry: { main: './src/index.js' },
+  plugins: [
+    new HtmlWebpackPlugin({ template: './src/index.html',    filename: 'index.html' }),
+    new HtmlWebpackPlugin({ template: './src/about.html',    filename: 'about/index.html' }),
+    new HtmlWebpackPlugin({ template: './src/pricing.html',  filename: 'pricing/index.html' }),
+    new HtmlWebpackPlugin({ template: './src/contact.html',  filename: 'contact/index.html' }),
+    new AeoWebpackPlugin({
+      title: 'My Marketing Site',
+      url: 'https://mysite.com',
+      description: 'A modern marketing site',
+      schema: {
+        enabled: true,
+        organization: {
+          name: 'My Company',
+          url: 'https://mysite.com',
+          logo: 'https://mysite.com/logo.png',
+        },
+      },
+    }),
+  ],
+};
+```
+
+### Documentation Site (multi-entry build)
+
+```js
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { AeoWebpackPlugin } = require('aeo.js/webpack');
+
+module.exports = {
+  entry: { docs: './src/docs.js' },
+  plugins: [
+    new HtmlWebpackPlugin({ template: './src/getting-started.html', filename: 'getting-started/index.html' }),
+    new HtmlWebpackPlugin({ template: './src/api-reference.html',   filename: 'api-reference/index.html' }),
+    new HtmlWebpackPlugin({ template: './src/guides.html',          filename: 'guides/index.html' }),
+    new AeoWebpackPlugin({
+      title: 'My API Documentation',
+      url: 'https://docs.myapi.com',
+      description: 'Complete API reference and integration guides',
+      schema: {
+        enabled: true,
+        organization: { name: 'My API', url: 'https://docs.myapi.com' },
+      },
+    }),
+  ],
+};
+```
+
+### SPA with runtime routes
+
+For SPAs where most pages render at runtime, supplement with `pages` so the sitemap reflects all routes:
+
+```js
+const { AeoWebpackPlugin } = require('aeo.js/webpack');
+
+module.exports = {
+  // ...
+  plugins: [
+    new AeoWebpackPlugin({
+      title: 'My SPA',
+      url: 'https://myspa.com',
+      pages: [
+        { pathname: '/',          title: 'Home' },
+        { pathname: '/dashboard', title: 'Dashboard' },
+        { pathname: '/pricing',   title: 'Pricing' },
+        { pathname: '/about',     title: 'About' },
+      ],
+      robots: {
+        allow: ['/'],
+        disallow: ['/dashboard'], // Block crawlers from the auth-gated route
+      },
+    }),
+  ],
+};
+```
+
+### E-commerce build with disabled widget
+
+```js
+const { AeoWebpackPlugin } = require('aeo.js/webpack');
+
+module.exports = {
+  plugins: [
+    new AeoWebpackPlugin({
+      title: 'My Store',
+      url: 'https://mystore.com',
+      description: 'Quality products, fast shipping',
+      robots: {
+        allow: ['/'],
+        disallow: ['/checkout', '/account', '/api'],
+      },
+      schema: {
+        enabled: true,
+        organization: { name: 'My Store', url: 'https://mystore.com' },
+      },
+      widget: { enabled: false }, // Don't inject the Human↔AI widget on customer-facing pages
+    }),
+  ],
+};
+```
+
+For per-product `Product` schema (rich product cards in AI shopping answers), see [Custom JSON-LD Recipes → Product](./json-ld.md#product).
+
 ## Further Reading
 
+- [CLI Reference](./cli.md) — direct CLI usage as an alternative to the plugin
+- [Custom JSON-LD Recipes](./json-ld.md) — FAQ, HowTo, Product, Article, Recipe, Event
 - [aeo.js Reference Configuration](https://aeojs.org/reference/configuration/)
 - [Generated Files](https://aeojs.org/features/generated-files/)
 - [GEO Audit & Citability](https://aeojs.org/features/audit/)
+- [Back to Overview](./README.md)

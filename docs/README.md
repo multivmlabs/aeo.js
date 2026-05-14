@@ -27,6 +27,12 @@ aeo.js provides native integrations for the following frameworks:
 | Vite | [vite.md](./vite.md) | Plugin | ✅ Stable |
 | Angular | [angular.md](./angular.md) | Post-build | ✅ Stable |
 | Webpack | [webpack.md](./webpack.md) | Plugin | ✅ Stable |
+| **Vanilla / Static HTML** | [vanilla.md](./vanilla.md) | CLI | ✅ Stable |
+
+## Additional references
+
+- **[CLI Reference](./cli.md)** — every command (`init` · `generate` · `check` · `report`), every flag
+- **[Custom JSON-LD Recipes](./json-ld.md)** — copy-paste schemas for FAQ, HowTo, Product, Article, Recipe, Event, VideoObject, BreadcrumbList
 
 ## Quick Start
 
@@ -148,6 +154,25 @@ module.exports = {
 ```
 
 [→ Full Webpack Guide](./webpack.md)
+
+### Vanilla JS / Static HTML
+No framework? Use the CLI directly on any static site or hand-rolled HTML.
+
+```bash
+npx aeo.js init                    # scaffold aeo.config.ts
+npx aeo.js generate                # generate all AEO files
+```
+
+Or one-shot, no config file:
+
+```bash
+npx aeo.js generate \
+  --url https://mysite.com \
+  --title "My Site" \
+  --out public
+```
+
+[→ Full Vanilla Guide](./vanilla.md) · [→ CLI Reference](./cli.md)
 
 ## What Gets Generated?
 

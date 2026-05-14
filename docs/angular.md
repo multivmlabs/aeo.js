@@ -273,8 +273,163 @@ The extractor strips scripts and boilerplate, prefers `<main>`. If your Angular 
 </main>
 ```
 
+## Deployment
+
+The generated AEO files live in `dist/<project>/browser` (Angular 17+) or `dist/<project>` (older versions) — deploy them with whatever you'd already use for static Angular hosting.
+
+### Vercel
+
+```jsonc
+// vercel.json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/my-app/browser"
+}
+```
+
+Vercel runs `npm run build`, which runs the `postbuild` hook, which generates the AEO files into the same output directory — all served as static assets automatically.
+
+### Netlify
+
+```toml
+# netlify.toml
+[build]
+  command = "npm run build"
+  publish = "dist/my-app/browser"
+```
+
+### Cloudflare Pages
+
+In the Cloudflare dashboard:
+- **Build command:** `npm run build`
+- **Build output directory:** `dist/my-app/browser`
+
+No `wrangler.toml` changes needed — Pages picks up the `postbuild` hook automatically.
+
+### Firebase Hosting
+
+```jsonc
+// firebase.json
+{
+  "hosting": {
+    "public": "dist/my-app/browser",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}
+```
+
+```bash
+npm run build
+firebase deploy
+```
+
+## Examples
+
+### Blog with prerendered routes
+
+```ts
+// scripts/aeo.mjs
+import { postBuild } from 'aeo.js/angular';
+
+await postBuild({
+  title: 'Tech Blog',
+  description: 'In-depth technical articles on Angular, RxJS, and the web platform',
+  url: 'https://techblog.dev',
+  schema: {
+    enabled: true,
+    organization: { name: 'Tech Blog', url: 'https://techblog.dev' },
+    defaultType: 'Article',
+  },
+});
+```
+
+Prerender every route in `angular.json`'s build target; `Article` becomes the default schema type for each prerendered page, which is what you want for content-heavy sites.
+
+### Documentation Site
+
+```ts
+// scripts/aeo.mjs
+import { postBuild } from 'aeo.js/angular';
+
+await postBuild({
+  title: 'My API Documentation',
+  description: 'REST + GraphQL API reference and integration guides',
+  url: 'https://docs.myapi.com',
+  schema: {
+    enabled: true,
+    organization: { name: 'My API', url: 'https://docs.myapi.com' },
+  },
+  // Doc sites often have hand-listed nav routes that aren't all in *.routes.ts
+  pages: [
+    { pathname: '/',              title: 'Overview',     description: 'Start here' },
+    { pathname: '/auth',          title: 'Authentication' },
+    { pathname: '/api/users',     title: 'Users API' },
+    { pathname: '/api/orders',    title: 'Orders API' },
+    { pathname: '/guides/quick',  title: 'Quick Start' },
+  ],
+});
+```
+
+### E-commerce SPA
+
+For an SPA that fetches product data at runtime and doesn't prerender, list the static marketing routes explicitly and let your product pages live in `pages` only for the sitemap:
+
+```ts
+import { postBuild } from 'aeo.js/angular';
+
+await postBuild({
+  title: 'My Store',
+  description: 'Quality products, fast shipping',
+  url: 'https://mystore.com',
+  robots: {
+    allow: ['/'],
+    disallow: ['/checkout', '/account', '/api'],
+  },
+  schema: {
+    enabled: true,
+    organization: { name: 'My Store', url: 'https://mystore.com' },
+  },
+  pages: [
+    { pathname: '/',          title: 'Home' },
+    { pathname: '/products',  title: 'All Products' },
+    { pathname: '/about',     title: 'About' },
+    { pathname: '/contact',   title: 'Contact' },
+  ],
+});
+```
+
+For full per-product schema (rich product cards in AI shopping answers), see [Custom JSON-LD Recipes → Product](./json-ld.md#product).
+
+### Marketing site (single page)
+
+```ts
+import { postBuild } from 'aeo.js/angular';
+
+await postBuild({
+  title: 'Acme Cloud',
+  description: 'Enterprise-grade infrastructure for modern teams',
+  url: 'https://acme.cloud',
+  schema: {
+    enabled: true,
+    organization: {
+      name: 'Acme Inc.',
+      url: 'https://acme.cloud',
+      logo: 'https://acme.cloud/logo.png',
+      sameAs: [
+        'https://twitter.com/acme',
+        'https://github.com/acme',
+        'https://linkedin.com/company/acme',
+      ],
+    },
+  },
+});
+```
+
 ## Further Reading
 
+- [CLI Reference](./cli.md) — full CLI flag/command reference
+- [Custom JSON-LD Recipes](./json-ld.md) — FAQ, HowTo, Product, Article, Recipe, Event
 - [aeo.js Reference Configuration](https://aeojs.org/reference/configuration/)
 - [Generated Files](https://aeojs.org/features/generated-files/)
 - [GEO Audit & Citability](https://aeojs.org/features/audit/)
+- [Back to Overview](./README.md)
