@@ -1,0 +1,53 @@
+---
+title: MCP Server
+description: Let AI agents audit sites and generate AEO files via the Model Context Protocol.
+---
+
+aeo.js ships an [MCP](https://modelcontextprotocol.io) server so AI agents — Claude Code, Claude Desktop, Cursor, or anything MCP-compatible — can audit sites and generate AEO files conversationally.
+
+## Setup
+
+No install needed. Add to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "aeo": {
+      "command": "npx",
+      "args": ["-y", "aeo.js", "mcp"]
+    }
+  }
+}
+```
+
+For Claude Code:
+
+```bash
+claude mcp add aeo -- npx -y aeo.js mcp
+```
+
+## Tools
+
+### `audit_url`
+
+Audit any live site for AI answer-engine readiness. Crawls the AEO surface (robots.txt, llms.txt, sitemap.xml, ai-index.json) plus the homepage and up to 10 inner pages, and returns the 0–100 GEO readiness score, the AI crawler access matrix, citability scores, and top fixes.
+
+> "Audit example.com and tell me why ChatGPT can't see it."
+
+### `score_citability`
+
+Score draft content (markdown or plain text) for AI citability — how likely answer engines are to extract and cite it. Returns a 0–100 score across four dimensions with concrete hints. Useful while writing: ask your agent to score and revise a page until it's citable.
+
+> "Score this blog post for AI citability and rewrite the weakest sections."
+
+### `generate_aeo_files`
+
+Generate the full AEO file set (robots.txt, llms.txt, llms-full.txt, sitemap.xml, ai-index.json, schema.json, per-page markdown) into the current project's output directory.
+
+> "Generate AEO files for this project, title 'My Site', url https://mysite.com."
+
+## Notes
+
+- The server speaks newline-delimited JSON-RPC over stdio; logs go to stderr.
+- `audit_url` requires network access; the other tools work offline.
+- Requires Node 18+.
