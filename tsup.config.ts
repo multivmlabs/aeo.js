@@ -10,6 +10,7 @@ export default defineConfig({
     astro: 'src/plugins/astro.ts',
     nuxt: 'src/plugins/nuxt.ts',
     angular: 'src/plugins/angular.ts',
+    remix: 'src/plugins/remix.ts',
     widget: 'src/widget/core.ts',
     react: 'src/widget/react.tsx',
     vue: 'src/widget/vue.ts',

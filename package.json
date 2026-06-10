@@ -45,6 +45,11 @@
       "import": "./dist/angular.mjs",
       "require": "./dist/angular.js"
     },
+    "./remix": {
+      "types": "./dist/remix.d.ts",
+      "import": "./dist/remix.mjs",
+      "require": "./dist/remix.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",
