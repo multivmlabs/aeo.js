@@ -23,6 +23,7 @@ Commands:
   init              Create an aeo.config.ts configuration file
   check [url]       GEO readiness score (0-100) — local setup, or any live site
   report [url]      Full AEO/GEO report with citability scores and platform hints
+  mcp               Run an MCP server (stdio) exposing audit and generation tools
 
 Options:
   --out <dir>       Output directory (default: auto-detected)
@@ -401,6 +402,11 @@ async function main(): Promise<void> {
         cmdReport(flags);
       }
       break;
+    case 'mcp': {
+      const { runMcpStdio } = await import('./core/mcp-server');
+      runMcpStdio();
+      break;
+    }
     default:
       console.error(`Unknown command: ${command}`);
       console.log(HELP);
