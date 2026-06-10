@@ -45,6 +45,11 @@
       "import": "./dist/angular.mjs",
       "require": "./dist/angular.js"
     },
+    "./sveltekit": {
+      "types": "./dist/sveltekit.d.ts",
+      "import": "./dist/sveltekit.mjs",
+      "require": "./dist/sveltekit.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",
