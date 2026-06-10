@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseArgs } from './cli';
+import { parseArgs, normalizeTargetUrl } from './cli';
 
 describe('parseArgs', () => {
   it('parses space-separated flag values', () => {
@@ -48,5 +48,40 @@ describe('parseArgs', () => {
     // Smoke check: if main() were running on import, the test runner would
     // exit before this assertion. Reaching this line proves the guard works.
     expect(typeof parseArgs).toBe('function');
+  });
+
+  it('captures positional arguments after the command', () => {
+    const { command, positionals } = parseArgs(['check', 'https://example.com']);
+    expect(command).toBe('check');
+    expect(positionals).toEqual(['https://example.com']);
+  });
+
+  it('captures positionals mixed with flags', () => {
+    const { command, flags, positionals } = parseArgs(['report', 'example.com', '--json']);
+    expect(command).toBe('report');
+    expect(flags.json).toBe(true);
+    expect(positionals).toEqual(['example.com']);
+  });
+
+  it('returns empty positionals when only a command is given', () => {
+    expect(parseArgs(['check']).positionals).toEqual([]);
+  });
+});
+
+describe('normalizeTargetUrl', () => {
+  it('keeps full http(s) URLs', () => {
+    expect(normalizeTargetUrl('https://example.com/docs')).toBe('https://example.com/docs');
+    expect(normalizeTargetUrl('http://example.com')).toBe('http://example.com/');
+  });
+
+  it('prepends https:// to bare domains', () => {
+    expect(normalizeTargetUrl('example.com')).toBe('https://example.com/');
+    expect(normalizeTargetUrl('sub.example.co.uk/path')).toBe('https://sub.example.co.uk/path');
+  });
+
+  it('rejects non-URL input', () => {
+    expect(normalizeTargetUrl('not a url')).toBeNull();
+    expect(normalizeTargetUrl('ftp://example.com')).toBeNull();
+    expect(normalizeTargetUrl('localhost')).toBeNull();
   });
 });
