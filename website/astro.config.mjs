@@ -67,6 +67,7 @@ export default defineConfig({
 						{ label: 'Next.js', slug: 'frameworks/nextjs' },
 						{ label: 'Vite', slug: 'frameworks/vite' },
 						{ label: 'Nuxt', slug: 'frameworks/nuxt' },
+						{ label: 'Remix', slug: 'frameworks/remix' },
 						{ label: 'Angular', slug: 'frameworks/angular' },
 						{ label: 'Webpack', slug: 'frameworks/webpack' },
 						{ label: 'Vanilla JS / Static HTML', slug: 'frameworks/vanilla' },
