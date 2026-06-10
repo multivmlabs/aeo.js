@@ -46,6 +46,24 @@ SCORE=$(npx aeo.js check --json | jq '.audit.score')
 [ "$SCORE" -ge 70 ] || { echo "GEO score $SCORE below 70"; exit 1; }
 ```
 
+### `check <url>` — audit any live site
+
+Pass a URL (or bare domain) to audit a **deployed site** instead of your local setup — no install, no config:
+
+```bash
+npx aeo.js check mysite.com
+npx aeo.js check https://mysite.com --json
+```
+
+This fetches the site's AEO surface (robots.txt, llms.txt, llms-full.txt, sitemap.xml, ai-index.json), crawls the homepage plus up to 10 inner pages, and reports:
+
+- the same 5-category GEO readiness score (0–100) used by the local audit and [check.aeojs.org](https://check.aeojs.org)
+- which of 23 known AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, …) can access the site
+- average content citability across crawled pages
+- the top fixes, ranked
+
+Works on any site — yours, a competitor's, or one you're evaluating. Requires Node 18+. Exits 1 if the target is invalid or unreachable.
+
 ### `report`
 
 Deeper analysis than `check`: per-page citability scores, platform-specific hints (ChatGPT, Claude, Perplexity, Google AI Overviews, Bing Copilot), and a prioritized fix list.
@@ -53,6 +71,13 @@ Deeper analysis than `check`: per-page citability scores, platform-specific hint
 ```bash
 npx aeo.js report > aeo-report.md
 npx aeo.js report --json > aeo-report.json
+```
+
+`report` also accepts a live URL, adding platform hints (including Claude and Gemini, driven by the site's actual robots.txt) and per-page citability to the remote scan:
+
+```bash
+npx aeo.js report mysite.com
+npx aeo.js report mysite.com --json > scan.json
 ```
 
 ## Options

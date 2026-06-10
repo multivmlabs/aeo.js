@@ -24,6 +24,16 @@
 npm install aeo.js
 ```
 
+## Check any site in 10 seconds
+
+See how visible a site is to ChatGPT, Claude, Perplexity & co — no install, no config:
+
+```bash
+npx aeo.js check mysite.com
+```
+
+You get a 0–100 GEO readiness score, an access matrix for 23 AI crawlers, average content citability, and the top fixes — for any deployed site. Also available in the browser at [check.aeojs.org](https://check.aeojs.org).
+
 ## Quick Start
 
 ### Astro
