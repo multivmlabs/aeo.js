@@ -1,6 +1,6 @@
 import type { AeoConfig } from './types';
 
-export const VERSION = '0.0.13';
+export const VERSION = '0.0.14';
 
 export function defineConfig(config: AeoConfig): AeoConfig {
   return config;
