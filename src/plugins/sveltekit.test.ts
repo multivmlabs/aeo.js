@@ -113,4 +113,56 @@ describe('postBuild (adapter-static)', () => {
     const llms = readFileSync(join(outDir, 'llms.txt'), 'utf-8');
     expect(llms).toContain('Home');
   });
+
+  it('injects the widget into prerendered/pages for non-static adapters', async () => {
+    writePage('.svelte-kit/output/client', '<!doctype html><html><body></body></html>');
+    rmSync(join(projectDir, '.svelte-kit', 'output', 'client', 'index.html'));
+    writePage('.svelte-kit/output/prerendered/pages', HTML('Home'));
+
+    await postBuild({ title: 'My Site', url: 'https://mysite.com' });
+
+    const prerenderedHome = readFileSync(
+      join(projectDir, '.svelte-kit', 'output', 'prerendered', 'pages', 'index.html'),
+      'utf-8',
+    );
+    expect(prerenderedHome).toContain("import('aeo.js/widget')");
+  });
+
+  it('config.pages overrides take priority over auto-discovered pages with the same pathname', async () => {
+    // Auto-discovered page has content extracted from HTML; user-provided page
+    // explicitly sets a custom title that should win.
+    writePage('build', HTML('Auto Home Title'));
+    writePage('build/about', HTML('Auto About'));
+
+    await postBuild({
+      title: 'My Site',
+      url: 'https://mysite.com',
+      widget: { enabled: false },
+      pages: [
+        { pathname: '/', title: 'Custom Home Title', description: 'Custom home description.' },
+      ],
+    });
+
+    const llms = readFileSync(join(projectDir, 'build', 'llms.txt'), 'utf-8');
+    expect(llms).toContain('Custom Home Title');
+    expect(llms).not.toContain('Auto Home Title');
+  });
+});
+
+describe('getWidgetScript (script tag safety)', () => {
+  it('escapes </script> sequences in serialized config', () => {
+    const script = getWidgetScript({
+      title: 'Safe</script><script>alert(1)',
+      url: 'https://mysite.com',
+    });
+    // Extract just the JSON config argument — everything between `config: ` and
+    // the closing `}` of the AeoWidget call. The raw sequence </script> must
+    // not appear there; it would prematurely close the enclosing script element.
+    const configMatch = script.match(/new AeoWidget\(\{ config: (.+?) \}\)/s);
+    expect(configMatch).not.toBeNull();
+    const jsonPart = configMatch![1];
+    expect(jsonPart).not.toContain('</script>');
+    // The title value should be present in its unicode-escaped form.
+    expect(jsonPart).toContain('\\u003c/script\\u003e');
+  });
 });

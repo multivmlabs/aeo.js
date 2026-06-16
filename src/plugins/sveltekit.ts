@@ -136,7 +136,10 @@ export function getWidgetScript(config: AeoConfig = {}): string {
     description: resolvedConfig.description,
     url: resolvedConfig.url,
     widget: resolvedConfig.widget,
-  });
+  })
+    .replace(/&/g, '\\u0026')
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e');
 
   return `<script type="module">
 import('aeo.js/widget').then(({ AeoWidget }) => {
@@ -217,14 +220,21 @@ export async function postBuild(config: AeoConfig & { injectWidget?: boolean } =
 
   const sourcePages = scanSvelteKitRoutes(projectRoot);
 
-  // Merge: build output (with content) takes priority over source-scanned routes
-  const allPages = [...discovered, ...sourcePages, ...(config.pages || [])];
+  // Merge priority (highest to lowest):
+  //   1. config.pages (explicit user overrides — always win)
+  //   2. discovered HTML pages with content
+  //   3. source-scanned routes (lowest priority)
   const pageMap = new Map<string, PageEntry>();
-  for (const page of allPages) {
+  // Layer in discovered and source pages first (lower priority)
+  for (const page of [...discovered, ...sourcePages]) {
     const existing = pageMap.get(page.pathname);
     if (!existing || (page.content && !existing.content)) {
       pageMap.set(page.pathname, page);
     }
+  }
+  // User-provided pages always win — overwrite whatever was discovered
+  for (const page of config.pages || []) {
+    pageMap.set(page.pathname, page);
   }
 
   for (const page of pageMap.values()) {
@@ -251,7 +261,16 @@ export async function postBuild(config: AeoConfig & { injectWidget?: boolean } =
   }
 
   if (config.injectWidget !== false && resolvedConfig.widget.enabled) {
-    const injected = injectWidgetIntoHtml(outputDir, config);
+    // For non-static adapters the client dir only holds JS/CSS bundles.
+    // Prerendered HTML lives under .svelte-kit/output/prerendered/pages.
+    const widgetDirs: string[] = [outputDir];
+    if (outputDir.includes('.svelte-kit')) {
+      widgetDirs.push(join(projectRoot, '.svelte-kit', 'output', 'prerendered', 'pages'));
+    }
+    let injected = 0;
+    for (const dir of widgetDirs) {
+      injected += injectWidgetIntoHtml(dir, config);
+    }
     if (injected > 0) {
       console.log(`[aeo.js] Injected widget into ${injected} page(s)`);
     }
