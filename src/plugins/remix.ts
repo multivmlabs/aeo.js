@@ -22,10 +22,15 @@ const ROUTE_EXTENSIONS = /\.(tsx|jsx|ts|js|mdx?)$/;
  */
 export function remixRouteToPathname(routeId: string): string | null {
   const segments: string[] = [];
-  for (const rawSegment of routeId.split('.')) {
+  const rawParts = routeId.split('.');
+  for (let i = 0; i < rawParts.length; i++) {
+    const rawSegment = rawParts[i];
     // Trailing underscore opts out of layout nesting but keeps the path
     const segment = rawSegment.endsWith('_') ? rawSegment.slice(0, -1) : rawSegment;
-    if (segment === '_index' || segment === 'index' || segment === 'route' || segment === '') continue;
+    if (segment === '_index' || segment === 'index' || segment === '') continue;
+    // 'route' is only a folder-route disambiguation suffix when it's the last part of
+    // a multi-segment id (e.g. blog.route.tsx → /blog). A standalone route.tsx → /route.
+    if (segment === 'route' && i === rawParts.length - 1 && i > 0) continue;
     if (segment.startsWith('_')) continue; // pathless layout
     if (segment.startsWith('(') && segment.endsWith(')')) continue; // optional segment
     if (segment.includes('$')) return null; // dynamic segment
