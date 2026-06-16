@@ -3,6 +3,7 @@ import { resolveConfig } from '../core/utils';
 import type { AeoConfig, PageEntry, ResolvedAeoConfig } from '../types';
 import { join, resolve, sep } from 'path';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { extractTextFromHtml, extractTitle, extractDescription, htmlToMarkdown } from '../core/html-extract';
 import { generateSiteSchemas, generatePageSchemas, generateJsonLdScript } from '../core/schema';
 import { generateOGTagsHtml } from '../core/opengraph';
@@ -96,6 +97,19 @@ function escapeAttr(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function toFileSystemPath(pathOrUrl: string | URL): string {
+  if (pathOrUrl instanceof URL) {
+    if (pathOrUrl.protocol !== 'file:') {
+      throw new TypeError(
+        `toFileSystemPath: expected a file: URL but received "${pathOrUrl.protocol}" — cannot convert to a filesystem path`
+      );
+    }
+    return fileURLToPath(pathOrUrl);
+  }
+
+  return pathOrUrl.replace(/^\/([A-Za-z]:)(?=\/|\\)/, '$1');
+}
+
 /**
  * Inject meta description, canonical URL, OG tags, and JSON-LD into each built HTML page's <head>.
  * Skips tags that already exist in the page.
@@ -181,11 +195,11 @@ export function aeoAstroIntegration(options: AeoConfig = {}): any {
         resolvedConfig = resolveConfig({
           ...options,
           contentDir: options.contentDir || 'src/content',
-          outDir: options.outDir || (command === 'build' ? config.outDir.pathname : config.publicDir.pathname),
+          outDir: options.outDir || (command === 'build' ? toFileSystemPath(config.outDir) : toFileSystemPath(config.publicDir)),
         });
 
         if (command === 'dev') {
-          const publicPath = config.publicDir.pathname;
+          const publicPath = toFileSystemPath(config.publicDir);
           if (!existsSync(publicPath)) {
             mkdirSync(publicPath, { recursive: true });
           }
@@ -228,7 +242,7 @@ if (!document.querySelector('meta[name="astro-view-transitions-enabled"]')) {
         const buildLogger = logger.fork('aeo.js');
         buildLogger.info('Generating AEO files...');
 
-        const outPath = dir instanceof URL ? dir.pathname : (dir || astroConfig.outDir.pathname);
+        const outPath = toFileSystemPath(dir || astroConfig.outDir);
         const siteUrl = options.url || astroConfig.site || 'https://example.com';
 
         const discoveredPages = scanBuiltPages(outPath, siteUrl);

@@ -73,6 +73,61 @@ describe('scorePageCitability', () => {
     expect(longHint).toBeDefined();
   });
 
+  it('suggests leading with a direct answer when the first substantial paragraph is contextual', () => {
+    // First substantial paragraph starts with "This" (not an answer-quality opener).
+    // Second paragraph starts with a capital noun and is long enough — counts as an
+    // answer paragraph, so the suggestion (which requires answerCount > 0) fires.
+    const content = `# About aeo.js
+
+This page explains the background, positioning, scope, and implementation details that teams should understand before adopting the library in their projects.
+
+Aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt, schema data, ai-index metadata, sitemap, and JSON-LD structured data.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeDefined();
+    expect(answerFirstHint?.line).toBe(3);
+  });
+
+  it('does not add an answer-first hint when zero answer paragraphs exist (warning covers it)', () => {
+    // When there are no answer-quality paragraphs at all, the standalone warning already
+    // tells the user to add some — the "lead with one" hint would be redundant noise.
+    const content = `# About aeo.js
+
+This page explains the background, positioning, scope, and history that teams should understand before adopting the library in their projects.`;
+    const result = scorePageCitability(makePage(content));
+    const warning = result.hints.find(h => h.message.includes('No direct answer paragraphs'));
+    const suggestion = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(warning).toBeDefined();
+    expect(suggestion).toBeUndefined();
+  });
+
+  it('does not add an answer-first hint when the first substantial paragraph is direct', () => {
+    const content = `# About aeo.js
+
+Aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt files, schema data, and AI index metadata for crawler discovery.
+
+This page explains the background, positioning, and implementation details for teams adopting the library.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeUndefined();
+  });
+
+  it('does not add an answer-first hint when the opener exceeds 200 words but is a direct answer', () => {
+    // The "Lead with a direct answer" suggestion previously gated on isAnswerQualityParagraph,
+    // which caps at 200 words. A well-formed 200+ word opener that starts with a capital noun
+    // is still a direct answer — splitting it is a separate hint that the long-paragraph check
+    // handles. Regression test: this content must NOT trigger the answer-first suggestion.
+    const longOpener = 'Aeo.js generates machine-readable answer-engine assets for websites at build time. '.repeat(15);
+    const content = `# About aeo.js
+
+${longOpener}
+
+A second paragraph adds positioning context for teams adopting the library in production environments.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeUndefined();
+  });
+
   it('detects context-dependent paragraphs', () => {
     const content = `As mentioned above, our platform is great.
 
@@ -89,6 +144,125 @@ Furthermore, we plan to add more features.`;
     const result = scorePageCitability(makePage(statsContent));
     const stats = result.dimensions.find(d => d.name === 'Statistical Density')!;
     expect(stats.score).toBeGreaterThanOrEqual(12);
+  });
+
+  it('suggests attribution when statistical claims lack evidence signals', () => {
+    const statsContent = `Our platform serves 50,000 users across 120 countries. Revenue grew 250% in 2024. We process $2.5 million in transactions daily with 99.99% uptime.`;
+    const result = scorePageCitability(makePage(statsContent));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('does not suggest attribution when statistical claims include evidence signals', () => {
+    const statsContent = `According to the 2024 Benchmark Report, our platform serves 50,000 users across 120 countries. Revenue grew 250% in 2024. Source: https://example.com/report`;
+    const result = scorePageCitability(makePage(statsContent));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
+  it('still suggests attribution for self-referential phrasing that mentions reports/studies', () => {
+    // "our internal report" / "based on our data" / "user behavior study" are
+    // self-referential — they should NOT silence the attribution hint.
+    const selfReferential = `Based on our internal data, we grew 300% in 2024. See our quarterly report for more numbers — our user behavior study found 80% retention.`;
+    const result = scorePageCitability(makePage(selfReferential));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "study by" / "report from" attribution phrases as evidence', () => {
+    const externalAttribution = `A 2024 study by Stanford found 80% adoption. Revenue figures came from a report from McKinsey, showing 250% growth.`;
+    const result = scorePageCitability(makePage(externalAttribution));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
+  it('still suggests attribution for "Citing our own data" — bare citing is self-referential', () => {
+    // The bare "citing" alternative used to swallow the hint here. Real attribution uses
+    // "cited by/in" or "as cited" — those are kept. "Citing our X" is self-referential.
+    const selfCiting = `Citing our own data, we grew 300% in 2024. Revenue grew 250% to $50 million daily.`;
+    const result = scorePageCitability(makePage(selfCiting));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('still suggests attribution for "According to our internal data" — self-referential according', () => {
+    // "according to" used to be unscoped and silently passed for "according to our X". The
+    // negative lookahead excludes our/my/us and "the {company,team,organization,internal}".
+    const selfAccording = `According to our internal data, we grew 300% in 2024. Revenue grew 250% to $50 million daily.`;
+    const result = scorePageCitability(makePage(selfAccording));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "according to" an external source as evidence', () => {
+    const externalAccording = `According to Gartner, the market grew 40% in 2024. Revenue figures reached $50 million daily.`;
+    const result = scorePageCitability(makePage(externalAccording));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
+  it('still suggests attribution for "data from our research team" — self-referential data-from', () => {
+    // "data from" used to be unguarded — "Data from our research team" would silently
+    // suppress the hint. Same negative-lookahead scoping as "according to".
+    const selfData = `Data from our research team shows we grew 300% in 2024. Revenue grew 250% to $50 million daily.`;
+    const result = scorePageCitability(makePage(selfData));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "data from" an external source as evidence', () => {
+    const externalData = `Data from Bloomberg shows the market grew 40% in 2024. Revenue figures reached $50 million daily.`;
+    const result = scorePageCitability(makePage(externalData));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
+  it('still suggests attribution for "study by our team" and "reported by our CEO"', () => {
+    // Same self-referential guard for study/report/research-by-from and reported/published-by-in.
+    const selfStudy = `In a study by our team, we grew 300% in 2024. Reported by our CEO, revenue reached $50 million daily.`;
+    const result = scorePageCitability(makePage(selfStudy));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "According to US regulators" as external evidence (not self-referential)', () => {
+    // /i flag was making 'us' in NOT_SELF_REF match 'US' (United States), incorrectly
+    // flagging legitimate citations like "According to US regulators". 'us' was dropped.
+    const usCitation = `According to US regulators, the market grew 40% in 2024. Revenue figures reached $50 million daily across 120 countries.`;
+    const result = scorePageCitability(makePage(usCitation));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
+  it('still suggests attribution for "As cited in our internal report"', () => {
+    // 'as cited' alone is meaningless without 'in/by SOURCE' — covered by the
+    // 'cited (by|in)' pattern with the self-referential guard.
+    const selfAsCited = `As cited in our internal report, we grew 300% in 2024 across 120 countries. Daily transactions reached $50 million.`;
+    const result = scorePageCitability(makePage(selfAsCited));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('still suggests attribution for "cited by our internal research team"', () => {
+    const selfCited = `Revenue data cited by our internal research team shows we grew 300% in 2024 across 120 countries. Daily transactions reached $50 million.`;
+    const result = scorePageCitability(makePage(selfCited));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
+  });
+
+  it('recognizes "cited by" an external source as evidence', () => {
+    const externalCited = `Findings cited by Stanford show the market grew 40% in 2024. Revenue figures reached $50 million daily.`;
+    const result = scorePageCitability(makePage(externalCited));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeUndefined();
+  });
+
+  it('still suggests attribution for "Sources: our internal team"', () => {
+    // The sources?: label is a strong signal but only when followed by an external source.
+    const selfSources = `We grew 300% in 2024. Revenue reached $50 million daily across 120 countries. Sources: our internal team and our research department.`;
+    const result = scorePageCitability(makePage(selfSources));
+    const evidenceHint = result.hints.find(h => h.message.includes('source links or attribution'));
+    expect(evidenceHint).toBeDefined();
   });
 });
 

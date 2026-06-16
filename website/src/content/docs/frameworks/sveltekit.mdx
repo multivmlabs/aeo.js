@@ -1,0 +1,70 @@
+---
+title: SvelteKit
+description: Use aeo.js with SvelteKit.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add a post-build step to your `package.json`:
+   ```json
+   {
+     "scripts": {
+       "postbuild": "node -e \"import('aeo.js/sveltekit').then(m => m.postBuild({ title: 'My Site', url: 'https://mysite.com' }))\""
+     }
+   }
+   ```
+
+3. Build your app:
+   ```bash
+   npm run build
+   ```
+</Steps>
+
+## How it works
+
+The SvelteKit plugin:
+
+- Detects the build output: `build/` for `adapter-static`, or `.svelte-kit/output` for other adapters
+- Scans prerendered HTML pages for titles, descriptions, and full text content
+- Scans `src/routes` for `+page.svelte` (and mdsvex `+page.md`/`+page.svx`) routes — route groups like `(marketing)` are transparent, dynamic segments like `[slug]` are skipped
+- Generates all AEO files (robots.txt, llms.txt, sitemap.xml, ai-index.json, …) into the output directory
+- Injects the Human/AI widget into every prerendered page
+
+<Aside type="tip">
+For the best results, prerender as much as possible (`export const prerender = true` in your root `+layout.ts`). aeo.js extracts content from prerendered HTML — server-rendered-only routes are still listed from source scanning, but without page content.
+</Aside>
+
+## Programmatic usage
+
+Generate AEO files from source routes without a build — files land in `static/` so any adapter ships them:
+
+```ts
+import { generate } from 'aeo.js/sveltekit';
+
+await generate({ title: 'My Site', url: 'https://mysite.com' });
+```
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options to `postBuild` or `generate`:
+
+```ts
+import { postBuild } from 'aeo.js/sveltekit';
+
+await postBuild({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  description: 'A site optimized for AI discovery',
+  widget: { enabled: true, position: 'bottom-right' },
+  // Skip widget injection into prerendered HTML:
+  // injectWidget: false,
+});
+```

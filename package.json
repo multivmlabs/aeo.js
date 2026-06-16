@@ -50,6 +50,11 @@
       "import": "./dist/remix.mjs",
       "require": "./dist/remix.js"
     },
+    "./sveltekit": {
+      "types": "./dist/sveltekit.d.ts",
+      "import": "./dist/sveltekit.mjs",
+      "require": "./dist/sveltekit.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",

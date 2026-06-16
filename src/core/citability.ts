@@ -85,11 +85,7 @@ function scoreAnswerBlocks(content: string, hints: ContentHint[]): CitabilityDim
     // Skip headings and very short paragraphs
     if (para.text.startsWith('#') || words < 15) continue;
 
-    // Good answer: starts with capital letter (not pronoun), 20-200 words
-    const startsWithSubject = /^[A-Z][a-z]/.test(para.text) && !/^(This|That|These|Those|It|They|We|He|She|I)\b/.test(para.text);
-    const goodLength = words >= 20 && words <= 200;
-
-    if (startsWithSubject && goodLength) {
+    if (isAnswerQualityParagraph(para.text)) {
       answerCount++;
     }
   }
@@ -106,6 +102,33 @@ function scoreAnswerBlocks(content: string, hints: ContentHint[]): CitabilityDim
     hints.push({ type: 'warning', message: 'No direct answer paragraphs found — add self-contained factual paragraphs that start with a clear subject' });
   }
 
+  // Only suggest "lead with a direct answer" when at least one answer paragraph already
+  // exists on the page — otherwise the existing zero-answer warning above covers the
+  // same action item. Match the 20-word threshold used by isAnswerQualityParagraph so a
+  // 15–19-word direct opening doesn't false-positive against itself.
+  //
+  // We check only the "starts contextually" half of isAnswerQualityParagraph (capital
+  // noun, not a pronoun). The 200-word upper bound from that helper would mis-flag a
+  // well-formed 201+ word opener as needing rephrasing — the long-paragraph hint below
+  // is the right place to suggest splitting it.
+  if (answerCount > 0) {
+    const firstSubstantialParagraph = paragraphs.find(
+      para => !para.text.startsWith('#') && para.text.split(/\s+/).length >= 20
+    );
+    if (firstSubstantialParagraph) {
+      const startsContextually =
+        !/^[A-Z][a-z]/.test(firstSubstantialParagraph.text) ||
+        /^(This|That|These|Those|It|They|We|He|She|I)\b/.test(firstSubstantialParagraph.text);
+      if (startsContextually) {
+        hints.push({
+          type: 'suggestion',
+          message: 'Lead with a direct, self-contained answer paragraph before background context',
+          line: firstSubstantialParagraph.line,
+        });
+      }
+    }
+  }
+
   // Flag long paragraphs
   for (const para of paragraphs) {
     const words = para.text.split(/\s+/).length;
@@ -115,6 +138,14 @@ function scoreAnswerBlocks(content: string, hints: ContentHint[]): CitabilityDim
   }
 
   return { name: 'Answer Blocks', score, maxScore: 25, details: `${answerCount} answer-quality paragraphs found` };
+}
+
+function isAnswerQualityParagraph(text: string): boolean {
+  const words = text.split(/\s+/).length;
+  const startsWithSubject = /^[A-Z][a-z]/.test(text) && !/^(This|That|These|Those|It|They|We|He|She|I)\b/.test(text);
+  const goodLength = words >= 20 && words <= 200;
+
+  return startsWithSubject && goodLength;
 }
 
 /**
@@ -197,9 +228,40 @@ function scoreStatisticalDensity(content: string, hints: ContentHint[]): Citabil
 
   if (totalMatches === 0) {
     hints.push({ type: 'suggestion', message: 'No statistics or factual claims found — AI favors content with concrete numbers, percentages, and dates' });
+  } else if (!hasEvidenceSignals(content)) {
+    hints.push({ type: 'suggestion', message: 'Add source links or attribution for statistical claims so AI systems can verify them' });
   }
 
   return { name: 'Statistical Density', score, maxScore: 25, details: `${totalMatches} statistical claims (${density.toFixed(1)} per 100 words)` };
+}
+
+// Shared negative-lookahead fragment used by every attribution pattern. The lookahead
+// is anchored immediately after the keyword and consumes any whitespace internally so
+// the engine can't backtrack \s* to 0 chars and slip a self-referential token through.
+// Excludes "our/my" and "the {company,team,organization,internal}" so phrases like
+// "according to our CEO" or "study from our team" don't masquerade as evidence.
+// 'us' is intentionally omitted — the /i flag makes it also match "US" (United States),
+// which would mis-flag legitimate external sources like "According to US regulators".
+// The bare "data from us" / "according to us" cases are uncommon and not worth the
+// collision with US-government citations.
+const NOT_SELF_REF = String.raw`(?!\s*(?:our|my|the\s+(?:company|team|organization|internal))\b)`;
+
+function hasEvidenceSignals(content: string): boolean {
+  const evidencePatterns = [
+    // External-source markers: URLs, footnote refs, or explicit attribution phrases.
+    // Every keyword pair must be followed by something that isn't self-referential —
+    // "our internal report", "data from us", "study by our team" should NOT count.
+    /https?:\/\/\S+/i,
+    /\[\^?\d+\]/,
+    new RegExp(String.raw`\baccording to\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bsources?:${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\b(reported|published) (by|in)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\b(study|survey|report|research|paper|analysis) (by|from)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bdata (from|by)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bcited (by|in)\b${NOT_SELF_REF}`, 'i'),
+  ];
+
+  return evidencePatterns.some(pattern => pattern.test(content));
 }
 
 /**
