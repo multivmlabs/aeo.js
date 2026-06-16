@@ -167,7 +167,10 @@ export function getWidgetScript(config: AeoConfig = {}): string {
     description: resolvedConfig.description,
     url: resolvedConfig.url,
     widget: resolvedConfig.widget,
-  });
+  })
+    .replace(/&/g, '\\u0026')
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e');
 
   return `<script type="module">
 import('aeo.js/widget').then(({ AeoWidget }) => {
@@ -255,6 +258,7 @@ export async function generate(config: AeoConfig = {}): Promise<void> {
     console.log(`[aeo.js] Discovered ${discoveredPages.length} routes from Remix source`);
   }
 
+  const pageMap = new Map<string, PageEntry>();
   for (const page of discoveredPages) {
     if (page.pathname === '/' && !page.title && config.title) {
       page.title = config.title;
@@ -262,12 +266,16 @@ export async function generate(config: AeoConfig = {}): Promise<void> {
     if (!page.description && config.description) {
       page.description = config.description;
     }
+    pageMap.set(page.pathname, page);
+  }
+  for (const page of config.pages || []) {
+    pageMap.set(page.pathname, page);
   }
 
   const resolvedConfig = resolveConfig({
     ...config,
     outDir: config.outDir || 'public',
-    pages: [...(config.pages || []), ...discoveredPages],
+    pages: Array.from(pageMap.values()),
   });
 
   const result = await generateAEOFiles(resolvedConfig);
