@@ -65,6 +65,11 @@ export function isPrivateUrl(url: string): boolean {
 
   // Hostname-based checks
   if (hostname === 'localhost') return true;
+  // mDNS and common internal-only TLDs bypass IP-range checks entirely
+  if (hostname.endsWith('.local') || hostname === 'local') return true;
+  if (hostname.endsWith('.internal') || hostname === 'internal') return true;
+  if (hostname.endsWith('.lan') || hostname === 'lan') return true;
+  if (hostname.endsWith('.localhost')) return true;
 
   // IPv6 loopback / ULA / link-local (string checks are sufficient here)
   if (hostname === '::1') return true;
@@ -124,23 +129,48 @@ async function fetchWithTimeout(url: string, opts: Required<RemoteCrawlOptions>)
   // SSRF guard: reject requests to private / loopback / link-local addresses
   if (isPrivateUrl(url)) return null;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs);
-  try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': opts.userAgent,
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      redirect: 'follow',
-    });
-    return res;
-  } catch {
-    return null;
-  } finally {
+  let currentUrl = url;
+  let redirectCount = 0;
+  const MAX_REDIRECTS = 5;
+
+  while (redirectCount <= MAX_REDIRECTS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), opts.timeoutMs);
+    let res: Response;
+    try {
+      res = await fetch(currentUrl, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': opts.userAgent,
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        redirect: 'manual',
+      });
+    } catch {
+      clearTimeout(timer);
+      return null;
+    }
     clearTimeout(timer);
+
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get('location');
+      if (!location) return null;
+      let nextUrl: string;
+      try {
+        nextUrl = new URL(location, currentUrl).href;
+      } catch {
+        return null;
+      }
+      if (isPrivateUrl(nextUrl)) return null;
+      currentUrl = nextUrl;
+      redirectCount++;
+      continue;
+    }
+
+    return res;
   }
+
+  return null; // too many redirects
 }
 
 async function fetchText(url: string, opts: Required<RemoteCrawlOptions>): Promise<string | null> {
