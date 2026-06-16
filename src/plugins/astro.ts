@@ -99,6 +99,11 @@ function escapeAttr(str: string): string {
 
 function toFileSystemPath(pathOrUrl: string | URL): string {
   if (pathOrUrl instanceof URL) {
+    if (pathOrUrl.protocol !== 'file:') {
+      throw new TypeError(
+        `toFileSystemPath: expected a file: URL but received "${pathOrUrl.protocol}" — cannot convert to a filesystem path`
+      );
+    }
     return fileURLToPath(pathOrUrl);
   }
 
