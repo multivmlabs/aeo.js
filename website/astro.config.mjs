@@ -83,6 +83,7 @@ export default defineConfig({
 						{ label: 'Schema & Open Graph', slug: 'features/schema-og' },
 						{ label: 'JSON-LD Recipes', slug: 'features/json-ld' },
 						{ label: 'Audit & Citability', slug: 'features/audit' },
+						{ label: 'MCP Server', slug: 'features/mcp' },
 					],
 				},
 				{

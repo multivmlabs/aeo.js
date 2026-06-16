@@ -1,6 +1,6 @@
 import type { AeoConfig } from './types';
 
-export const VERSION = '0.0.13';
+export const VERSION = '0.0.14';
 
 export function defineConfig(config: AeoConfig): AeoConfig {
   return config;
@@ -36,3 +36,7 @@ export { generateReport, formatReportMarkdown, formatReportJson } from './core/r
 export type { AeoReport } from './core/report';
 export { generatePlatformHints } from './core/platform-hints';
 export type { PlatformHint } from './core/platform-hints';
+export { discover, crawlPages, parseRobotsTxtBotAccess, AI_BOTS } from './core/remote-crawl';
+export type { DiscoveryResult, CrawledPage, BotAccessEntry, RemoteCrawlOptions } from './core/remote-crawl';
+export { remoteAuditSite, buildRemoteReport, formatRemoteReport, detectAeoJs } from './core/remote-audit';
+export type { RemoteScanReport } from './core/remote-audit';

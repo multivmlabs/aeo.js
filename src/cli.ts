@@ -5,6 +5,9 @@ import { resolveConfig } from './core/utils';
 import { detectFramework } from './core/detect';
 import { auditSite, formatAuditReport } from './core/audit';
 import { generateReport, formatReportMarkdown, formatReportJson } from './core/report';
+import { discover, crawlPages } from './core/remote-crawl';
+import { buildRemoteReport, formatRemoteReport } from './core/remote-audit';
+import type { RemoteScanReport } from './core/remote-audit';
 import { writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { VERSION } from './index';
@@ -16,17 +19,18 @@ Usage:
   npx aeo.js <command> [options]
 
 Commands:
-  generate    Generate all AEO files (robots.txt, llms.txt, sitemap.xml, etc.)
-  init        Create an aeo.config.ts configuration file
-  check       Validate AEO setup + GEO readiness score (0-100)
-  report      Full AEO/GEO report with citability scores and platform hints
+  generate          Generate all AEO files (robots.txt, llms.txt, sitemap.xml, etc.)
+  init              Create an aeo.config.ts configuration file
+  check [url]       GEO readiness score (0-100) — local setup, or any live site
+  report [url]      Full AEO/GEO report with citability scores and platform hints
+  mcp               Run an MCP server (stdio) exposing audit and generation tools
 
 Options:
   --out <dir>       Output directory (default: auto-detected)
   --url <url>       Site URL (default: https://example.com)
   --title <title>   Site title (default: My Site)
   --no-widget       Disable widget generation
-  --json            Output audit results as JSON (check command)
+  --json            Output full report as JSON (check/report share the same JSON schema)
   --help, -h        Show this help message
   --version, -v     Show version
 
@@ -35,9 +39,10 @@ Examples:
   npx aeo.js generate --url https://mysite.com --title "My Site"
   npx aeo.js init
   npx aeo.js check
-  npx aeo.js check --json
+  npx aeo.js check mysite.com
+  npx aeo.js check https://mysite.com --json
   npx aeo.js report
-  npx aeo.js report --json
+  npx aeo.js report mysite.com --json
 `;
 
 // Map kebab-case flag names to the camelCase keys the rest of the CLI reads.
@@ -59,9 +64,10 @@ function coerceValue(key: string, raw: string): string | boolean {
   return raw;
 }
 
-export function parseArgs(args: string[]): { command: string; flags: Record<string, string | boolean> } {
+export function parseArgs(args: string[]): { command: string; flags: Record<string, string | boolean>; positionals: string[] } {
   let command = 'help';
   const flags: Record<string, string | boolean> = {};
+  const positionals: string[] = [];
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -83,12 +89,35 @@ export function parseArgs(args: string[]): { command: string; flags: Record<stri
     } else if (arg.startsWith('--') && i + 1 < args.length) {
       const key = normalizeKey(arg.slice(2));
       flags[key] = coerceValue(key, args[++i]);
-    } else if (!arg.startsWith('-') && command === 'help') {
-      command = arg;
+    } else if (!arg.startsWith('-')) {
+      if (command === 'help') {
+        command = arg;
+      } else {
+        positionals.push(arg);
+      }
     }
   }
 
-  return { command, flags };
+  return { command, flags, positionals };
+}
+
+/**
+ * Normalize a CLI target into an http(s) URL, accepting bare domains
+ * like "example.com". Returns null for anything that isn't a usable target.
+ */
+export function normalizeTargetUrl(input: string): string | null {
+  let candidate = input.trim();
+  if (!/^https?:\/\//i.test(candidate)) {
+    if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?(\/.*)?$/i.test(candidate)) return null;
+    candidate = 'https://' + candidate;
+  }
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.href;
+  } catch {
+    return null;
+  }
 }
 
 async function cmdGenerate(flags: Record<string, string | boolean>): Promise<void> {
@@ -183,6 +212,75 @@ export default defineConfig({
   console.log('[aeo.js] Edit the config and run `npx aeo.js generate` to generate AEO files.');
 }
 
+async function scanRemote(targetUrl: string): Promise<RemoteScanReport> {
+  if (typeof fetch !== 'function') {
+    console.error('[aeo.js] URL checks require Node 18+ (global fetch).');
+    process.exit(1);
+  }
+
+  console.error(`[aeo.js] Scanning ${targetUrl} ...`);
+  const discovery = await discover(targetUrl);
+
+  if (!discovery.homepage) {
+    console.error(`[aeo.js] Could not reach ${targetUrl} — check the URL and try again.`);
+    process.exit(1);
+  }
+
+  const pages = await crawlPages(discovery, targetUrl);
+  console.error(`[aeo.js] Crawled ${pages.length} page(s).`);
+  return buildRemoteReport(targetUrl, discovery, pages);
+}
+
+/** Report JSON for terminal output — drops raw page HTML to keep it readable. */
+function remoteReportJson(report: RemoteScanReport): string {
+  return JSON.stringify(
+    {
+      ...report,
+      discovery: {
+        ...report.discovery,
+        homepage: report.discovery.homepage ? { url: report.discovery.homepage.url } : null,
+      },
+      pages: report.pages.map(({ html: _html, ...page }) => page),
+    },
+    null,
+    2
+  );
+}
+
+async function cmdCheckRemote(targetUrl: string, flags: Record<string, string | boolean>): Promise<void> {
+  const report = await scanRemote(targetUrl);
+
+  if (flags.json) {
+    console.log(remoteReportJson(report));
+    return;
+  }
+
+  console.log(formatRemoteReport(report));
+}
+
+async function cmdReportRemote(targetUrl: string, flags: Record<string, string | boolean>): Promise<void> {
+  const report = await scanRemote(targetUrl);
+
+  if (flags.json) {
+    console.log(remoteReportJson(report));
+    return;
+  }
+
+  console.log(formatRemoteReport(report));
+  console.log('Platform hints:');
+  for (const hint of report.platformHints) {
+    console.log(`  ${hint.platform} [${hint.status}]`);
+    for (const tip of hint.tips) {
+      console.log(`    * ${tip}`);
+    }
+  }
+  console.log();
+  console.log('Per-page citability:');
+  for (const page of report.citability.pages) {
+    console.log(`  ${page.score}/100  ${page.pathname}`);
+  }
+}
+
 function cmdCheck(flags: Record<string, string | boolean>): void {
   const framework = detectFramework();
   const config = resolveConfig({
@@ -261,7 +359,7 @@ function cmdReport(flags: Record<string, string | boolean>): void {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const { command, flags } = parseArgs(args);
+  const { command, flags, positionals } = parseArgs(args);
 
   if (flags.version) {
     console.log(VERSION);
@@ -273,6 +371,16 @@ async function main(): Promise<void> {
     return;
   }
 
+  // "check <url>" / "report <url>" audit a live site instead of the local setup
+  let targetUrl: string | null = null;
+  if ((command === 'check' || command === 'report') && positionals.length > 0) {
+    targetUrl = normalizeTargetUrl(positionals[0]);
+    if (!targetUrl) {
+      console.error(`[aeo.js] "${positionals[0]}" is not a valid URL or domain.`);
+      process.exit(1);
+    }
+  }
+
   switch (command) {
     case 'generate':
       await cmdGenerate(flags);
@@ -281,11 +389,24 @@ async function main(): Promise<void> {
       cmdInit();
       break;
     case 'check':
-      cmdCheck(flags);
+      if (targetUrl) {
+        await cmdCheckRemote(targetUrl, flags);
+      } else {
+        cmdCheck(flags);
+      }
       break;
     case 'report':
-      cmdReport(flags);
+      if (targetUrl) {
+        await cmdReportRemote(targetUrl, flags);
+      } else {
+        cmdReport(flags);
+      }
       break;
+    case 'mcp': {
+      const { runMcpStdio } = await import('./core/mcp-server');
+      runMcpStdio();
+      break;
+    }
     default:
       console.error(`Unknown command: ${command}`);
       console.log(HELP);
