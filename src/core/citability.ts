@@ -228,9 +228,40 @@ function scoreStatisticalDensity(content: string, hints: ContentHint[]): Citabil
 
   if (totalMatches === 0) {
     hints.push({ type: 'suggestion', message: 'No statistics or factual claims found — AI favors content with concrete numbers, percentages, and dates' });
+  } else if (!hasEvidenceSignals(content)) {
+    hints.push({ type: 'suggestion', message: 'Add source links or attribution for statistical claims so AI systems can verify them' });
   }
 
   return { name: 'Statistical Density', score, maxScore: 25, details: `${totalMatches} statistical claims (${density.toFixed(1)} per 100 words)` };
+}
+
+// Shared negative-lookahead fragment used by every attribution pattern. The lookahead
+// is anchored immediately after the keyword and consumes any whitespace internally so
+// the engine can't backtrack \s* to 0 chars and slip a self-referential token through.
+// Excludes "our/my" and "the {company,team,organization,internal}" so phrases like
+// "according to our CEO" or "study from our team" don't masquerade as evidence.
+// 'us' is intentionally omitted — the /i flag makes it also match "US" (United States),
+// which would mis-flag legitimate external sources like "According to US regulators".
+// The bare "data from us" / "according to us" cases are uncommon and not worth the
+// collision with US-government citations.
+const NOT_SELF_REF = String.raw`(?!\s*(?:our|my|the\s+(?:company|team|organization|internal))\b)`;
+
+function hasEvidenceSignals(content: string): boolean {
+  const evidencePatterns = [
+    // External-source markers: URLs, footnote refs, or explicit attribution phrases.
+    // Every keyword pair must be followed by something that isn't self-referential —
+    // "our internal report", "data from us", "study by our team" should NOT count.
+    /https?:\/\/\S+/i,
+    /\[\^?\d+\]/,
+    new RegExp(String.raw`\baccording to\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bsources?:${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\b(reported|published) (by|in)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\b(study|survey|report|research|paper|analysis) (by|from)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bdata (from|by)\b${NOT_SELF_REF}`, 'i'),
+    new RegExp(String.raw`\bcited (by|in)\b${NOT_SELF_REF}`, 'i'),
+  ];
+
+  return evidencePatterns.some(pattern => pattern.test(content));
 }
 
 /**
