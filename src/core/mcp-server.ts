@@ -12,19 +12,19 @@ import { VERSION } from '../index';
  * ping — as plain JSON-RPC, so no SDK dependency is required.
  */
 
-interface JsonRpcRequest {
+type JsonRpcRequest = {
   jsonrpc: '2.0';
   id?: number | string | null;
   method: string;
   params?: Record<string, unknown>;
-}
+};
 
-interface JsonRpcResponse {
+type JsonRpcResponse = {
   jsonrpc: '2.0';
   id: number | string | null;
   result?: unknown;
   error?: { code: number; message: string };
-}
+};
 
 const TOOLS = [
   {
