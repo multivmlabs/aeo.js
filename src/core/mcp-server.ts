@@ -170,7 +170,7 @@ export async function handleMcpRequest(request: JsonRpcRequest): Promise<JsonRpc
           jsonrpc: '2.0',
           id,
           result: {
-            protocolVersion: (request.params?.protocolVersion as string) || '2024-11-05',
+            protocolVersion: '2025-03-26',
             capabilities: { tools: {} },
             serverInfo: { name: 'aeo.js', version: VERSION },
           },
@@ -234,9 +234,14 @@ export function runMcpStdio(): void {
         continue;
       }
 
-      handleMcpRequest(request).then((response) => {
-        if (response) process.stdout.write(JSON.stringify(response) + '\n');
-      });
+      handleMcpRequest(request)
+        .then((response) => {
+          if (response) process.stdout.write(JSON.stringify(response) + '\n');
+        })
+        .catch((err: NodeJS.ErrnoException) => {
+          if (err.code === 'EPIPE') return; // client disconnected — swallow silently
+          throw err;
+        });
     }
   });
 
