@@ -95,6 +95,23 @@ describe('postBuild', () => {
 
     expect(existsSync(join(projectDir, 'public', 'robots.txt'))).toBe(true);
   });
+
+  it('config.pages entries override auto-scanned pages for the same pathname', async () => {
+    const client = join(projectDir, 'build', 'client');
+    mkdirSync(join(client, 'about'), { recursive: true });
+    writeFileSync(join(client, 'about', 'index.html'), HTML('About'));
+
+    await postBuild({
+      title: 'My Site',
+      url: 'https://mysite.com',
+      widget: { enabled: false },
+      pages: [{ pathname: '/about', title: 'About (Override)', description: 'Custom description.' }],
+    });
+
+    const llms = readFileSync(join(client, 'llms.txt'), 'utf-8');
+    expect(llms).toContain('About (Override)');
+    expect(llms).not.toContain('Description for About');
+  });
 });
 
 describe('getWidgetScript', () => {

@@ -151,9 +151,12 @@ function scanHtmlOutput(outputDir: string): PageEntry[] {
 
 /**
  * Generate a widget script tag for Remix.
+ * Returns a complete `<script type="module">…</script>` string.
  * Add it to your root route so the widget loads on every page:
  *
- *   <script type="module" dangerouslySetInnerHTML={{ __html: widgetScript }} />
+ *   const widgetScript = getWidgetScript(config);
+ *   // …
+ *   <div dangerouslySetInnerHTML={{ __html: widgetScript }} />
  */
 export function getWidgetScript(config: AeoConfig = {}): string {
   const resolvedConfig = resolveConfig(config);
@@ -201,14 +204,19 @@ export async function postBuild(config: AeoConfig = {}): Promise<void> {
 
   const sourcePages = scanRemixRoutes(projectRoot);
 
-  // Merge: prerendered output (with content) takes priority over source routes
-  const allPages = [...buildPages, ...sourcePages, ...(config.pages || [])];
+  // Merge: prerendered output (with content) takes priority over source routes;
+  // config.pages always wins last, giving users unconditional override power.
+  const autoPages = [...buildPages, ...sourcePages];
   const pageMap = new Map<string, PageEntry>();
-  for (const page of allPages) {
+  for (const page of autoPages) {
     const existing = pageMap.get(page.pathname);
     if (!existing || (page.content && !existing.content)) {
       pageMap.set(page.pathname, page);
     }
+  }
+  // config.pages entries unconditionally overwrite auto-scanned entries
+  for (const page of config.pages || []) {
+    pageMap.set(page.pathname, page);
   }
 
   for (const page of pageMap.values()) {
