@@ -6,7 +6,7 @@ import type { PageCitabilityResult } from './citability';
 import { generatePlatformHints } from './platform-hints';
 import type { PlatformHint } from './platform-hints';
 
-export interface RemoteScanReport {
+export type RemoteScanReport = {
   url: string;
   scannedAt: string;
   discovery: DiscoveryResult;
@@ -19,7 +19,7 @@ export interface RemoteScanReport {
   platformHints: PlatformHint[];
   botAccess: BotAccessEntry[];
   usesAeoJs: boolean;
-}
+};
 
 function auditAiAccess(discovery: DiscoveryResult): AuditCategory {
   const majorBots = ['GPTBot', 'ClaudeBot', 'Google-Extended', 'PerplexityBot'];

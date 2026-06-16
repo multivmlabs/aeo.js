@@ -29,7 +29,7 @@ Options:
   --url <url>       Site URL (default: https://example.com)
   --title <title>   Site title (default: My Site)
   --no-widget       Disable widget generation
-  --json            Output audit results as JSON (check/report commands)
+  --json            Output full report as JSON (check/report share the same JSON schema)
   --help, -h        Show this help message
   --version, -v     Show version
 
