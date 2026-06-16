@@ -102,6 +102,16 @@ export default defineNuxtConfig({
 });
 ```
 
+### Remix
+
+```json
+{
+  "scripts": {
+    "postbuild": "node -e \"import('aeo.js/remix').then(m => m.postBuild({ title: 'My Site', url: 'https://mysite.com' }))\""
+  }
+}
+```
+
 ### SvelteKit
 
 ```json
@@ -157,6 +167,7 @@ npx aeo.js check
 | Next.js | `aeo.js/next` |
 | Vite | `aeo.js/vite` |
 | Nuxt | `aeo.js/nuxt` |
+| Remix | `aeo.js/remix` |
 | SvelteKit | `aeo.js/sveltekit` |
 | Angular | `aeo.js/angular` |
 | Webpack | `aeo.js/webpack` |
