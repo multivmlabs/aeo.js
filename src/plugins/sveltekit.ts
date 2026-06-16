@@ -78,6 +78,10 @@ function detectSvelteKitOutputDir(projectRoot: string): string {
   const clientDir = join(projectRoot, '.svelte-kit', 'output', 'client');
   if (existsSync(clientDir)) return clientDir;
 
+  console.warn(
+    '[aeo.js] Could not detect SvelteKit output directory (build/ and .svelte-kit/output/client are absent). ' +
+      'Pass outDir explicitly or run your build first.',
+  );
   return staticBuild;
 }
 
