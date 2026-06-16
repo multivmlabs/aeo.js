@@ -73,6 +73,61 @@ describe('scorePageCitability', () => {
     expect(longHint).toBeDefined();
   });
 
+  it('suggests leading with a direct answer when the first substantial paragraph is contextual', () => {
+    // First substantial paragraph starts with "This" (not an answer-quality opener).
+    // Second paragraph starts with a capital noun and is long enough — counts as an
+    // answer paragraph, so the suggestion (which requires answerCount > 0) fires.
+    const content = `# About aeo.js
+
+This page explains the background, positioning, scope, and implementation details that teams should understand before adopting the library in their projects.
+
+Aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt, schema data, ai-index metadata, sitemap, and JSON-LD structured data.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeDefined();
+    expect(answerFirstHint?.line).toBe(3);
+  });
+
+  it('does not add an answer-first hint when zero answer paragraphs exist (warning covers it)', () => {
+    // When there are no answer-quality paragraphs at all, the standalone warning already
+    // tells the user to add some — the "lead with one" hint would be redundant noise.
+    const content = `# About aeo.js
+
+This page explains the background, positioning, scope, and history that teams should understand before adopting the library in their projects.`;
+    const result = scorePageCitability(makePage(content));
+    const warning = result.hints.find(h => h.message.includes('No direct answer paragraphs'));
+    const suggestion = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(warning).toBeDefined();
+    expect(suggestion).toBeUndefined();
+  });
+
+  it('does not add an answer-first hint when the first substantial paragraph is direct', () => {
+    const content = `# About aeo.js
+
+Aeo.js generates machine-readable answer-engine assets for websites at build time, including llms.txt files, schema data, and AI index metadata for crawler discovery.
+
+This page explains the background, positioning, and implementation details for teams adopting the library.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeUndefined();
+  });
+
+  it('does not add an answer-first hint when the opener exceeds 200 words but is a direct answer', () => {
+    // The "Lead with a direct answer" suggestion previously gated on isAnswerQualityParagraph,
+    // which caps at 200 words. A well-formed 200+ word opener that starts with a capital noun
+    // is still a direct answer — splitting it is a separate hint that the long-paragraph check
+    // handles. Regression test: this content must NOT trigger the answer-first suggestion.
+    const longOpener = 'Aeo.js generates machine-readable answer-engine assets for websites at build time. '.repeat(15);
+    const content = `# About aeo.js
+
+${longOpener}
+
+A second paragraph adds positioning context for teams adopting the library in production environments.`;
+    const result = scorePageCitability(makePage(content));
+    const answerFirstHint = result.hints.find(h => h.message.includes('Lead with a direct'));
+    expect(answerFirstHint).toBeUndefined();
+  });
+
   it('detects context-dependent paragraphs', () => {
     const content = `As mentioned above, our platform is great.
 

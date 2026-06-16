@@ -85,11 +85,7 @@ function scoreAnswerBlocks(content: string, hints: ContentHint[]): CitabilityDim
     // Skip headings and very short paragraphs
     if (para.text.startsWith('#') || words < 15) continue;
 
-    // Good answer: starts with capital letter (not pronoun), 20-200 words
-    const startsWithSubject = /^[A-Z][a-z]/.test(para.text) && !/^(This|That|These|Those|It|They|We|He|She|I)\b/.test(para.text);
-    const goodLength = words >= 20 && words <= 200;
-
-    if (startsWithSubject && goodLength) {
+    if (isAnswerQualityParagraph(para.text)) {
       answerCount++;
     }
   }
@@ -106,6 +102,33 @@ function scoreAnswerBlocks(content: string, hints: ContentHint[]): CitabilityDim
     hints.push({ type: 'warning', message: 'No direct answer paragraphs found — add self-contained factual paragraphs that start with a clear subject' });
   }
 
+  // Only suggest "lead with a direct answer" when at least one answer paragraph already
+  // exists on the page — otherwise the existing zero-answer warning above covers the
+  // same action item. Match the 20-word threshold used by isAnswerQualityParagraph so a
+  // 15–19-word direct opening doesn't false-positive against itself.
+  //
+  // We check only the "starts contextually" half of isAnswerQualityParagraph (capital
+  // noun, not a pronoun). The 200-word upper bound from that helper would mis-flag a
+  // well-formed 201+ word opener as needing rephrasing — the long-paragraph hint below
+  // is the right place to suggest splitting it.
+  if (answerCount > 0) {
+    const firstSubstantialParagraph = paragraphs.find(
+      para => !para.text.startsWith('#') && para.text.split(/\s+/).length >= 20
+    );
+    if (firstSubstantialParagraph) {
+      const startsContextually =
+        !/^[A-Z][a-z]/.test(firstSubstantialParagraph.text) ||
+        /^(This|That|These|Those|It|They|We|He|She|I)\b/.test(firstSubstantialParagraph.text);
+      if (startsContextually) {
+        hints.push({
+          type: 'suggestion',
+          message: 'Lead with a direct, self-contained answer paragraph before background context',
+          line: firstSubstantialParagraph.line,
+        });
+      }
+    }
+  }
+
   // Flag long paragraphs
   for (const para of paragraphs) {
     const words = para.text.split(/\s+/).length;
@@ -115,6 +138,14 @@ function scoreAnswerBlocks(content: string, hints: ContentHint[]): CitabilityDim
   }
 
   return { name: 'Answer Blocks', score, maxScore: 25, details: `${answerCount} answer-quality paragraphs found` };
+}
+
+function isAnswerQualityParagraph(text: string): boolean {
+  const words = text.split(/\s+/).length;
+  const startsWithSubject = /^[A-Z][a-z]/.test(text) && !/^(This|That|These|Those|It|They|We|He|She|I)\b/.test(text);
+  const goodLength = words >= 20 && words <= 200;
+
+  return startsWithSubject && goodLength;
 }
 
 /**
