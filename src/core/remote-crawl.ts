@@ -330,7 +330,13 @@ export async function discover(targetUrl: string, options: RemoteCrawlOptions = 
       exists: Boolean(
         aiIndexRes?.ok && (aiIndexRes.headers.get('content-type') ?? '').toLowerCase().includes('application/json')
       ),
-      content: aiIndexRes?.ok ? await aiIndexRes.text().catch(() => null) : null,
+      content: await (async () => {
+        if (!aiIndexRes?.ok) return null;
+        const cl = Number(aiIndexRes.headers.get('content-length') ?? '0');
+        if (cl > MAX_BODY_BYTES) return null;
+        const text = await aiIndexRes.text().catch(() => null);
+        return text && text.length <= MAX_BODY_BYTES ? text : null;
+      })(),
     },
     homepage: homepageHtml ? { html: homepageHtml, url: targetUrl } : null,
     botAccess: parseRobotsTxtBotAccess(robotsText),
