@@ -3,6 +3,7 @@ import { buildRemoteReport, formatRemoteReport } from './remote-audit';
 import { scorePageCitability, formatPageCitability } from './citability';
 import { generateAEOFiles } from './generate';
 import { resolveConfig } from './utils';
+import { resolve, isAbsolute } from 'path';
 import { VERSION } from '../index';
 
 /**
@@ -133,11 +134,24 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
       if (typeof args.title !== 'string' || typeof args.url !== 'string') {
         return textResult('Both "title" and "url" arguments are required.', true);
       }
+      const canonicalUrl = normalizeUrl(args.url);
+      if (!canonicalUrl) {
+        return textResult(`"${args.url}" is not a valid URL or domain.`, true);
+      }
+      let safeOutDir: string | undefined;
+      if (typeof args.outDir === 'string') {
+        const cwd = process.cwd();
+        const resolved = isAbsolute(args.outDir) ? args.outDir : resolve(cwd, args.outDir);
+        if (!resolved.startsWith(cwd + '/') && resolved !== cwd) {
+          return textResult('outDir must be inside the current working directory.', true);
+        }
+        safeOutDir = resolved;
+      }
       const config = resolveConfig({
         title: args.title,
-        url: args.url,
+        url: canonicalUrl,
         description: typeof args.description === 'string' ? args.description : undefined,
-        outDir: typeof args.outDir === 'string' ? args.outDir : undefined,
+        outDir: safeOutDir,
       });
       const result = await generateAEOFiles(config);
       const lines = [
