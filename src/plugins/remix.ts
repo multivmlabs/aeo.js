@@ -265,16 +265,19 @@ export async function generate(config: AeoConfig = {}): Promise<void> {
 
   const pageMap = new Map<string, PageEntry>();
   for (const page of discoveredPages) {
+    pageMap.set(page.pathname, page);
+  }
+  for (const page of config.pages || []) {
+    pageMap.set(page.pathname, page);
+  }
+
+  for (const page of pageMap.values()) {
     if (page.pathname === '/' && !page.title && config.title) {
       page.title = config.title;
     }
     if (!page.description && config.description) {
       page.description = config.description;
     }
-    pageMap.set(page.pathname, page);
-  }
-  for (const page of config.pages || []) {
-    pageMap.set(page.pathname, page);
   }
 
   const resolvedConfig = resolveConfig({
