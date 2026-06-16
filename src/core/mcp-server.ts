@@ -3,7 +3,7 @@ import { buildRemoteReport, formatRemoteReport } from './remote-audit';
 import { scorePageCitability, formatPageCitability } from './citability';
 import { generateAEOFiles } from './generate';
 import { resolveConfig } from './utils';
-import { resolve, isAbsolute } from 'path';
+import { resolve } from 'path';
 import { VERSION } from '../index';
 
 /**
@@ -141,7 +141,7 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
       let safeOutDir: string | undefined;
       if (typeof args.outDir === 'string') {
         const cwd = process.cwd();
-        const resolved = isAbsolute(args.outDir) ? args.outDir : resolve(cwd, args.outDir);
+        const resolved = resolve(cwd, args.outDir);
         if (!resolved.startsWith(cwd + '/') && resolved !== cwd) {
           return textResult('outDir must be inside the current working directory.', true);
         }

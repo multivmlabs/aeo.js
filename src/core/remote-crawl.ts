@@ -173,17 +173,20 @@ async function fetchWithTimeout(url: string, opts: Required<RemoteCrawlOptions>)
   return null; // too many redirects
 }
 
+async function readBodyWithTimeout(res: Response, timeoutMs: number): Promise<string | null> {
+  const bodyTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
+  const text = await Promise.race([res.text().catch(() => null), bodyTimeout]);
+  return text && text.length <= MAX_BODY_BYTES ? text : null;
+}
+
 async function fetchText(url: string, opts: Required<RemoteCrawlOptions>): Promise<string | null> {
   const res = await fetchWithTimeout(url, opts);
   if (!res || !res.ok) return null;
 
-  // Enforce a 1 MB body size cap to prevent unbounded memory consumption
   const contentLength = Number(res.headers.get('content-length') ?? '0');
   if (contentLength > MAX_BODY_BYTES) return null;
 
-  const text = await res.text();
-  if (text.length > MAX_BODY_BYTES) return null;
-  return text;
+  return readBodyWithTimeout(res, opts.timeoutMs);
 }
 
 export function parseSitemapUrls(xml: string, baseUrl: string): string[] {
@@ -364,8 +367,7 @@ export async function discover(targetUrl: string, options: RemoteCrawlOptions = 
         if (!aiIndexRes?.ok) return null;
         const cl = Number(aiIndexRes.headers.get('content-length') ?? '0');
         if (cl > MAX_BODY_BYTES) return null;
-        const text = await aiIndexRes.text().catch(() => null);
-        return text && text.length <= MAX_BODY_BYTES ? text : null;
+        return readBodyWithTimeout(aiIndexRes, opts.timeoutMs);
       })(),
     },
     homepage: homepageHtml ? { html: homepageHtml, url: targetUrl } : null,
