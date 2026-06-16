@@ -239,8 +239,10 @@ export function runMcpStdio(): void {
           if (response) process.stdout.write(JSON.stringify(response) + '\n');
         })
         .catch((err: NodeJS.ErrnoException) => {
-          if (err.code === 'EPIPE') return; // client disconnected — swallow silently
-          throw err;
+          // Swallow all stdout write errors — EPIPE means the client disconnected,
+          // EBADF/ENOTSOCK can occur on unusual stdio setups. Log to stderr so
+          // the error is visible without crashing the long-running server process.
+          process.stderr.write(`[aeo.js mcp] stdout write error: ${err.code ?? err.message}\n`);
         });
     }
   });
