@@ -47,6 +47,51 @@ const DEFAULTS: Required<RemoteCrawlOptions> = {
 };
 
 const MAX_URLS_FROM_SITEMAP = 20;
+const MAX_BODY_BYTES = 1024 * 1024; // 1 MB
+
+/**
+ * Returns true if the URL resolves to a private/loopback/link-local address
+ * that should never be fetched by the crawler (SSRF guard).
+ */
+export function isPrivateUrl(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return true; // unparseable → treat as private
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+
+  // Hostname-based checks
+  if (hostname === 'localhost') return true;
+
+  // IPv6 loopback / ULA / link-local (string checks are sufficient here)
+  if (hostname === '::1') return true;
+  if (hostname === '[::1]') return true;
+  // ULA fc00::/7 — starts with fc or fd
+  if (/^\[?fc/i.test(hostname) || /^\[?fd/i.test(hostname)) return true;
+  // Link-local fe80::/10
+  if (/^\[?fe80/i.test(hostname)) return true;
+
+  // Strip IPv6 brackets for numeric range checks
+  const host = hostname.replace(/^\[|\]$/g, '');
+
+  // IPv4 range checks
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const o1 = Number(ipv4[1]);
+    const o2 = Number(ipv4[2]);
+    if (o1 === 127) return true;                             // 127.x.x.x loopback
+    if (o1 === 0) return true;                               // 0.0.0.0/8
+    if (o1 === 10) return true;                              // 10.x.x.x
+    if (o1 === 172 && o2 >= 16 && o2 <= 31) return true;    // 172.16–31.x.x
+    if (o1 === 192 && o2 === 168) return true;               // 192.168.x.x
+    if (o1 === 169 && o2 === 254) return true;               // 169.254.x.x link-local / cloud metadata
+  }
+
+  return false;
+}
 
 /** Known AI crawlers checked against robots.txt. */
 export const AI_BOTS: ReadonlyArray<Omit<BotAccessEntry, 'allowed'>> = [
@@ -76,6 +121,9 @@ export const AI_BOTS: ReadonlyArray<Omit<BotAccessEntry, 'allowed'>> = [
 ];
 
 async function fetchWithTimeout(url: string, opts: Required<RemoteCrawlOptions>): Promise<Response | null> {
+  // SSRF guard: reject requests to private / loopback / link-local addresses
+  if (isPrivateUrl(url)) return null;
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs);
   try {
@@ -98,7 +146,14 @@ async function fetchWithTimeout(url: string, opts: Required<RemoteCrawlOptions>)
 async function fetchText(url: string, opts: Required<RemoteCrawlOptions>): Promise<string | null> {
   const res = await fetchWithTimeout(url, opts);
   if (!res || !res.ok) return null;
-  return res.text();
+
+  // Enforce a 1 MB body size cap to prevent unbounded memory consumption
+  const contentLength = Number(res.headers.get('content-length') ?? '0');
+  if (contentLength > MAX_BODY_BYTES) return null;
+
+  const text = await res.text();
+  if (text.length > MAX_BODY_BYTES) return null;
+  return text;
 }
 
 export function parseSitemapUrls(xml: string, baseUrl: string): string[] {

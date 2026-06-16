@@ -6,6 +6,7 @@ import {
   extractOgTags,
   discover,
   crawlPages,
+  isPrivateUrl,
   AI_BOTS,
 } from './remote-crawl';
 
@@ -90,6 +91,53 @@ describe('extractOgTags', () => {
   });
 });
 
+describe('isPrivateUrl', () => {
+  it('blocks loopback 127.x.x.x', () => {
+    expect(isPrivateUrl('http://127.0.0.1/')).toBe(true);
+    expect(isPrivateUrl('http://127.1.2.3/')).toBe(true);
+  });
+
+  it('blocks 0.0.0.0', () => {
+    expect(isPrivateUrl('http://0.0.0.0/')).toBe(true);
+  });
+
+  it('blocks 10.x.x.x', () => {
+    expect(isPrivateUrl('http://10.0.0.1/')).toBe(true);
+    expect(isPrivateUrl('http://10.255.255.255/')).toBe(true);
+  });
+
+  it('blocks 172.16–31.x.x', () => {
+    expect(isPrivateUrl('http://172.16.0.1/')).toBe(true);
+    expect(isPrivateUrl('http://172.31.255.255/')).toBe(true);
+    expect(isPrivateUrl('http://172.15.0.1/')).toBe(false);
+    expect(isPrivateUrl('http://172.32.0.1/')).toBe(false);
+  });
+
+  it('blocks 192.168.x.x', () => {
+    expect(isPrivateUrl('http://192.168.1.1/')).toBe(true);
+  });
+
+  it('blocks link-local and cloud metadata 169.254.x.x', () => {
+    expect(isPrivateUrl('http://169.254.1.1/')).toBe(true);
+    expect(isPrivateUrl('http://169.254.169.254/latest/meta-data/')).toBe(true);
+  });
+
+  it('blocks localhost hostname', () => {
+    expect(isPrivateUrl('http://localhost/')).toBe(true);
+    expect(isPrivateUrl('http://localhost:8080/path')).toBe(true);
+  });
+
+  it('blocks IPv6 loopback', () => {
+    expect(isPrivateUrl('http://[::1]/')).toBe(true);
+  });
+
+  it('allows public IPs', () => {
+    expect(isPrivateUrl('https://example.com/')).toBe(false);
+    expect(isPrivateUrl('https://8.8.8.8/')).toBe(false);
+    expect(isPrivateUrl('https://93.184.216.34/')).toBe(false);
+  });
+});
+
 describe('discover + crawlPages (mocked fetch)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -162,5 +210,56 @@ describe('discover + crawlPages (mocked fetch)', () => {
 
     const pages = await crawlPages(discovery, 'https://down.example');
     expect(pages).toHaveLength(0);
+  });
+
+  it('returns null (no homepage) when response body exceeds 1 MB', async () => {
+    const oversizedBody = 'x'.repeat(1024 * 1024 + 1);
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'text/html' }),
+      text: async () => oversizedBody,
+    })));
+
+    const discovery = await discover('https://big.example');
+    // fetchText returns null for oversized bodies, so homepage should be null
+    expect(discovery.homepage).toBeNull();
+  });
+
+  it('returns null when Content-Length header exceeds 1 MB', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers({
+        'content-type': 'text/html',
+        'content-length': String(1024 * 1024 + 1),
+      }),
+      text: async () => '<html></html>',
+    })));
+
+    const discovery = await discover('https://big-header.example');
+    expect(discovery.homepage).toBeNull();
+  });
+
+  it('rejects private IP URLs — 192.168.x.x returns no pages', async () => {
+    // fetch should never be called for private IPs
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const discovery = await discover('http://192.168.1.1/');
+    expect(discovery.homepage).toBeNull();
+    // fetch should not have been invoked for any of the discovery endpoints
+    const calledUrls: string[] = fetchMock.mock.calls.map((c: unknown[]) => c[0] as string);
+    expect(calledUrls.every((u) => !u.includes('192.168.1.1'))).toBe(true);
+  });
+
+  it('rejects cloud metadata endpoint 169.254.169.254', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const discovery = await discover('http://169.254.169.254/latest/meta-data/');
+    expect(discovery.homepage).toBeNull();
+    const calledUrls: string[] = fetchMock.mock.calls.map((c: unknown[]) => c[0] as string);
+    expect(calledUrls.every((u) => !u.includes('169.254.169.254'))).toBe(true);
   });
 });
