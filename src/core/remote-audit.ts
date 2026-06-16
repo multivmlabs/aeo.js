@@ -26,10 +26,13 @@ function auditAiAccess(discovery: DiscoveryResult): AuditCategory {
   const allowedMajorBots = discovery.botAccess.filter((b) => majorBots.includes(b.bot) && b.allowed).length;
   const totalAllowed = discovery.botAccess.filter((b) => b.allowed).length;
 
+  const noBlanketDisallow = !discovery.robotsTxt.hasAiDisallow;
+
   const checks = [
-    { label: 'robots.txt exists', passed: discovery.robotsTxt.exists, points: 4 },
-    { label: 'llms.txt exists', passed: discovery.llmsTxt.exists, points: 4 },
-    { label: 'sitemap.xml exists', passed: discovery.sitemap.exists, points: 4 },
+    { label: 'robots.txt exists', passed: discovery.robotsTxt.exists, points: 3 },
+    { label: 'llms.txt exists', passed: discovery.llmsTxt.exists, points: 3 },
+    { label: 'sitemap.xml exists', passed: discovery.sitemap.exists, points: 3 },
+    { label: 'No blanket disallow rules blocking AI crawlers', passed: noBlanketDisallow, points: 4 },
     {
       label: 'Major AI bots allowed (GPTBot, ClaudeBot, Google-Extended, PerplexityBot)',
       passed: allowedMajorBots >= 3,
@@ -38,7 +41,7 @@ function auditAiAccess(discovery: DiscoveryResult): AuditCategory {
     {
       label: `${totalAllowed}/${discovery.botAccess.length} AI crawlers can access site`,
       passed: totalAllowed >= discovery.botAccess.length * 0.7,
-      points: 4,
+      points: 3,
     },
   ];
 
