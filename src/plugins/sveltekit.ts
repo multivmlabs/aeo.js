@@ -209,9 +209,10 @@ export async function postBuild(config: AeoConfig & { injectWidget?: boolean } =
 
   const buildPages = scanHtmlOutput(outputDir);
 
-  // Non-static adapters keep prerendered pages in a separate directory
+  // Non-static adapters keep prerendered pages in a separate directory.
+  // Check existence rather than string-matching the path so custom outDir still works.
   const prerenderedDir = join(projectRoot, '.svelte-kit', 'output', 'prerendered', 'pages');
-  const prerenderedPages = outputDir.includes('.svelte-kit') ? scanHtmlOutput(prerenderedDir) : [];
+  const prerenderedPages = existsSync(prerenderedDir) ? scanHtmlOutput(prerenderedDir) : [];
 
   const discovered = [...buildPages, ...prerenderedPages];
   if (discovered.length > 0) {
@@ -264,8 +265,8 @@ export async function postBuild(config: AeoConfig & { injectWidget?: boolean } =
     // For non-static adapters the client dir only holds JS/CSS bundles.
     // Prerendered HTML lives under .svelte-kit/output/prerendered/pages.
     const widgetDirs: string[] = [outputDir];
-    if (outputDir.includes('.svelte-kit')) {
-      widgetDirs.push(join(projectRoot, '.svelte-kit', 'output', 'prerendered', 'pages'));
+    if (existsSync(prerenderedDir)) {
+      widgetDirs.push(prerenderedDir);
     }
     let injected = 0;
     for (const dir of widgetDirs) {
@@ -298,10 +299,19 @@ export async function generate(config: AeoConfig = {}): Promise<void> {
     }
   }
 
+  // Merge with same priority as postBuild: discovered first, then config.pages win.
+  const pageMap = new Map<string, PageEntry>();
+  for (const page of discoveredPages) {
+    pageMap.set(page.pathname, page);
+  }
+  for (const page of config.pages || []) {
+    pageMap.set(page.pathname, page);
+  }
+
   const resolvedConfig = resolveConfig({
     ...config,
     outDir: config.outDir || 'static',
-    pages: [...(config.pages || []), ...discoveredPages],
+    pages: Array.from(pageMap.values()),
   });
 
   const result = await generateAEOFiles(resolvedConfig);
