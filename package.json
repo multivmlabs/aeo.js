@@ -60,6 +60,11 @@
       "import": "./dist/tanstack-start.mjs",
       "require": "./dist/tanstack-start.js"
     },
+    "./docusaurus": {
+      "types": "./dist/docusaurus.d.ts",
+      "import": "./dist/docusaurus.mjs",
+      "require": "./dist/docusaurus.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",

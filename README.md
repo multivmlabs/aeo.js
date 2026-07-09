@@ -144,6 +144,19 @@ export default defineNuxtConfig({
 
 Routes are discovered from `src/routes` (TanStack Router file conventions). No build output yet? Use `generate()` instead of `postBuild()` to emit files into `public/` from your source routes.
 
+### Docusaurus
+
+```js
+// docusaurus.config.js
+module.exports = {
+  plugins: [
+    ['aeo.js/docusaurus', { url: 'https://mysite.com', title: 'My Docs' }],
+  ],
+};
+```
+
+`url`, `title`, and `description` default to your Docusaurus `siteConfig` (including `baseUrl`) when omitted. AEO files are generated from the built HTML during `docusaurus build`, and the widget is injected on every page.
+
 ### Angular
 
 ```json
