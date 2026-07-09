@@ -13,6 +13,7 @@ export default defineConfig({
     remix: 'src/plugins/remix.ts',
     sveltekit: 'src/plugins/sveltekit.ts',
     'tanstack-start': 'src/plugins/tanstack-start.ts',
+    docusaurus: 'src/plugins/docusaurus.ts',
     widget: 'src/widget/core.ts',
     react: 'src/widget/react.tsx',
     vue: 'src/widget/vue.ts',
