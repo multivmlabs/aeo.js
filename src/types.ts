@@ -3,6 +3,8 @@ export interface PageEntry {
   title?: string;
   description?: string;
   content?: string;
+  /** User-defined labels (e.g. 'calculator', 'template'). Surfaced in ai-index.json metadata only. */
+  tags?: string[];
 }
 
 export interface AeoConfig {

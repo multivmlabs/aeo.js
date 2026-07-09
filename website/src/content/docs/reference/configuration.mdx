@@ -96,6 +96,16 @@ export default defineConfig({
 | `outDir` | `string` | auto-detected | Output directory for generated files |
 | `pages` | `PageEntry[]` | `[]` | Manually specify pages to include |
 
+### `pages` (`PageEntry`)
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `pathname` | `string` | — | Page path (e.g. `/about`) |
+| `title` | `string` | — | Page title |
+| `description` | `string` | — | Page description |
+| `content` | `string` | — | Page body used for AI index chunks and keywords |
+| `tags` | `string[]` | — | Optional user-defined labels (e.g. `'calculator'`, `'template'`, `'guide'`). Surfaced verbatim in `ai-index.json` entry `metadata.tags`. Descriptive only — does not affect audit or citability scoring. |
+
 ### `generators`
 
 | Option | Type | Default | Description |

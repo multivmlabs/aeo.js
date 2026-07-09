@@ -203,6 +203,43 @@ describe('generateAIIndex', () => {
     expect(contactEntry?.title).toBe('Contact');
   });
 
+  it('should surface page tags verbatim in entry metadata', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      pages: [
+        {
+          pathname: '/tools/roi',
+          title: 'ROI Calculator',
+          description: 'Estimate return on investment',
+          content: 'Use this calculator to estimate ROI for your campaign.',
+          tags: ['calculator', 'template'],
+        },
+        {
+          pathname: '/guides/setup',
+          title: 'Setup Guide',
+          tags: ['guide'],
+        },
+      ],
+    };
+
+    const result = generateAIIndex(config);
+    const index = JSON.parse(result);
+
+    const roiEntry = index.entries.find((e: any) => e.url === 'https://example.com/tools/roi');
+    expect(roiEntry?.metadata?.tags).toEqual(['calculator', 'template']);
+
+    const guideEntry = index.entries.find((e: any) => e.url === 'https://example.com/guides/setup');
+    expect(guideEntry?.metadata?.tags).toEqual(['guide']);
+  });
+
+  it('should omit tags from metadata when not provided', () => {
+    const result = generateAIIndex(baseConfig);
+    const index = JSON.parse(result);
+
+    const homeEntry = index.entries.find((e: any) => e.url === 'https://example.com');
+    expect(homeEntry?.metadata?.tags).toBeUndefined();
+  });
+
   it('should handle empty pages', () => {
     const config: ResolvedAeoConfig = { ...baseConfig, pages: [] };
     const result = generateAIIndex(config);
