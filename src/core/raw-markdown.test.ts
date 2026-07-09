@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { copyRawMarkdown, generatePageMarkdownFiles } from './raw-markdown';
-import { readdirSync, statSync, copyFileSync, mkdirSync, writeFileSync } from 'fs';
+import { readdirSync, statSync, copyFileSync, mkdirSync, writeFileSync, existsSync } from 'fs';
 import type { ResolvedAeoConfig } from '../types';
 
 vi.mock('fs', () => ({
@@ -112,6 +112,19 @@ describe('copyRawMarkdown', () => {
 
     expect(result).toEqual([]);
     expect(mockCopyFileSync).not.toHaveBeenCalled();
+  });
+
+  it('does not read or warn when contentDir does not exist (#74)', () => {
+    vi.mocked(existsSync).mockReturnValueOnce(false);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = copyRawMarkdown(createConfig());
+
+    expect(result).toEqual([]);
+    expect(mockReaddirSync).not.toHaveBeenCalled();
+    expect(warnSpy).not.toHaveBeenCalled();
+
+    warnSpy.mockRestore();
   });
 
   it('should recursively copy from subdirectories', () => {

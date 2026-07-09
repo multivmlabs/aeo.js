@@ -1,4 +1,4 @@
-import { readdirSync, statSync, mkdirSync, writeFileSync, copyFileSync } from 'fs';
+import { readdirSync, statSync, mkdirSync, writeFileSync, copyFileSync, existsSync } from 'fs';
 import { join, relative, extname, dirname } from 'path';
 import type { ResolvedAeoConfig } from '../types';
 import { escapeYamlString } from './utils';
@@ -56,7 +56,12 @@ export function copyMarkdownFiles(config: ResolvedAeoConfig): CopiedFile[] {
     }
   }
   
-  copyRecursive(config.contentDir);
+  // A missing contentDir is a valid state (e.g. CMS-backed or page-derived
+  // sites): treat it as an empty content set instead of warning. Mirrors the
+  // existsSync guard used by the manifest/sitemap/llms generators.
+  if (existsSync(config.contentDir)) {
+    copyRecursive(config.contentDir);
+  }
   return copiedFiles;
 }
 
