@@ -55,6 +55,11 @@
       "import": "./dist/sveltekit.mjs",
       "require": "./dist/sveltekit.js"
     },
+    "./tanstack-start": {
+      "types": "./dist/tanstack-start.d.ts",
+      "import": "./dist/tanstack-start.mjs",
+      "require": "./dist/tanstack-start.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",

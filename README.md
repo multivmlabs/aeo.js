@@ -132,6 +132,18 @@ export default defineNuxtConfig({
 }
 ```
 
+### TanStack Start
+
+```json
+{
+  "scripts": {
+    "postbuild": "node -e \"import('aeo.js/tanstack-start').then(m => m.postBuild({ title: 'My Site', url: 'https://mysite.com' }))\""
+  }
+}
+```
+
+Routes are discovered from `src/routes` (TanStack Router file conventions). No build output yet? Use `generate()` instead of `postBuild()` to emit files into `public/` from your source routes.
+
 ### Angular
 
 ```json
