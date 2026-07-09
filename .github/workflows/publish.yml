@@ -18,6 +18,15 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
+      - name: Verify package version matches release tag
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match release tag ($GITHUB_REF_NAME). Bump the version before releasing."
+            exit 1
+          fi
+
       - run: npm ci
 
       - run: npm run build
