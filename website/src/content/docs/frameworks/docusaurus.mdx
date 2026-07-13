@@ -1,0 +1,63 @@
+---
+title: Docusaurus
+description: Use aeo.js with Docusaurus documentation sites.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the plugin to your `docusaurus.config.js`:
+   ```js
+   // docusaurus.config.js
+   module.exports = {
+     plugins: [
+       ['aeo.js/docusaurus', { url: 'https://mysite.com', title: 'My Docs' }],
+     ],
+   };
+   ```
+
+3. Build your site:
+   ```bash
+   npm run build
+   ```
+</Steps>
+
+## How it works
+
+The Docusaurus plugin uses two lifecycle hooks:
+
+- **`postBuild`** — after `docusaurus build`, it scans the generated HTML in the build output for titles, descriptions, and full text content, then writes all AEO files (robots.txt, llms.txt, sitemap.xml, ai-index.json, …) alongside the static output
+- **`injectHtmlTags`** — injects the AEO widget on every page
+
+`url`, `title`, and `description` default to your Docusaurus `siteConfig` (`url`, `title`, `tagline`) when omitted, and `baseUrl` is folded into the generated URLs so project sub-path sites (e.g. `https://user.github.io/project/`) resolve correctly.
+
+<Aside type="note">
+Generation runs during `docusaurus build` only — the `postBuild` hook does not run under `docusaurus start` (the dev server), by Docusaurus design.
+</Aside>
+
+## Configuration
+
+Explicit plugin options always override the values inferred from `siteConfig`:
+
+```js
+plugins: [
+  [
+    'aeo.js/docusaurus',
+    {
+      url: 'https://mysite.com',
+      title: 'My Docs',
+      description: 'Documentation optimized for AI discovery',
+      schema: { organization: { name: 'My Company' } },
+    },
+  ],
+],
+```
+
+See the [configuration reference](/reference/configuration/) for all available options.
