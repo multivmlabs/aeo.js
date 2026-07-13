@@ -279,7 +279,9 @@ describe('generateSitemap', () => {
     
     const sitemap = generateSitemap(baseConfig);
     
-    expect(sitemap).toContain('<loc>https://example.com/index</loc>');
+    // index.md collapses to the site root, not /index
+    expect(sitemap).toContain('<loc>https://example.com</loc>');
+    expect(sitemap).not.toContain('<loc>https://example.com/index</loc>');
     expect(sitemap).toContain('<loc>https://example.com/blog/post1</loc>');
     expect(sitemap).toContain('<loc>https://example.com/blog/post2</loc>');
     expect(sitemap).toContain('<loc>https://example.com/docs/guide</loc>');

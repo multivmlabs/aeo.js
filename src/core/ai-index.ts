@@ -3,6 +3,7 @@ import { join, relative, extname } from 'path';
 import { createHash } from 'crypto';
 import type { ResolvedAeoConfig, AIIndexEntry } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
+import { buildPageUrl, contentFileToPathname } from './url';
 
 function extractKeywords(content: string, maxKeywords: number): string[] {
   if (maxKeywords < 1) return [];
@@ -65,8 +66,7 @@ function collectAIIndexEntries(dir: string, config: ResolvedAeoConfig, base: str
         const content = readFileSync(fullPath, 'utf-8');
         const { frontmatter, content: mainContent } = parseFrontmatter(content);
         const relativePath = relative(base, fullPath);
-        const urlPath = relativePath.replace(/\.mdx?$/, '');
-        const url = `${config.url}/${urlPath}`;
+        const url = buildPageUrl(config.url, contentFileToPathname(relativePath), config.trailingSlash);
         
         const chunks = chunkContent(mainContent, config.aiIndex.maxChunkLength);
         const title = frontmatter.title || extractTitle(mainContent);
@@ -112,7 +112,7 @@ export function generateAIIndex(config: ResolvedAeoConfig): string {
   // Add discovered pages from framework plugin
   if (config.pages && config.pages.length > 0) {
     for (const page of config.pages) {
-      const url = `${config.url}${page.pathname === '/' ? '' : page.pathname}`;
+      const url = buildPageUrl(config.url, page.pathname, config.trailingSlash);
       const title = page.title || page.pathname;
       const content = page.content || '';
 

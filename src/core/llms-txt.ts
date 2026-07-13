@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig, MarkdownFile } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
+import { buildPageUrl, contentFileToPathname } from './url';
 
 function collectMarkdownFiles(dir: string, base: string = dir): MarkdownFile[] {
   const files: MarkdownFile[] = [];
@@ -60,7 +61,7 @@ export function generateLlmsTxt(config: ResolvedAeoConfig): string {
     lines.push('');
 
     for (const page of config.pages) {
-      const url = `${config.url}${page.pathname === '/' ? '' : page.pathname}`;
+      const url = buildPageUrl(config.url, page.pathname, config.trailingSlash);
       const title = page.title || page.pathname;
       lines.push(`- [${title}](${url})`);
       if (page.description) {
@@ -90,7 +91,7 @@ export function generateLlmsTxt(config: ResolvedAeoConfig): string {
       lines.push('');
 
       for (const file of files) {
-        const url = `${config.url}/${file.path.replace(/\.mdx?$/, '')}`;
+        const url = buildPageUrl(config.url, contentFileToPathname(file.path), config.trailingSlash);
         lines.push(`- [${file.title}](${url})`);
         if (file.description) {
           lines.push(`  ${file.description}`);

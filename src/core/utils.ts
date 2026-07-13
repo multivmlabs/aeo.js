@@ -51,6 +51,7 @@ export function resolveConfig(config: AeoConfig = {}): ResolvedAeoConfig {
     url: config.url || 'https://example.com',
     contentDir: config.contentDir || frameworkInfo.contentDir,
     outDir: config.outDir || frameworkInfo.outDir,
+    trailingSlash: config.trailingSlash || 'preserve',
     pages: config.pages || [],
     generators: {
       robotsTxt: config.generators?.robotsTxt !== false,

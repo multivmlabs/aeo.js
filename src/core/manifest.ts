@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig, ManifestEntry } from '../types';
 import { parseFrontmatter, extractTitle } from './utils';
+import { buildPageUrl, contentFileToPathname } from './url';
 
 function collectManifestEntries(dir: string, config: ResolvedAeoConfig, base: string = dir): ManifestEntry[] {
   const entries: ManifestEntry[] = [];
@@ -19,10 +20,9 @@ function collectManifestEntries(dir: string, config: ResolvedAeoConfig, base: st
         const content = readFileSync(fullPath, 'utf-8');
         const { frontmatter, content: mainContent } = parseFrontmatter(content);
         const relativePath = relative(base, fullPath);
-        const urlPath = relativePath.replace(/\.mdx?$/, '');
-        
+
         entries.push({
-          url: `${config.url}/${urlPath}`,
+          url: buildPageUrl(config.url, contentFileToPathname(relativePath), config.trailingSlash),
           title: frontmatter.title || extractTitle(mainContent),
           description: frontmatter.description,
           lastModified: stat.mtime.toISOString(),
@@ -43,7 +43,7 @@ export function generateManifest(config: ResolvedAeoConfig): string {
   if (config.pages && config.pages.length > 0) {
     for (const page of config.pages) {
       entries.push({
-        url: `${config.url}${page.pathname === '/' ? '' : page.pathname}`,
+        url: buildPageUrl(config.url, page.pathname, config.trailingSlash),
         title: page.title || page.pathname,
         description: page.description,
       });
