@@ -157,6 +157,19 @@ module.exports = {
 
 `url`, `title`, and `description` default to your Docusaurus `siteConfig` (including `baseUrl`) when omitted. AEO files are generated from the built HTML during `docusaurus build`, and the widget is injected on every page.
 
+### Eleventy
+
+```js
+// eleventy.config.js
+const aeo = require('aeo.js/eleventy');
+
+module.exports = function (eleventyConfig) {
+  eleventyConfig.addPlugin(aeo, { url: 'https://mysite.com', title: 'My Site' });
+};
+```
+
+Requires Eleventy 2.0+. AEO files are generated from the rendered output into your Eleventy output directory (`_site` by default), and the widget is injected into every HTML page.
+
 ### Angular
 
 ```json

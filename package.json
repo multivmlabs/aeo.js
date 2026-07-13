@@ -65,6 +65,11 @@
       "import": "./dist/docusaurus.mjs",
       "require": "./dist/docusaurus.js"
     },
+    "./eleventy": {
+      "types": "./dist/eleventy.d.ts",
+      "import": "./dist/eleventy.mjs",
+      "require": "./dist/eleventy.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",

@@ -72,6 +72,7 @@ export default defineConfig({
 						{ label: 'TanStack Start', slug: 'frameworks/tanstack-start' },
 						{ label: 'Angular', slug: 'frameworks/angular' },
 						{ label: 'Docusaurus', slug: 'frameworks/docusaurus' },
+						{ label: 'Eleventy', slug: 'frameworks/eleventy' },
 						{ label: 'Webpack', slug: 'frameworks/webpack' },
 						{ label: 'Vanilla JS / Static HTML', slug: 'frameworks/vanilla' },
 					],
