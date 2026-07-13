@@ -13,6 +13,8 @@ export interface AeoConfig {
   url?: string;
   contentDir?: string;
   outDir?: string;
+  /** Trailing-slash policy for generated URLs (sitemap, llms.txt, …). Default 'preserve'. */
+  trailingSlash?: 'always' | 'never' | 'preserve';
   pages?: PageEntry[];
   generators?: {
     robotsTxt?: boolean;
@@ -72,6 +74,7 @@ export interface ResolvedAeoConfig {
   url: string;
   contentDir: string;
   outDir: string;
+  trailingSlash?: 'always' | 'never' | 'preserve';
   pages: PageEntry[];
   generators: {
     robotsTxt: boolean;

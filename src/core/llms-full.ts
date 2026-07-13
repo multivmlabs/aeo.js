@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig } from '../types';
 import { parseFrontmatter, bumpHeadings } from './utils';
+import { buildPageUrl } from './url';
 
 function collectAndConcatenateMarkdown(dir: string, base: string = dir): string[] {
   const sections: string[] = [];
@@ -79,7 +80,7 @@ export function generateLlmsFullTxt(config: ResolvedAeoConfig): string {
   // Include discovered pages (from framework plugin)
   if (config.pages && config.pages.length > 0) {
     for (const page of config.pages) {
-      const url = `${config.url}${page.pathname === '/' ? '' : page.pathname}`;
+      const url = buildPageUrl(config.url, page.pathname, config.trailingSlash);
       const title = page.title || page.pathname;
       const sectionLines: string[] = [
         '---',

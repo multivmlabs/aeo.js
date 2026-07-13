@@ -1,6 +1,7 @@
 import { readdirSync, statSync, existsSync } from 'fs';
 import { join, relative, extname } from 'path';
 import type { ResolvedAeoConfig } from '../types';
+import { buildPageUrl, contentFileToPathname } from './url';
 
 function collectUrls(dir: string, config: ResolvedAeoConfig, base: string = dir): string[] {
   const urls: string[] = [];
@@ -17,8 +18,7 @@ function collectUrls(dir: string, config: ResolvedAeoConfig, base: string = dir)
         urls.push(...collectUrls(fullPath, config, base));
       } else if (stat.isFile() && (extname(entry) === '.md' || extname(entry) === '.mdx' || extname(entry) === '.html')) {
         const relativePath = relative(base, fullPath);
-        const urlPath = relativePath.replace(/\.(md|mdx|html)$/, '');
-        urls.push(`${config.url}/${urlPath}`);
+        urls.push(buildPageUrl(config.url, contentFileToPathname(relativePath), config.trailingSlash));
       }
     }
   } catch (error) {
@@ -63,7 +63,7 @@ export function generateSitemap(config: ResolvedAeoConfig): string {
   if (config.pages && config.pages.length > 0) {
     for (const page of config.pages) {
       if (isSitemapPathname(page.pathname)) continue;
-      urls.push(`${config.url}${page.pathname === '/' ? '' : page.pathname}`);
+      urls.push(buildPageUrl(config.url, page.pathname, config.trailingSlash));
     }
   }
 
@@ -81,7 +81,7 @@ export function generateSitemap(config: ResolvedAeoConfig): string {
   ];
 
   // Always include the site root
-  urls.push(config.url);
+  urls.push(buildPageUrl(config.url, '/', config.trailingSlash));
 
   const uniqueUrls = [...new Set(urls)].sort();
   
