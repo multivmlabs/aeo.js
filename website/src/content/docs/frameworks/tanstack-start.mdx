@@ -1,0 +1,84 @@
+---
+title: TanStack Start
+description: Use aeo.js with TanStack Start and TanStack Router.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add a post-build step to your `package.json`:
+   ```json
+   {
+     "scripts": {
+       "postbuild": "node -e \"import('aeo.js/tanstack-start').then(m => m.postBuild({ title: 'My Site', url: 'https://mysite.com' }))\""
+     }
+   }
+   ```
+
+3. Build your app:
+   ```bash
+   npm run build
+   ```
+</Steps>
+
+## How it works
+
+The TanStack Start plugin:
+
+- Scans `src/routes` (falling back to `app/routes`) using the [TanStack Router file conventions](https://tanstack.com/router/latest/docs/routing/file-naming-conventions): flat (`.`) and directory nesting, `index` tokens, `route.tsx` layout tokens, pathless `_layout` segments, and trailing-underscore un-nesting
+- Skips routes that can't be enumerated statically — dynamic params (`$postId`), splats (`$`), the `__root` layout, and `-`prefixed files
+- Scans prerendered HTML from the build output (`.output/public`, `dist/client`, or `dist`) for titles, descriptions, and full text content
+- Generates all AEO files (robots.txt, llms.txt, sitemap.xml, ai-index.json, …) alongside the static assets so they're served from the site root
+
+<Aside type="tip">
+Dynamic routes are skipped because they can't be listed at build time. Add them explicitly via the [`pages`](/reference/configuration/) option — your entries always win over auto-discovered ones.
+</Aside>
+
+## Widget
+
+TanStack Start renders HTML on the server, so add the widget script once in your root document (`src/routes/__root.tsx`):
+
+```tsx
+// src/routes/__root.tsx
+import { getWidgetScript } from 'aeo.js/tanstack-start';
+
+const widgetScript = getWidgetScript({
+  title: 'My Site',
+  url: 'https://mysite.com',
+});
+
+// In your root document body, before </body>:
+<div dangerouslySetInnerHTML={{ __html: widgetScript }} />
+```
+
+## Programmatic usage
+
+No build output yet? Generate AEO files from source routes only — files land in `public/`:
+
+```ts
+import { generate } from 'aeo.js/tanstack-start';
+
+await generate({ title: 'My Site', url: 'https://mysite.com' });
+```
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options to `postBuild` or `generate`:
+
+```ts
+import { postBuild } from 'aeo.js/tanstack-start';
+
+await postBuild({
+  title: 'My Site',
+  url: 'https://mysite.com',
+  description: 'A site optimized for AI discovery',
+  schema: { organization: { name: 'My Company' } },
+});
+```
