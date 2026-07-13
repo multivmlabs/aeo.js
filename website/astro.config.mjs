@@ -10,6 +10,10 @@ export default defineConfig({
 			title: 'aeo.js — Answer Engine Optimization for the Modern Web',
 			description: 'Make your website discoverable by ChatGPT, Claude, Perplexity & AI search engines. Auto-generates llms.txt, robots.txt, sitemap, JSON-LD structured data & more.',
 			url: 'https://aeojs.org',
+			// Starlight serves src/content/docs/** at the site root, so point the
+			// content scan at the collection root. Without this it defaults to
+			// 'src/content' and emits phantom /docs/* URLs (404s) in the sitemap.
+			contentDir: 'src/content/docs',
 			schema: {
 				organization: {
 					name: 'aeo.js',
