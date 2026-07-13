@@ -1,0 +1,60 @@
+---
+title: Eleventy
+description: Use aeo.js with Eleventy (11ty) static sites.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Add the plugin in your `eleventy.config.js`:
+   ```js
+   const aeo = require('aeo.js/eleventy');
+
+   module.exports = function (eleventyConfig) {
+     eleventyConfig.addPlugin(aeo, {
+       url: 'https://mysite.com',
+       title: 'My Site',
+     });
+   };
+   ```
+
+3. Build your site:
+   ```bash
+   npx @11ty/eleventy
+   ```
+</Steps>
+
+<Aside type="caution">
+Requires Eleventy **2.0 or newer** — the plugin uses the `eleventy.after` event's `results` API and the `directories` argument.
+</Aside>
+
+## How it works
+
+The Eleventy plugin:
+
+- Registers a transform that injects the AEO widget into every rendered `.html` page
+- Listens for the `eleventy.after` event and reads Eleventy's build `results` — each page's URL and rendered HTML — to extract titles, descriptions, and full text content
+- Normalizes Eleventy's trailing-slash URLs (`/about/` → `/about`) and skips non-HTML output and 404 pages
+- Generates all AEO files (robots.txt, llms.txt, sitemap.xml, ai-index.json, …) into your Eleventy output directory (`_site` by default)
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options as the second argument to `addPlugin`. Add pages that Eleventy doesn't emit as HTML via `pages` — your entries always win over auto-discovered ones:
+
+```js
+eleventyConfig.addPlugin(aeo, {
+  url: 'https://mysite.com',
+  title: 'My Site',
+  description: 'A site optimized for AI discovery',
+  schema: { organization: { name: 'My Company' } },
+});
+```
+
+If your output directory isn't the default `_site`, either pass `outDir` or rely on the `directories` value Eleventy reports — the plugin reads it automatically.
