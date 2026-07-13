@@ -170,6 +170,21 @@ module.exports = function (eleventyConfig) {
 
 Requires Eleventy 2.0+. AEO files are generated from the rendered output into your Eleventy output directory (`_site` by default), and the widget is injected into every HTML page.
 
+### VitePress
+
+```ts
+// .vitepress/config.ts
+import { defineConfig } from 'vitepress';
+import { withAeo } from 'aeo.js/vitepress';
+
+export default defineConfig(withAeo({
+  title: 'My Docs',
+  // …your VitePress config…
+}, { url: 'https://mysite.com' }));
+```
+
+`withAeo` wraps your config: it collects pages during `vitepress build`, injects the widget, and generates AEO files into the output directory. `url`, `title`, and `description` default from your VitePress site config (and `sitemap.hostname`).
+
 ### Angular
 
 ```json

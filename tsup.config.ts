@@ -15,6 +15,7 @@ export default defineConfig({
     'tanstack-start': 'src/plugins/tanstack-start.ts',
     docusaurus: 'src/plugins/docusaurus.ts',
     eleventy: 'src/plugins/eleventy.ts',
+    vitepress: 'src/plugins/vitepress.ts',
     widget: 'src/widget/core.ts',
     react: 'src/widget/react.tsx',
     vue: 'src/widget/vue.ts',

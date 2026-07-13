@@ -1,0 +1,62 @@
+---
+title: VitePress
+description: Use aeo.js with VitePress documentation sites.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+## Setup
+
+<Steps>
+1. Install the package:
+   ```bash
+   npm install aeo.js
+   ```
+
+2. Wrap your config in `.vitepress/config.ts`:
+   ```ts
+   import { defineConfig } from 'vitepress';
+   import { withAeo } from 'aeo.js/vitepress';
+
+   export default defineConfig(
+     withAeo(
+       {
+         title: 'My Docs',
+         description: 'My documentation site',
+         // …the rest of your VitePress config…
+       },
+       { url: 'https://mysite.com' }
+     )
+   );
+   ```
+
+3. Build your site:
+   ```bash
+   npm run docs:build
+   ```
+</Steps>
+
+## How it works
+
+`withAeo(config, options)` wraps your VitePress config and composes two build hooks:
+
+- **`transformHtml`** — runs per page during the build. It collects each page's URL, title, description, and rendered text content, and injects the AEO widget before `</body>`.
+- **`buildEnd`** — after the build, generates all AEO files (robots.txt, llms.txt, sitemap.xml, ai-index.json, …) into the VitePress output directory.
+
+`url`, `title`, and `description` default from your VitePress site config (and `sitemap.hostname`) when omitted.
+
+<Aside type="tip">
+Any `transformHtml` or `buildEnd` hooks you already define are preserved — they run first, then aeo.js adds its behavior. These hooks only run during `vitepress build`, not the dev server.
+</Aside>
+
+## Configuration
+
+Pass any [AeoConfig](/reference/configuration/) options as the second argument. Add pages VitePress doesn't emit via `pages` — your entries always win:
+
+```ts
+withAeo(config, {
+  url: 'https://mysite.com',
+  title: 'My Docs',
+  schema: { organization: { name: 'My Company' } },
+});
+```

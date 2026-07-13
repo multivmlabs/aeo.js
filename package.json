@@ -70,6 +70,11 @@
       "import": "./dist/eleventy.mjs",
       "require": "./dist/eleventy.js"
     },
+    "./vitepress": {
+      "types": "./dist/vitepress.d.ts",
+      "import": "./dist/vitepress.mjs",
+      "require": "./dist/vitepress.js"
+    },
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.mjs",
