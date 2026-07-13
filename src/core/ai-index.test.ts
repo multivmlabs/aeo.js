@@ -240,6 +240,48 @@ describe('generateAIIndex', () => {
     expect(homeEntry?.metadata?.tags).toBeUndefined();
   });
 
+  it('should omit tags when an empty array is provided', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      pages: [{ pathname: '/empty-tags', title: 'Empty', tags: [] }],
+    };
+    const result = generateAIIndex(config);
+    const index = JSON.parse(result);
+
+    const entry = index.entries.find((e: any) => e.url === 'https://example.com/empty-tags');
+    expect(entry?.metadata?.tags).toBeUndefined();
+  });
+
+  it('should carry tags on every chunk of multi-chunk content', () => {
+    const config: ResolvedAeoConfig = {
+      ...baseConfig,
+      aiIndex: { ...baseConfig.aiIndex, maxChunkLength: 20 },
+      pages: [
+        {
+          pathname: '/tools/roi',
+          title: 'ROI Calculator',
+          content: [
+            'First paragraph content.',
+            'Second paragraph content.',
+            'Third paragraph content.',
+          ].join('\n\n'),
+          tags: ['calculator', 'template'],
+        },
+      ],
+    };
+
+    const result = generateAIIndex(config);
+    const index = JSON.parse(result);
+    const chunks = index.entries
+      .filter((e: any) => e.url === 'https://example.com/tools/roi')
+      .sort((a: any, b: any) => a.metadata.chunkIndex - b.metadata.chunkIndex);
+
+    expect(chunks).toHaveLength(3);
+    for (const chunk of chunks) {
+      expect(chunk.metadata.tags).toEqual(['calculator', 'template']);
+    }
+  });
+
   it('should handle empty pages', () => {
     const config: ResolvedAeoConfig = { ...baseConfig, pages: [] };
     const result = generateAIIndex(config);

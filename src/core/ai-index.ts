@@ -137,7 +137,7 @@ export function generateAIIndex(config: ResolvedAeoConfig): string {
               chunkIndex: index,
               totalChunks: chunks.length,
               sourcePath: page.pathname,
-              ...(page.tags !== undefined ? { tags: page.tags } : {}),
+              ...(page.tags?.length ? { tags: page.tags } : {}),
             },
           });
         });
@@ -154,7 +154,7 @@ export function generateAIIndex(config: ResolvedAeoConfig): string {
           content: page.description || title,
           description: page.description,
           keywords: [],
-          ...(page.tags !== undefined
+          ...(page.tags?.length
             ? { metadata: { tags: page.tags } }
             : {}),
         });
