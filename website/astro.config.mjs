@@ -73,6 +73,7 @@ export default defineConfig({
 						{ label: 'Angular', slug: 'frameworks/angular' },
 						{ label: 'Docusaurus', slug: 'frameworks/docusaurus' },
 						{ label: 'Eleventy', slug: 'frameworks/eleventy' },
+						{ label: 'VitePress', slug: 'frameworks/vitepress' },
 						{ label: 'Webpack', slug: 'frameworks/webpack' },
 						{ label: 'Vanilla JS / Static HTML', slug: 'frameworks/vanilla' },
 					],
