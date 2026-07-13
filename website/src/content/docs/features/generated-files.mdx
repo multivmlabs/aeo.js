@@ -71,17 +71,25 @@ A structured documentation manifest:
 An AI-optimized content index designed for RAG (Retrieval-Augmented Generation) pipelines:
 
 ```json
-[
-  {
-    "id": "index",
-    "url": "https://mysite.com/",
-    "title": "Home",
-    "content": "Full page content in markdown...",
-    "description": "Page description",
-    "keywords": ["keyword1", "keyword2"]
-  }
-]
+{
+  "version": "1.0",
+  "entries": [
+    {
+      "id": "…",
+      "url": "https://mysite.com/tools/roi",
+      "title": "ROI Calculator",
+      "content": "Full page content in markdown...",
+      "description": "Page description",
+      "keywords": ["keyword1", "keyword2"],
+      "metadata": {
+        "tags": ["calculator", "template"]
+      }
+    }
+  ]
+}
 ```
+
+Optional `PageEntry.tags` values are copied into each entry's `metadata.tags` for downstream tools. They are informational only and do not change scoring.
 
 ## Raw Markdown
 
