@@ -4,7 +4,7 @@
   "public_key": "pk_LNcNy18KbBnGjRaPjB3v2",
   "projectTitle": "aeo.js",
   "description": "Answer Engine Optimization for the modern web. Make your site discoverable by AI crawlers and LLMs.",
-  "folders": ["src", "website/content", "demo"],
+  "folders": ["src", "website/src/content", "demo"],
   "excludeFolders": ["dist", "node_modules", ".next", ".ralph", "extension/dist"],
   "excludeFiles": ["package-lock.json", "*.gif", ".DS_Store"],
   "rules": [
